@@ -45,7 +45,8 @@ function buildInstance(name: string, slug: string, links: Record<string, string>
     slug,
     vertical: "personal",
     entity: { name, tagline: str(g.tagline, 120) || `${name}'s portfolio`, blurb: str(g.blurb, 400), location: "", links },
-    story: { mission: str(g.mission, 240), principles: principles.length ? principles : [{ title: "In progress", body: "This portfolio is grounded in a résumé; the owner can refine it." }] },
+    // mission is REQUIRED by validateInstance — never leave it empty (the no-LLM fallback would, → null config → 500).
+    story: { mission: str(g.mission, 240) || `${name}'s work, in one place — ask my agent anything about it.`, principles: principles.length ? principles : [{ title: "In progress", body: "This portfolio is grounded in a résumé; the owner can refine it." }] },
     theme: "vercel",
     agent: {
       persona: `A friendly agent for ${name} — answers about their background and whether they're a fit, grounded in their real material.`,
@@ -139,6 +140,9 @@ export async function POST(req: NextRequest) {
 
   const slug = slugFor(name, email);
   const config = buildInstance(name, slug, links, await generate(resume, name));
+  if (!config?.entity) {
+    return NextResponse.json({ error: "Couldn't assemble a valid portfolio from that input — add a few more lines about yourself and try again." }, { status: 422 });
+  }
 
   const origin = req.nextUrl.origin;
   const hostedUrl = `${origin}/p/${slug}`;

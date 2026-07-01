@@ -9,7 +9,7 @@
 // On-brand for UnmaskLeads (a lead-gen product) and generic for any Agentize instance.
 // ─────────────────────────────────────────────────────────────────────────────
 import { NextRequest, NextResponse } from "next/server";
-import { isOwnerRequest } from "@/lib/owner";
+import { isOwnerRequest, ownerTokenConfigured } from "@/lib/owner";
 import { ownerHashMatches, ownerKey } from "@/lib/portfolio-owner";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { kvConfigured, kvGetJSON, kvSetJSON } from "@/lib/storage";
@@ -30,7 +30,9 @@ function leadsKeyFor(slug?: string): string {
 // Owns THIS instance? The deploy admin (global PORTFOLIO_OWNER_TOKEN) owns any; otherwise the
 // caller must present the per-portfolio owner token that matches owner:<slug> (multi-tenant safe).
 async function ownsInstance(req: NextRequest, slug?: string): Promise<boolean> {
-  if (isOwnerRequest(req)) return true;
+  // Admin bypass ONLY when a global token is actually configured AND matches — never the un-gated
+  // dev shortcut (else a deploy without PORTFOLIO_OWNER_TOKEN would leave every tenant's data open).
+  if (ownerTokenConfigured() && isOwnerRequest(req)) return true;
   if (!slug) return false;
   const provided = req.headers.get("x-portfolio-owner") ?? "";
   if (!provided) return false;

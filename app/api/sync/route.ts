@@ -8,7 +8,7 @@
 // Never claims a pull a wall forbids (X paid/login, LinkedIn login-walled) — see sourceFeasibility.
 // ─────────────────────────────────────────────────────────────────────────────
 import { NextRequest, NextResponse } from "next/server";
-import { isOwnerRequest } from "@/lib/owner";
+import { isOwnerRequest, ownerTokenConfigured } from "@/lib/owner";
 import { ownerHashMatches, ownerKey } from "@/lib/portfolio-owner";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { kvConfigured, kvGetJSON, kvSetJSON } from "@/lib/storage";
@@ -24,7 +24,8 @@ const slugRe = /^[a-z0-9-]{1,64}$/i;
 const MAX_CRON = 25;
 
 async function ownsInstance(req: NextRequest, slug: string): Promise<boolean> {
-  if (isOwnerRequest(req)) return true;
+  // Admin bypass ONLY when a global token is configured AND matches (never the un-gated dev shortcut).
+  if (ownerTokenConfigured() && isOwnerRequest(req)) return true;
   const provided = req.headers.get("x-portfolio-owner") ?? "";
   if (!provided) return false;
   const hash = await kvGetJSON<string>(ownerKey(slug));

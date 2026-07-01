@@ -158,6 +158,9 @@ So: `Agentize` is the meta-template ("one core, any business"); `agentic` only e
   hash (`ownsInstance(req, slug)`) and key data per slug (`leads:<slug>`) — never let one maker read another's
   pipeline, and never gate a hosted portfolio on the single global admin token alone. Store only the hash;
   show the raw token once. A visibility badge must verify server-side, not trust local token presence.
+  **The admin bypass must be `ownerTokenConfigured() && isOwnerRequest()`, never bare `isOwnerRequest()`** —
+  `isOwnerRequest()` returns `true` when no token is set (the un-gated dev shortcut), so a bare check leaves every
+  tenant open on a deploy that skipped the *optional* `PORTFOLIO_OWNER_TOKEN`. Fail **closed**.
 - **Built-in section ids are fixed; custom ones are dynamic.** Built-ins: `practices, projects,
   writing, receipts, job-fit, deep-dives, compass, values` — reorder/hide/rename only, code-rendered. The agent can ALSO
   create **custom sections** (`id: custom-<slug>`, `custom:true`, carrying their own `items`) via the
