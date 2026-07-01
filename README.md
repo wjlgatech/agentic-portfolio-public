@@ -58,6 +58,13 @@ Open it and you're in **🔓 Owner mode**: manage your portfolio and ask your ag
 agent captured). Everyone else is a **🔒 visitor** — they can chat with your agent and it can capture *their* interest,
 but only you can read your pipeline. Each portfolio has its own owner key; no one can see anyone else's.
 
+**Keep it fresh — 1-click or on a schedule.** Add your **GitHub** and **YouTube** links and your portfolio
+auto-pulls your latest repos + videos: ask your agent to *"sync my portfolio"* (1-click, owner-only), or let it
+update itself on a **daily schedule** (a [Vercel Cron](https://vercel.com/docs/cron-jobs) in `vercel.json` hits
+`/api/sync`; set `CRON_SECRET`). Re-syncing is idempotent (dedupe by URL). **Honest about the walls:** GitHub +
+YouTube are public feeds a server can pull; **X and LinkedIn are paid/login-walled**, so those aren't auto-synced —
+you add them in your browser (the harvester), never a server-side scrape.
+
 Every page carries a small credit to the creator and a *make-your-own / join-the-network* invite — open source
 and free, but each portfolio grows the network and the brand. That's the point.
 
@@ -140,6 +147,7 @@ zero component edits. Live theme switcher included.
 | `POSTGRES_URL` (or `DATABASE_URL`) | durable + **shared** hosting: `/make` → `/p/<slug>`, the Network registry, TRUE standing, the referral tree | a free Neon/Vercel Postgres. Without it, `/make` hands back a downloadable pack instead of hosting. |
 | `NEXT_PUBLIC_SITE_URL` | share **thumbnails** unfurling on X/LinkedIn/Slack | your production URL, e.g. `https://your-app.vercel.app`. Falls back to Vercel's auto URL. |
 | `PORTFOLIO_OWNER_TOKEN` | locking edits/owner routes to you | optional but recommended. The real security boundary. |
+| `CRON_SECRET` | the daily **auto-sync** (`vercel.json` cron → `/api/sync`) | optional. Vercel sends it as a Bearer token to the cron path; without it the scheduled sync is disabled. (`SYNC_SECRET` does the same for the GitHub Action alternative.) |
 
 CLI alternative (after `vercel link`): `printf '%s' "<value>" | vercel env add GROQ_API_KEY production` (repeat per var), then `vercel --prod`.
 

@@ -10,7 +10,7 @@ import { SharePanel } from "@/components/SharePanel";
 type Result = { url?: string; hosted?: boolean; slug?: string; pack?: unknown; note?: string; source?: "resume" | "linkedin" | "thin"; error?: string; tagline?: string; ownerUrl?: string; referredBy?: string | null };
 
 export default function Make() {
-  const [f, setF] = useState({ name: "", email: "", linkedin: "", resume: "", x: "", fb: "", ig: "" });
+  const [f, setF] = useState({ name: "", email: "", linkedin: "", resume: "", x: "", fb: "", ig: "", github: "", youtube: "" });
   const [busy, setBusy] = useState(false);
   const [res, setRes] = useState<Result | null>(null);
   const [copied, setCopied] = useState(false);
@@ -119,13 +119,16 @@ export default function Make() {
         <Field label="Email *" k="email" ph="jane@example.com" hint="Used only to key your portfolio (re-run to update it). Not shown publicly." />
         <Field label="LinkedIn profile — or paste your résumé below" k="linkedin" ph="https://www.linkedin.com/in/…" hint="We auto-fill from your PUBLIC profile (best-effort — no login, we never post as you). If LinkedIn blocks it, just paste a few lines below." />
         <Field label="Your résumé / about you" k="resume" ph="Optional if you gave LinkedIn above. Paste your résumé or a few paragraphs about your work, skills, and highlights…" hint="The more real detail here, the richer your agent. Either this OR LinkedIn is enough to start." textarea />
-        <details className="text-sm">
-          <summary className="cursor-pointer text-accent">+ optional social links</summary>
+        <details className="text-sm" open>
+          <summary className="cursor-pointer text-accent">+ links to keep your portfolio auto-fresh</summary>
           <div className="mt-3 grid gap-3">
-            <Field label="X / Twitter" k="x" ph="https://x.com/…" />
+            <Field label="GitHub" k="github" ph="https://github.com/yourname" hint="Your recent repos sync in automatically." />
+            <Field label="YouTube channel" k="youtube" ph="https://youtube.com/@yourchannel" hint="Your latest videos sync in (public RSS, no login)." />
+            <Field label="X / Twitter" k="x" ph="https://x.com/…" hint="Linked only — X can't be auto-synced (paid/login)." />
             <Field label="Facebook" k="fb" ph="https://facebook.com/…" />
             <Field label="Instagram" k="ig" ph="https://instagram.com/…" />
           </div>
+          <p className="mt-2 text-xs text-muted">GitHub + YouTube <strong className="text-ink">auto-sync</strong> to keep your portfolio current (1-click or on a schedule). LinkedIn &amp; X can&apos;t be pulled server-side — you add those in your browser.</p>
         </details>
         <div className="flex items-center gap-3">
           <button onClick={make} disabled={busy} className="chip border-accent/50 text-accent disabled:opacity-50">{busy ? "Building your portfolio…" : "✨ Make my portfolio"}</button>

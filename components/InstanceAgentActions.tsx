@@ -92,5 +92,34 @@ export function InstanceAgentActions({ instanceName, siteUrl, slug }: { instance
     },
   });
 
+  useCopilotAction({
+    name: "syncSources",
+    description:
+      `OWNER ONLY: refresh ${instanceName}'s portfolio from its public sources (GitHub repos + YouTube videos) ` +
+      "in one click — pulls the latest and adds them to the portfolio. If the caller isn't the owner, say it's " +
+      "owner-only and how to unlock (open the site with ?owner=<token>). Note honestly that LinkedIn & X can't be " +
+      "auto-synced (login-walled / paid) — those are added via the browser.",
+    parameters: [],
+    handler: async () => {
+      if (!slug) return "Sync is available on hosted portfolios (made via /make).";
+      let token = "";
+      try { token = localStorage.getItem(tokenKey(slug)) || ""; } catch { /* ignore */ }
+      try {
+        const res = await fetch("/api/sync", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...(token ? { "x-portfolio-owner": token } : {}) },
+          body: JSON.stringify({ instance: slug }),
+        });
+        if (res.status === 403) return "🔒 Owner only. Open your portfolio with `?owner=<your token>` once to unlock, then ask me to sync again.";
+        const data = await res.json();
+        if (!res.ok) return `Couldn't sync: ${data.error || res.status}`;
+        const gh = data.synced?.github ?? 0, yt = data.synced?.youtube ?? 0;
+        return `🔄 Synced ${instanceName}: ${gh} GitHub repo(s) + ${yt} YouTube video(s), ${data.added ?? 0} new added. (LinkedIn & X aren't auto-syncable — add those in your browser.)`;
+      } catch (e) {
+        return `Couldn't reach sync: ${(e as Error).message}`;
+      }
+    },
+  });
+
   return null;
 }

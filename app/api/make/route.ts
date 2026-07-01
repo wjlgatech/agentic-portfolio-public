@@ -114,7 +114,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Please give your name and a valid email." }, { status: 400 });
   }
   const links: Record<string, string> = {};
-  for (const [k, key] of [["linkedin", "linkedin"], ["x", "x"], ["facebook", "fb"], ["instagram", "ig"]] as const) {
+  for (const [k, key] of [["linkedin", "linkedin"], ["x", "x"], ["facebook", "fb"], ["instagram", "ig"], ["github", "github"], ["youtube", "youtube"]] as const) {
     const v = str(body[key], 200);
     if (/^https?:\/\//i.test(v)) links[k] = v;
   }

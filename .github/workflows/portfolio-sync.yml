@@ -1,0 +1,37 @@
+# Portfolio sync — the scheduled "keep every hosted portfolio fresh from its public sources"
+# cadence. Calls the deployed GET /api/sync, which pulls GitHub repos + YouTube videos for every
+# hosted /p/<slug> portfolio and merges the latest into each. Writes to the shared store (KV) — it
+# does NOT commit to the repo (unlike the compass scout).
+#
+# NOTE: if you deploy on Vercel, you don't need this — `vercel.json` already runs the same
+# GET /api/sync on a daily Vercel Cron (auth via CRON_SECRET). Use this Action if you host
+# elsewhere or want a second cadence.
+#
+# Setup (one-time):
+#   • Repo secret   SYNC_SECRET   — must equal the SYNC_SECRET env var on the deploy.
+#   • Repo variable PORTFOLIO_URL — your deployed origin.
+name: Portfolio sync
+
+on:
+  schedule:
+    - cron: "0 8 * * *" # daily 08:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger sync
+        env:
+          PORTFOLIO_URL: ${{ vars.PORTFOLIO_URL }}
+          SYNC_SECRET: ${{ secrets.SYNC_SECRET }}
+        run: |
+          set -e
+          if [ -z "$SYNC_SECRET" ] || [ -z "$PORTFOLIO_URL" ]; then
+            echo "SYNC_SECRET secret and PORTFOLIO_URL variable are required — skipping."; exit 0;
+          fi
+          curl -sS "$PORTFOLIO_URL/api/sync" \
+            -H "x-sync-secret: $SYNC_SECRET" \
+            --max-time 240 -o /tmp/sync.json
+          node -e "const d=require('/tmp/sync.json');console.log('Synced',d.ran,'of',d.ofTotal,'portfolios'+(d.truncated?' (truncated)':''));" \
+            || { echo 'Sync returned a non-JSON/error response:'; cat /tmp/sync.json; exit 1; }
