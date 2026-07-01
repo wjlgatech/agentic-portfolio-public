@@ -1,0 +1,230 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   webapp-style — brand-aesthetic theme seam
+   ---------------------------------------------------------------------------
+   ONE seam, many swappable bodies. Every component reads CSS variables; the
+   active "body" is chosen by `data-theme="<name>"` on <html>. Swap the attribute,
+   swap the entire aesthetic — colors, type, radius, shadow, motion.
+
+   Color tokens are stored as "R G B" triplets (--c-*) so Tailwind's opacity
+   modifiers work: `rgb(var(--c-accent) / <alpha-value>)`. Full-color aliases
+   (--canvas, --accent, …) are derived once and re-resolve per active theme.
+
+   ⚠️ These palettes are ORIGINAL homages to each brand's *public* design
+   language for theming/education — not official brand kits or trademarked assets.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+:root {
+  /* Derived full-color aliases — resolve against the active theme's triplets. */
+  --canvas: rgb(var(--c-canvas));
+  --surface: rgb(var(--c-surface));
+  --edge: rgb(var(--c-edge));
+  --ink: rgb(var(--c-ink));
+  --muted: rgb(var(--c-muted));
+  --accent: rgb(var(--c-accent));
+  --accent2: rgb(var(--c-accent2));
+  --onaccent: rgb(var(--c-onaccent));
+
+  /* Sensible cross-theme defaults (each theme overrides what it needs). */
+  --radius: 12px;
+  --edge-w: 1px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 8px 24px rgba(0, 0, 0, 0.05);
+  --tracking-display: -0.02em;
+  --display-weight: 800;
+  --display-transform: none;
+  --font-mono: ui-monospace, "SF Mono", Menlo, monospace;
+}
+
+/* ── 1. ANTHROPIC (default) — warm, editorial, human ───────────────────────── */
+:root,
+[data-theme="anthropic"] {
+  --c-canvas: 240 238 230;   /* Cloud  #F0EEE6 */
+  --c-surface: 250 249 245;  /* #FAF9F5 */
+  --c-edge: 226 222 211;     /* #E2DED3 */
+  --c-ink: 25 25 25;         /* #191919 */
+  --c-muted: 107 102 87;     /* #6B6657 */
+  --c-accent: 204 120 92;    /* Book Cloth #CC785C */
+  --c-accent2: 191 145 110;  /* Kraft #BF916E */
+  --c-onaccent: 255 255 255;
+  --radius: 14px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 10px 30px rgba(40, 30, 20, 0.06);
+  --tracking-display: -0.015em;
+  --display-weight: 600;
+  --font-sans: ui-sans-serif, system-ui, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-display: "Iowan Old Style", "Palatino", Georgia, "Times New Roman", serif;
+  --hero-bg:
+    radial-gradient(1100px 520px at 78% -8%, rgba(204, 120, 92, 0.20), transparent),
+    radial-gradient(820px 480px at -8% 12%, rgba(191, 145, 110, 0.16), transparent),
+    rgb(var(--c-canvas));
+}
+
+/* ── 2. OPENAI — clean, neutral, monochrome with a green pulse ──────────────── */
+[data-theme="openai"] {
+  --c-canvas: 255 255 255;
+  --c-surface: 247 247 248;  /* #F7F7F8 */
+  --c-edge: 229 229 229;     /* #E5E5E5 */
+  --c-ink: 13 13 13;         /* #0D0D0D */
+  --c-muted: 110 110 128;    /* #6E6E80 */
+  --c-accent: 16 163 127;    /* #10A37F */
+  --c-accent2: 13 13 13;
+  --c-onaccent: 255 255 255;
+  --radius: 9px;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.05), 0 6px 20px rgba(0, 0, 0, 0.05);
+  --tracking-display: -0.022em;
+  --display-weight: 600;
+  --font-sans: "Söhne", ui-sans-serif, system-ui, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Söhne", ui-sans-serif, system-ui, "Helvetica Neue", Arial, sans-serif;
+  --hero-bg:
+    radial-gradient(900px 480px at 82% -10%, rgba(16, 163, 127, 0.10), transparent),
+    rgb(var(--c-canvas));
+}
+
+/* ── 3. GOOGLE (Material 3) — bright, friendly, multi-color ─────────────────── */
+[data-theme="google"] {
+  --c-canvas: 255 255 255;
+  --c-surface: 248 250 253;  /* #F8FAFD */
+  --c-edge: 218 220 224;     /* #DADCE0 */
+  --c-ink: 32 33 36;         /* #202124 */
+  --c-muted: 95 99 104;      /* #5F6368 */
+  --c-accent: 26 115 232;    /* #1A73E8 */
+  --c-accent2: 234 67 53;    /* #EA4335 */
+  --c-onaccent: 255 255 255;
+  --radius: 16px;            /* Material 3 large rounding */
+  --shadow: 0 1px 3px rgba(60, 64, 67, 0.30), 0 4px 10px rgba(60, 64, 67, 0.15);
+  --tracking-display: 0em;
+  --display-weight: 700;
+  --font-sans: "Google Sans", "Roboto", ui-sans-serif, Arial, sans-serif;
+  --font-display: "Google Sans", "Roboto", ui-sans-serif, Arial, sans-serif;
+  --hero-bg:
+    radial-gradient(680px 360px at 10% 0%, rgba(66, 133, 244, 0.13), transparent),
+    radial-gradient(680px 360px at 90% 6%, rgba(234, 67, 53, 0.09), transparent),
+    radial-gradient(600px 320px at 50% 0%, rgba(52, 168, 83, 0.07), transparent),
+    rgb(var(--c-canvas));
+}
+
+/* ── 4. APPLE (HIG) — minimal, premium, oversized type ─────────────────────── */
+[data-theme="apple"] {
+  --c-canvas: 251 251 253;   /* #FBFBFD */
+  --c-surface: 255 255 255;
+  --c-edge: 210 210 215;     /* #D2D2D7 */
+  --c-ink: 29 29 31;         /* #1D1D1F */
+  --c-muted: 110 110 115;    /* #6E6E73 */
+  --c-accent: 0 113 227;     /* #0071E3 */
+  --c-accent2: 29 29 31;
+  --c-onaccent: 255 255 255;
+  --radius: 18px;
+  --shadow: 0 4px 16px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  --tracking-display: -0.025em;
+  --display-weight: 700;
+  --font-sans: -apple-system, "SF Pro Text", ui-sans-serif, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "SF Pro Display", -apple-system, ui-sans-serif, "Helvetica Neue", sans-serif;
+  --hero-bg:
+    radial-gradient(900px 500px at 50% -12%, rgba(0, 113, 227, 0.10), transparent),
+    rgb(var(--c-canvas));
+}
+
+/* ── 5. VERCEL / LINEAR — dark, technical, geometric ───────────────────────── */
+[data-theme="vercel"] {
+  --c-canvas: 10 10 10;      /* #0A0A0A */
+  --c-surface: 17 17 19;     /* #111113 */
+  --c-edge: 38 38 42;        /* #26262A */
+  --c-ink: 237 237 237;      /* #EDEDED */
+  --c-muted: 138 138 145;    /* #8A8A91 */
+  --c-accent: 94 106 210;    /* Linear indigo #5E6AD2 */
+  --c-accent2: 0 220 130;    /* Vercel green #00DC82 */
+  --c-onaccent: 255 255 255;
+  --radius: 9px;
+  --shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 14px 36px rgba(0, 0, 0, 0.55);
+  --tracking-display: -0.02em;
+  --display-weight: 700;
+  --font-sans: "Inter", "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Inter", "Geist", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "Geist Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --hero-bg:
+    radial-gradient(900px 480px at 82% -10%, rgba(94, 106, 210, 0.22), transparent),
+    radial-gradient(720px 420px at -5% 10%, rgba(0, 220, 130, 0.10), transparent),
+    rgb(var(--c-canvas));
+}
+
+/* ── 6. STRIPE — luminous gradient, fintech polish ─────────────────────────── */
+[data-theme="stripe"] {
+  --c-canvas: 246 249 252;   /* #F6F9FC */
+  --c-surface: 255 255 255;
+  --c-edge: 227 232 238;     /* #E3E8EE */
+  --c-ink: 10 37 64;         /* #0A2540 */
+  --c-muted: 66 84 102;      /* #425466 */
+  --c-accent: 99 91 255;     /* Blurple #635BFF */
+  --c-accent2: 0 212 255;    /* #00D4FF */
+  --c-onaccent: 255 255 255;
+  --radius: 12px;
+  --shadow: 0 12px 28px rgba(10, 37, 64, 0.10), 0 2px 6px rgba(10, 37, 64, 0.06);
+  --tracking-display: -0.02em;
+  --display-weight: 700;
+  --font-sans: "Sohne", "Inter", ui-sans-serif, "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Sohne", "Inter", ui-sans-serif, "Helvetica Neue", Arial, sans-serif;
+  --hero-bg:
+    linear-gradient(180deg, rgba(99, 91, 255, 0.10), transparent 28%),
+    radial-gradient(900px 460px at 86% -10%, rgba(0, 212, 255, 0.18), transparent),
+    radial-gradient(700px 380px at 8% 4%, rgba(99, 91, 255, 0.12), transparent),
+    rgb(var(--c-canvas));
+}
+
+/* ── 7. SWISS (International Typographic) — grid, Helvetica, red ────────────── */
+[data-theme="swiss"] {
+  --c-canvas: 255 255 255;
+  --c-surface: 255 255 255;
+  --c-edge: 17 17 17;        /* hard black rules #111 */
+  --c-ink: 17 17 17;
+  --c-muted: 68 68 68;       /* #444 */
+  --c-accent: 226 35 26;     /* Swiss red #E2231A */
+  --c-accent2: 17 17 17;
+  --c-onaccent: 255 255 255;
+  --radius: 0px;
+  --edge-w: 1px;
+  --shadow: none;
+  --tracking-display: -0.03em;
+  --display-weight: 800;
+  --font-sans: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --font-display: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  --hero-bg: rgb(var(--c-canvas));
+}
+
+/* ── 8. BRUTALIST — mono, hard borders, offset shadow ──────────────────────── */
+[data-theme="brutalist"] {
+  --c-canvas: 245 245 240;   /* #F5F5F0 paper */
+  --c-surface: 255 255 255;
+  --c-edge: 0 0 0;
+  --c-ink: 0 0 0;
+  --c-muted: 38 38 38;       /* #262626 */
+  --c-accent: 0 0 255;       /* raw web blue #0000FF */
+  --c-accent2: 255 73 17;    /* #FF4911 */
+  --c-onaccent: 255 255 255;
+  --radius: 0px;
+  --edge-w: 2px;
+  --shadow: 5px 5px 0 0 rgba(0, 0, 0, 1);
+  --tracking-display: 0em;
+  --display-weight: 700;
+  --display-transform: uppercase;
+  --font-sans: ui-monospace, "Courier New", monospace;
+  --font-display: ui-monospace, "Courier New", monospace;
+  --font-mono: ui-monospace, "Courier New", monospace;
+  --hero-bg: rgb(var(--c-canvas));
+}
+
+/* ── 9. NOTION (Editorial) — calm, document-like, serif accents ────────────── */
+[data-theme="notion"] {
+  --c-canvas: 255 255 255;
+  --c-surface: 255 255 255;
+  --c-edge: 234 234 234;     /* #EAEAEA */
+  --c-ink: 55 53 47;         /* #37352F */
+  --c-muted: 120 119 116;    /* #787774 */
+  --c-accent: 35 131 226;    /* #2383E2 */
+  --c-accent2: 235 87 87;    /* #EB5757 */
+  --c-onaccent: 255 255 255;
+  --radius: 6px;
+  --shadow: 0 1px 2px rgba(15, 15, 15, 0.06), 0 6px 16px rgba(15, 15, 15, 0.04);
+  --tracking-display: -0.01em;
+  --display-weight: 700;
+  --font-sans: ui-sans-serif, "Inter", -apple-system, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-display: "Lyon", "Iowan Old Style", Georgia, "Times New Roman", serif;
+  --hero-bg: rgb(var(--c-canvas));
+}

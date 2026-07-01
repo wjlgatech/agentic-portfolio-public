@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Agentic Portfolio — LinkedIn Importer",
+  "version": "1.0.0",
+  "description": "One click on your LinkedIn activity page sends your posts to your agentic portfolio — no DevTools, no credentials, nothing leaves your browser.",
+  "permissions": ["storage", "tabs"],
+  "background": { "service_worker": "background.js" },
+  "content_scripts": [
+    {
+      "matches": ["https://www.linkedin.com/*"],
+      "js": ["harvest-core.js", "content-linkedin.js"],
+      "run_at": "document_idle"
+    },
+    {
+      "matches": [
+        "https://agentic-portfolio-lovat.vercel.app/*",
+        "https://*.vercel.app/*",
+        "http://localhost:3000/*"
+      ],
+      "js": ["content-portfolio.js"],
+      "run_at": "document_idle"
+    }
+  ]
+}

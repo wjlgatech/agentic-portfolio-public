@@ -1,0 +1,679 @@
+# Changelog
+
+All notable changes to this project are documented here.
+Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+
+## [Unreleased]
+
+### Added
+- **10X the Portfolio Network — from a directory to a self-propelling network.** The `/network` page gained the flywheel it was missing: a **growth header** (nodes · unique skills · Metcalfe `n(n-1)/2` possible links — value rises with N), a **capability marketplace** (browse the network by skill — "who can do X?"), on-join **peer recommendations** (reciprocity — shared-skill nodes to reach) + an **embeddable membership badge** (`/api/badge` → a live SVG "🌐 agentic network · N nodes"; every embed is a backlink → more discover → more join). Pure helpers `networkStats`/`skillIndex`/`peersLike` in `@core/registry-types` (tested); the badge is a cached SVG route. _Verified live: badge serves; the marketplace/growth/reciprocity render._
+### Added
+- **Emitted Agentize instances now deploy with zero code — a JSON-pack loader closes the loop.** `getActiveInstance()` (`content/instances/index.ts`) now falls back to reading `content/instances/<slug>.json` when a slug isn’t a registered `.ts` pack, validating it like any pack (path-traversal guarded, server-only). So `anyagent agentize --emit-instance` → drop the JSON → `INSTANCE=<slug>` renders a full agentic site (hero, agent, instance-aware A2A card) with **no hand-written `.ts`**. _Verified: a machine-emitted pack rendered as "Unmaskleads" with its agent card (describe_offering/assess_fit/next_step); `validateInstance` passes; build green._
+### Fixed
+- **Instance theme switcher now works (was locked to the instance's brand).** `InstanceSite` wrapped its
+  content in `<div data-theme={config.theme}>`, which overrode the `<html data-theme>` the StyleSwitcher
+  sets — so on a non-portfolio deploy, picking "Anthropic/Apple style" did nothing (e.g. UnmaskLeads stayed
+  black). Removed the wrapper override; the layout now sets the **active instance's theme as the `<html>`
+  default** (portfolio→anthropic, unmaskleads→vercel…) and the switcher/localStorage override it live. No
+  flash. _Verified: SSR `<html data-theme="vercel">`, no content-level override; switching re-themes._
+
+### Added
+- **The instance agent now does WORK, not just chat — + a real owner↔visitor split.** The non-portfolio
+  agent gained copilot **actions** (`components/InstanceAgentActions.tsx`): `captureLead` + `bookDemo`
+  (VISITOR — the agent captures the prospect's interest as a durable, instance-scoped lead, no form) and
+  `viewLeads` (OWNER — read the pipeline the agent built). Backed by **`POST/GET /api/lead`**: POST is public
+  + rate-limited + durable (KV, keyed `leads:<instance>`); GET is **owner-gated** (`x-portfolio-owner` → 403
+  otherwise). This is the differentiation, concrete: a **visitor** gets frictionless help + capture; the
+  **owner** gets the pipeline the agent generated 24/7 (the buy-in). On-brand for UnmaskLeads (lead-gen),
+  generic for any instance. _Verified: visitor POST persists (`durable:true`), non-owner GET → 403, owner GET
+  returns the captured lead._
+- **GEO for instances — `/llms.txt` + JSON-LD, instance-aware.** Every Agentize deploy now serves a
+  grounded **`/llms.txt`** (`app/llms.txt/route.ts`, built from the active `InstanceConfig`) and emits
+  schema.org **JSON-LD** (`Organization`/`WebSite`/`ItemList`) in `InstanceSite`. _Proof (result-oriented):
+  `anyagent seo` on the UnmaskLeads instance went **66 → 87 [agent-SEO ready ✅]**, agent-search **64 → 93**._
+
+### Added
+- **`unmaskleads` Agentize instance — a real agentic site for a prospect (UnmaskLeads / Mike Hawn).**
+  A new vertical pack (`content/instances/unmaskleads.ts`, registered in `content/instances/index.ts`) turns
+  the meta-template into a full agentic app for UnmaskLeads (a visitor-de-anonymization SaaS): a CopilotKit
+  agent a visitor can chat with, grounded in the product's own material, plus an instance-aware A2A agent
+  card (`describe_product`/`assess_fit`/`explain_compliance`/`book_demo`). Built from the public
+  unmaskleads.io content as a demo; deployed separately at `INSTANCE=unmaskleads`
+  (**unmaskleads-agent.vercel.app**). **Honesty preserved:** the "98% match" headline is UnmaskLeads' OWN
+  claim, so its Proof/outcomes render `verdict: "unverified"` — the agent presents it as claimed, never as
+  audited. Proves the "point at a business → get a grounded agentic site" promise on a real third party.
+  _Verified live: renders as UnmaskLeads (0 portfolio leak), copilot present, agent card instance-aware;
+  `validateInstance` passes; build + all node test groups green._
+
+### Changed
+- **Unified the meta-template naming: `agentic-anything`/`agentize-anything` → `Agentize`.** The two names
+  denoted two different layers (platform vs. action) and the "-anything" suffix stuck to both, which read as
+  inconsistent. Now one verb-forward system: **`anyagent`** = the engine, **Agentize** (*"Agentize Anything"*)
+  = the action + the meta-template brand (`anyagent agentize`, `docs/AGENTIZE.md`, `@agentize/core`,
+  `create-agentize`), and **"agentic"** demoted to a plain adjective (an *agentic* portfolio/app), never a
+  brand. Renamed `docs/AGENTIC-ANYTHING.md` → `docs/AGENTIZE.md` and every brand reference across README /
+  AGENTS / docs / the `InstanceSite` footer / comments. Zero code-path risk: `@agentic-anything/core` was
+  never imported (code uses the `@core/*` tsconfig alias, unchanged). A new **Naming** table in `AGENTS.md`
+  makes the convention enforceable. _Rationale: a verb ("agentize your résumé/business") states the value,
+  stays distinctive amid the generic "agentic X" wave, and carries the wow (the transformation); it's also
+  already the command, so name ↔ action align. Verified: build + all 13 node test groups + vitest green._
+
+### Added
+- **Deepen pipeline — the portfolio as a *sink* for super-u's distilled knowledge + skills (not the engine, not the orchestrator).**
+  A new **Deep Dives** section + inbound `POST /api/ingest-knowledge` let super-u's flywheel
+  (`/creator/transform` → kgfy + skillfy) hand this node a distilled artifact — a knowledge graph
+  (`nodes`/`edges`) + extracted skills + a plain-language digest — which the node **grounds, presents, and
+  uses to educate** the user (a copilot readable). Answers the architecture question directly: the portfolio
+  is a personal **node**, super-u is the **capability service**, and **super-u's flywheel is the orchestrator**;
+  the portfolio's whole rightful slice is one inbound endpoint. Full rationale + the contract in
+  **`docs/DEEPEN-PIPELINE.md`**.
+  - **The node refuses ungrounded knowledge.** `normalizeArtifact` (`@core/deepen-types`) rejects an artifact
+    with no real http(s) `source.url` (→ 422), drops edges to non-existent nodes, and **drops any "skill" with
+    no honest `not_good_at`** (a claim with no limit is marketing, not a skill). Forged skills arrive
+    `verified:false` and are shown **unproven** until super-u's outcome loop confirms them (Receipts ethic).
+  - **The inbound endpoint is a gated write surface** (owner token OR `x-ingest-secret == INGEST_SECRET`, like
+    the Compass cron) + per-IP rate-limited; `GET` is public. Ingests persist durably (Postgres KV) merged over
+    a committed seed — same pattern as the registry.
+  - **Worked example, grounded in the real source:** `content/deepen.json` seeds DeepSeek's **Engram**
+    (*"Conditional Memory via Scalable Lookup"*, `deepseek-ai/Engram`) — a 10-node/11-edge map + 2 skills
+    (allocate-sparsity-budget, add-O(1)-memory-lookup) — hand-built from the real repo/paper and labelled
+    `seed-example`. The LinkedIn URL from the request is kept only as `discoveredVia` (login-walled → never
+    server-fetched; the fetchable source is the GitHub repo).
+  - The contract shapes mirror super-u's **real** output (`GraphNode`/`GraphEdge`/`KnowledgeGraph`, the skillfy
+    `Skill` with honest edges) — read from the super-u repo, not invented. Cross-project boundary respected:
+    only the node's slice ships here; kgfy/skillfy/flywheel stay in super-u. Pure logic covered by
+    `scripts/test-deepen.mjs` (`npm test`).
+  - _Verified: Deep Dives renders the Engram card SSR; an ingest round-trips (POST gated → GET merged);
+    build + all 13 node test groups + vitest green; `tsc --noEmit` clean._
+- **Role Fit — score whether a job is a good fit, held to a golden-set accuracy.** A new `Role Fit`
+  section + `POST /api/job-fit` scores a posting against the owner across THREE axes — past **experience**,
+  current **skillset**, and future **mission/values/vision trajectory** (trajectory weighted highest) —
+  grounded in the same corpus as Resume Verification (profile + 12X practices + projects + live GitHub).
+  Paste a posting **URL** (Ashby / Greenhouse / Lever are fetched server-side via their **public posting
+  APIs** — no login, no scraping; `lib/jobfit.ts`) or the raw JD text. Public + per-IP rate-limited like
+  verify-resume; the agent action is **`scoreJobFit`**. Sibling architecture to the verifier: the LLM judges
+  each axis with evidence + honest gaps, but the **overall score + fit level are computed in code**
+  (`@core/jobfit-types` `aggregateFit`), never trusted from the model — so a misaligned role scores low and
+  the "why it might NOT fit" sits next to the number.
+  - **Credibility = a golden-dataset eval (the "why trust the conclusion" answer).** `content/jobfit-golden.json`
+    holds human-labeled `(JD → expected fit)` examples across all four bands; `scripts/eval-jobfit.mjs` runs
+    the REAL scorer over them and writes `content/jobfit-eval.json`, which the page shows as a trust badge
+    ("agrees with the golden set N/M within one band, X%"). First run: **8/8 within one band (100%), 6/8 exact**
+    on `groq:llama-3.3-70b`. Honest caveat surfaced, not hidden: both near-misses lean *optimistic*
+    (Etched ASIC role stretch→promising, a devtools role promising→strong) — the harness makes tightening the
+    prompt an iterable, measured change. Pure logic (aggregate + URL parse + eval math) is covered by
+    `scripts/test-jobfit.mjs` in `npm test`.
+  - **On-ethic "proactive LinkedIn" boundary:** the URL fetcher speaks only PUBLIC ATS APIs; LinkedIn
+    (login-walled) is never server-crawled — it stays an in-browser harvest. The proactive *Opportunities*
+    scout (fanning this scorer over public feeds on a cron) is the documented next increment.
+  - _Verified live: the real Etched JD (`jobs.ashbyhq.com/Etched/831bfa22…`, the URL from the request) scored
+    89/strong via its public Ashby fetch; the Role Fit section + golden-set badge render server-side; build +
+    all 12 node test groups + vitest green._
+
+### Changed
+- **Durable storage is now wired and live — backed by Postgres (Vercel Postgres / Neon), not Upstash KV.**
+  `lib/storage.ts` keeps its exact surface (`kvConfigured`/`kvGetJSON`/`kvSetJSON`) but now speaks Postgres
+  via the `@neondatabase/serverless` HTTP driver: a lazily-created `kv_store(key TEXT PRIMARY KEY, value JSONB)`
+  table with an `ON CONFLICT` upsert. Configured by **`POSTGRES_URL`** (or `DATABASE_URL`) — Vercel's Postgres
+  integration injects it automatically — so the agent's edits + Network registry joins **persist and are shared
+  across every visitor and serverless instance** instead of being per-browser. `GET /api/health`
+  `durableStorage` now reads the new var. The three callers (`lib/registry.ts`, `lib/portfolio.ts`,
+  `/api/health`) are unchanged. `scripts/test-storage-kv.mjs` was rewritten to round-trip against a **real**
+  Postgres store (self-loads `.env.local`) and to **skip cleanly** when none is configured, so `npm test` stays
+  green in CI; it writes only `selftest:*` keys.
+  ### Investigated / Rejected
+  - _Upstash KV / Vercel KV (the original `lib/storage.ts` backend)._ The marketplace install repeatedly failed
+    with `integration_terms_acceptance_required` under an account/team scope mismatch (CLI logged in as personal
+    `wjlgatech-8346`, project under team `wjlgatechs-projects`); `vercel env ls` confirmed no KV vars ever landed
+    on the project. Banked as `provision-needs-user-verify-path-locally`. The user provisioned a **Vercel
+    Postgres/Neon** store instead — it attached to the project cleanly (env injected into Production). Postgres is
+    an equally durable KV backend (`kv_store` table), so we swapped backends rather than keep fighting the scope
+    mismatch. _Verified: live round-trip against the real Neon DB passes; build + all 11 node test groups + vitest
+    green; prod `/api/health` flips `durableStorage:false → true` after deploy._
+- **Monorepo split, step 1 — the platform contract layer extracted to `packages/core`.** Agentize
+  is a *platform*; the portfolio is a *node* on it (a website doesn't own DNS). Moved the 4 pure, import-free
+  contract files — `instance-types` (the `InstanceConfig` Lego contract) + the registry / verification /
+  compass models — from `lib/` to **`packages/core/src/`**, imported via a new **`@core/*`** tsconfig alias.
+  The Next app stays at the repo root so the **Vercel deploy is unchanged**; framework-coupled infra
+  (storage, LLM chain, registry logic, A2A, owner) + the workspace-ification + the `apps/portfolio` move
+  (which needs the Vercel root reconfigured) are documented next increments. Rationale + the network-effect
+  design (verifiable trust × transferable capability × matchmaking liquidity) in
+  **`docs/NETWORK-AND-SPLIT-STRATEGY.md`**; `packages/core/README.md` has the migration roadmap. _Verified:
+  build + all 11 node test groups + vitest green; portfolio + `INSTANCE=learning-center` render unchanged._
+- **Resume Verification got its paste window back — now a PUBLIC self-proof demo.** A "Verify it yourself"
+  panel with a résumé/CV textarea + Verify button now sits at the top of the section, visible to **everyone**
+  ("don't trust me — paste my résumé and watch it verify live against real GitHub"). `app/api/verify-resume`
+  is no longer owner-gated (was **403**); it's **public + per-IP rate-limited** (4/min — it's an LLM + GitHub
+  route) and **only the owner's run publishes** (a visitor's run is shown in-session, never overwrites the
+  proof). The agent `verifyResume` action is public to match; `draftVerifiedResume` (the loop-closer) stays
+  owner-only. _Reverses the PR #30 decision to move the verify input to chat — pasting a multi-page résumé
+  into a textarea beats a chat box, and a public live audit is the section's killer demo. Verified live: the
+  paste window renders; an unauthenticated POST returns 400 (too short), not 403._
+
+### Added
+- **Values & Love is now a 1→2→6 mindmap, and the mindmap is one reusable component (OOP).** Extracted a
+  generic **`components/Mindmap.tsx`** (single responsibility: root → clusters → leaves + click-to-expand
+  state; data and the detail panel are injected via props + a `renderDetail` render-prop). `PracticesMindmap`
+  is now a thin adapter over it, and **`ValuesMindmap`** is the second adapter — Values & Love renders as
+  root → 2 clusters (How I work · Who it's for) → 6 leaves (the 5 values + Love), each expanding a parallel
+  detail (**Lived · In the work · For an agent**). Data in `content/values-map.ts`; a test
+  (`scripts/test-values.mjs`) guards the shape AND that every leaf title matches a real `profile.ts` value
+  (no drift). DRY/open-closed: a third mindmap = a new adapter, zero changes to the shared component.
+- **The TRUE rubric is wired into the agent.** `app/page.tsx` adds a `practices12X` block to the agent
+  grounding (the rubric + every practice's T/R/U/E facets + human/agent angle, from `content/practices-map.ts`)
+  and instructs the agent it can "explain practice N through TRUE." So **"explain practice 4 through TRUE"**
+  now answers from the real data, not invented. _Verified live: the rubric + a per-practice agent facet are
+  present in the server-rendered grounding._
+- **12X Future Practices is now a 1→3→12 interactive mindmap.** The "How I compound" section renders as a
+  connected tree: root (How I compound · 1→3→12) → **3 clusters** (① Aim · ② Loop · ③ Compound, a 3·4·5 split
+  of the 12) → **12 practice** leaves. Click any practice to expand its **TRUE** test: **T**ransferable &
+  Transformative · **R**eusable & Refinable · **U**nderstandable & U-loop (Theory U) · **E**xperienceable &
+  Experimentable — each shown **for a human** *and* **for an agent** (as a skill / plugin / dynamic workflow /
+  hook). New `components/PracticesMindmap.tsx` + the pure data in `content/practices-map.ts` (clusters + the
+  full TRUE detail per practice); it replaces the old flat `PracticesGrid` in the practices section. New test
+  `scripts/test-practices.mjs` (in `npm test`) guards the shape: 3 clusters cover exactly 1..12 once, every
+  practice has T·R·U·E + human + agent detail, and the agent angles name real surfaces. _Verified live: root +
+  3 clusters + all 12 leaves render; TRUE panels are collapsed until a practice is clicked._
+- **Visual instance render — a non-portfolio INSTANCE is now a real, full website (not just a curl-able
+  A2A endpoint).** New `components/InstanceSite.tsx` (server component) paints any business's site straight
+  from its `InstanceConfig` + `content`: hero (entity + mission), principles (story), offerings (tracks/
+  services/products), writing, and outcomes (with honest verdict chips), themed via a `data-theme` wrapper.
+  `app/page.tsx` branches on `getActiveInstance()`: a non-portfolio slug renders `<InstanceSite>` with its
+  OWN grounded agent (instance grounding + labels + prompt-starters), while the portfolio keeps its full,
+  agent-editable `<Portfolio>` **byte-identical** (the branch is an early return). Made the supporting
+  surfaces instance-aware so nothing leaks: `CopilotProvider` takes optional `labels`/`groundingDescription`/
+  `starters` (default to the portfolio's), `PromptStarters` takes optional `items`, and `page.tsx`
+  `generateMetadata()` sets a per-instance `<title>`/OG (returns `{}` for the portfolio → unchanged).
+  _Verified live: `INSTANCE=learning-center` renders "12X Agentic Academy" with its tracks/lessons/outcomes,
+  title + starters + agent label are the academy's, and **0** "Paul Jialiang Wu" references leak; the default
+  portfolio is unchanged (same title, same site)._ This was the last portfolio-bound surface — card, A2A
+  identity, A2A corpus, AND the visual page are now all instance-aware.
+
+### Changed
+- **Projects "Show all" toggle restyled** to the same `▸`/`▾` text-link as the Resume Verification / Next
+  Projects disclosures, for a consistent minimalist affordance. (Projects already defaulted to featured-only;
+  Writing is already a compact single-row slider — no behavioural change to either.)
+- **Minimalist UI — compact-on-page, depth-on-demand, owner tools in the agent (Resume Verification +
+  Next Projects).** The two heaviest sections now show only their **essence** on the page and tuck the
+  rest behind ONE disclosure: Resume Verification shows the corroboration score + verdict counts + the
+  single **top gap**, with `▸ Show the N-claim audit` revealing by-category / the full punch-list /
+  per-claim breakdown; Next Projects shows the four-vector legend + one featured move, with
+  `▸ Show all N moves + M collaborators` revealing the rest + the Reach lane. The owner **tools** left
+  the page — the inline résumé-verifier form, the Re-verify/Generate buttons, and the "Scout now" button
+  are gone; the owner drives them by chat (`verifyResume`, `scoutNext`, and the new **`draftVerifiedResume`**
+  copilot action), with a one-line owner hint where the forms used to be. `Receipts.tsx` + `Compass.tsx`
+  are now **presentational** (props `{report, isOwner}` only). _Verified live: the page renders the essence
+  + collapsed toggles; the per-claim breakdown + collaborator cards are absent until expanded; the agent
+  still has the full data via its readables._
+
+### Added
+- **Resume Verification closes the loop — verify → fix → re-verify → a verified résumé.** The "Receipts"
+  section is renamed **Resume Verification** (clearer for recruiters/agents; internal id stays `receipts`).
+  It now actions the result instead of just showing verdicts: a **Close the loop** panel turns every
+  non-corroborated claim into a punch-list (the claim + its `gapCloser` = "to close it, add X"), an owner
+  **Re-verify** affordance, and a **Generate verified résumé** action — new owner-gated `POST
+  /api/verified-resume` drafts an honest résumé from ONLY corroborated/partial claims, each cited, dropping
+  the unprovable ones (career-os ethic: it drafts, never sends; copy/download .md). _Verified live: headings
+  render, the panel renders, the route 403s without the owner token._
+- **"Next Projects" — four researched growth vectors (was the 2-lane "Compass / What's Next").** Renamed
+  **Next Projects**; the scout now proposes moves along **four** vectors instead of two, each grounded in a
+  named strategy framework (rendered as a legend on the page): **Deepen** (first-principles / foundational),
+  **Widen** (Ansoff · Innovation Ambition), **Lengthen** (McKinsey Three Horizons · Wardley evolution),
+  **Heighten** (abstraction laddering · MDL compression) — together the quadrants of explore↔exploit ×
+  concrete↔abstract — plus **Reach** (collaborators). `lib/compass-types.ts` adds the `lengthen`/`heighten`
+  lanes + `GROWTH_VECTORS`/`PROJECT_KINDS`/`ideaCount`; the scout prompt (`/api/scout`) asks for all four;
+  `Compass.tsx` renders the legend + lanes; seed `content/compass.json` gains sample lengthen/heighten ideas.
+  New test `scripts/test-compass.mjs` (in `npm test`). _Researched: McKinsey Three Horizons, Ansoff/Innovation
+  Ambition Matrix, organizational ambidexterity (explore/exploit)._
+- **Per-instance content packs — `/api/a2a` answers AS the business, from its OWN corpus.** New
+  `InstanceContent` on the Lego contract (`offerings`/`outcomes`/`writings` — the generalization of
+  projects.json + Receipts claims + articles) plus pure builders `instanceEvidence()` (the lean,
+  budget-bounded A2A evidence corpus; private offerings share a highlight only, outcomes keep their
+  HONEST verdict) and `instanceStaticAnswer()` (the no-LLM grounded fallback). `app/api/a2a/route.ts`
+  is now instance-aware: a non-portfolio instance with a `content` pack answers from its material; the
+  portfolio keeps reading `content/profile.ts` + `projects.json` (byte-identical path). Scaffolded the
+  first content pack — the **12X Agentic Academy** (3 tracks, build-loop pedagogy, sample lessons; its
+  outcomes are deliberately marked `unverified` so the agent demonstrates the honesty discipline rather
+  than fabricating audited student results). _Verified live: `INSTANCE=learning-center` POST `message/send`
+  answered with the academy's tracks + grading method; the default portfolio answered with Paul's real
+  repos — same endpoint, same code._ The only remaining instance-bound surface is the **visual** `page.tsx`
+  rendering (documented next step in `docs/AGENTIZE.md`).
+- **Instance-aware Agent Card — any deploy is discoverable AS ITSELF (the federation stud, wired live).**
+  New `content/instances/index.ts` registers the vertical packs and exposes `getActiveInstance()` (reads the
+  `INSTANCE` env var, default `portfolio`; an unknown slug or a pack that fails `validateInstance` degrades to
+  the known-good portfolio with a server warning — never a 500). `app/api/agent-card/route.ts` now builds the
+  A2A card from `instanceToAgentCard(getActiveInstance(), origin)` instead of hand-built portfolio fields, so a
+  `INSTANCE=learning-center` deploy advertises learning-center skills and a portfolio deploy advertises recruiter
+  skills — **same code, zero vertical branches.** _Verified live (`npm start`): default → "Paul Jialiang Wu —
+  Agent" / personal / ask_candidate+verify_claim+role_fit; `INSTANCE=learning-center` → "12X Agentic Academy —
+  Agent" / education / ask_program+verify_outcome+fit_check; `x-llm-ready` preserved both ways._ Minor cosmetic
+  change to the live portfolio card: the name suffix is now "— Agent" (was "— Portfolio Agent"); skills,
+  examples, and grounding are unchanged. `/api/a2a`'s grounded-answer corpus + the visual `page.tsx` rendering
+  stay portfolio-bound for now — making those instance-aware needs per-instance content packs (the documented
+  next step in `docs/AGENTIZE.md`).
+- **KV durable path — verified end-to-end against a real REST server.** `scripts/test-storage-kv.mjs` stands up a
+  local Upstash-protocol KV (SET/GET, Bearer-auth, in-memory) and drives `lib/storage.ts` through it: durable
+  round-trip, a Network "join" written under `registry:entries` survives a fresh GET (the "shared across
+  instances" claim), an owner edit under `portfolio:config` round-trips without colliding, and a bad token fails
+  the write **closed** (returns false, never throws). In `npm test`. This proves the durable code path the live
+  "provision a store" step is blocked on — so the moment a real KV is configured, persistence works. _(Provisioning
+  the production Upstash store still requires a one-click browser acceptance of its marketplace terms — a legal
+  acceptance on the owner's account that can't be done headlessly.)_
+- **Agentize — the Lego contract that turns this portfolio into a meta-template.** `lib/instance-types.ts`
+  defines `InstanceConfig`: the studs (entity / story / theme / agent.skills / sections / proof / scout /
+  network / owner / storage) that snap a *vertical pack* onto the existing core bricks, so a church, gym,
+  learning center, agency, trading school, or R&D firm is **data, not a code fork**. `validateInstance()` is
+  the fit-check (rejects unknown theme/vertical, missing skill/section, non-kebab slug with precise errors);
+  `instanceToAgentCard()` proves any instance → a spec-shaped A2A card with zero vertical code. Ships two
+  reference packs — `content/instances/portfolio.ts` (instance #0: the live site, expressed as a config, to
+  prove the contract generalizes) and `content/instances/learning-center.ts` (the first new vertical: an
+  Agentic Learning Center; Receipts→audited outcomes, Compass→next cohorts). New test `scripts/test-instance.mjs`
+  (in `npm test`, 22 checks). Design: `docs/AGENTIZE.md`. _Additive: no existing surface changes — the
+  instance-aware wiring of `app/page.tsx`/`agent-card`/`a2a` is the documented next step (declined this pass to
+  protect the live $0 deploy). Verified: build + full test suite green._
+- **Durable storage (KV) — owner edits + Network joins survive on serverless.** `lib/storage.ts`
+  talks to a Vercel-KV / Upstash Redis store via its REST API (no new dependency) when
+  `KV_REST_API_URL` + `KV_REST_API_TOKEN` are set. The registry (`readRegistryAsync`/`upsertEntry`)
+  and the portfolio config (`readPortfolioAsync`/`writePortfolioDurable`) now read KV-over-the-
+  committed-seed and write to KV — so owner wording/layout edits and Network "join" registrations
+  become **durable and shared across visitors/instances** instead of per-browser/per-instance.
+  Degrades cleanly to the fs seed when KV isn't configured. `/api/health` reports `durableStorage`.
+  _Verified: the no-KV fallback path is unchanged (build + all tests green; health=false; registry/
+  portfolio/home/network all 200). The live KV write path needs a provisioned store to fully verify._
+
+### Changed
+- **God-component split finished + Vitest.** All 16 copilot actions are now extracted into domain
+  hooks — `useLayoutActions`, `useContentActions` (editWording/editText/getRepoDigest/add+removeSection),
+  `useEngagementActions` (article import + verifyResume + scoutNext) — so **`Portfolio.tsx` is 1,137 → 639
+  LOC** (−44%): it now holds state + helpers + readables + render, and routes actions to hooks. Added a
+  **Vitest** component-test layer (`vitest.config.ts`, `components/sections.test.tsx`, `npm run test:unit`)
+  alongside the fast node-script logic tests; both run in CI. _(Playwright E2E is the remaining test layer —
+  deferred: real-browser E2E of the CopilotKit chat needs browser installs + is flaky headless; the node +
+  Vitest layers cover logic + components now.)_
+
+### Added
+- **Federated search — the A2A fan-out (the network *answers*, not just lists).** `POST
+  /api/registry/ask {q}` index-searches the registry for the top-matching nodes, then queries each
+  node's **live A2A agent** (JSON-RPC `message/send`) in parallel and returns their grounded answers
+  — with a per-node timeout so a slow/dead node can't hang the fan-out. Surfaced as an "Ask the
+  network" box on `/network`. Rate-limited (it triggers N downstream LLM calls). `app/api/registry/ask`,
+  `components/Network.tsx`. _Verified live: "who ships agent-verification tooling" fanned out and the
+  nodes answered grounded — "cli-judge / anyagent (private)" — even respecting the private-repo rule._
+  _This is STRATEGY.md feature #4; the index-search (registry) is feature #1._
+- **Portfolio Registry (the network's DNS) — the first 10x-network feature.** A searchable
+  directory of agent-portfolios at **`/network`**: search by skill ("agent verification", "Rust",
+  "founder"), see each node, and "Ask the agent" (each exposes an A2A card). **Join-by-agent-card:**
+  `POST /api/registry {url}` fetches the portfolio's `/.well-known/agent-card.json`, validates it's
+  a real A2A card, and indexes its skills — **no fabrication**, only portfolios that actually expose
+  an agent card can join. `GET /api/registry?q=` ranks the index (name/handle/tags/skills/desc).
+  New: `lib/registry.ts` (+ fs-free `lib/registry-types.ts` with the search/rank), `app/api/registry`,
+  `app/network/page.tsx`, `components/Network.tsx`, seed `content/registry.json` (genesis node = this
+  portfolio). Rate-limited. _Verified live: search finds the node; registering a portfolio by its
+  agent-card indexes its real skills (ask_candidate/verify_claim/role_fit)._ _Why: each new portfolio
+  makes search/matchmaking/trust more valuable — the network is the 10x. (Index-search now; the A2A
+  fan-out to top matches is the documented upgrade — see `docs/STRATEGY.md`.)_
+- **Foundation finish.** `/api/health` (liveness + config probe — providers configured, owner-gating,
+  no secrets — the observability gap from STRATEGY.md). God-component split continued: the layout/theme
+  actions moved to `components/useLayoutActions.ts`; **`Portfolio.tsx` 1,137 → 946 LOC** (with the
+  earlier `sections.tsx` + `OwnerBadge.tsx`). The remaining action groups (import/verify/scout/section/
+  content) follow the same pattern next. _Lesson: a `"use client"` module must not VALUE-import an
+  `fs`-bearing lib (it pulls `node:fs` into the bundle) — pass constants via ctx + use `import type`._
+- **Foundation hardening (from the strategy deep-dive, `docs/STRATEGY.md`).**
+  - **Rate-limiting on the open, LLM/GitHub-backed routes** (`/api/copilotkit` 30/min, `/api/a2a`
+    20/min, `/api/repo-digest` 15/min, `/api/repo-activity` 30/min) — per-IP, in-memory
+    (`lib/rate-limit.ts`). Closes a real cost/abuse hole: these had no owner gate, so anyone could
+    drain the free LLM quota. _Verified: copilotkit serves 30 then 429s; a2a returns JSON-RPC -32005._
+  - **CI** (`.github/workflows/ci.yml`): `npm ci && npm test && npm run build` on every PR + push —
+    the gate is now automated (the doc-sync hook only ran locally).
+  - **Tests 2 → 5 files** (`overrides`, `verification` aggregate, `rate-limit`) covering the
+    critical pure logic. ~22 assertions via `npm test`.
+  - **Began splitting the 1,137-line `Portfolio.tsx` god-component** → pure section renderers
+    (`components/sections.tsx`) + `components/OwnerBadge.tsx`; now 1,038 LOC. (Action-hook
+    extraction is the next iteration.)
+  - Added **`docs/STRATEGY.md`** — code-quality eval, 10x efficiency/effectiveness, 10x network
+    features (length/height/depth/width), README virality, and monetization, with a sequenced plan.
+- **The copilot can now edit the WORDING of any text — schema stays fixed.** Say "change
+  Genentech to Accenture" or "reword the blurb/mission/that value" and it applies. Two owner
+  actions: `editWording` (substring find/replace across the editable fields) and `editText`
+  (replace a whole field). Edits are stored as **overrides** (a whitelisted dot-path → text map
+  in `portfolio.yaml`), applied on top of the fixed `content/profile.ts` structure — so the agent
+  can change *text* but never the schema. Whitelisted paths only: `profile.{name,tagline,blurb,
+  location}`, `mission`, `love`, `values.<i>.{title,body}`, `practices.<i>.{name,body}`. New
+  `lib/overrides.ts`; wired into `lib/portfolio.ts` (model+normalize), `app/page.tsx` (grounding),
+  `components/Portfolio.tsx` (render + actions + a "current wording" readable so the agent answers
+  with the edited text). _Verified end-to-end: an override persists, survives normalize, and
+  SSR-renders the new text._ _Why: the portfolio's wording shouldn't require a code edit._
+- **1-click example prompts in the chat.** A curated, dismissible row of starter chips above the
+  chat input illustrates what the agent can do (flagship projects, hottest repos, verify a claim/
+  résumé, scout, add a section, import LinkedIn, switch theme, "what can you do?"). Clicking a chip
+  **fills** the input (doesn't auto-send) and drops the cursor on the `<paste …>` token, so you
+  customize then send. `components/PromptStarters.tsx`, wired in `components/Copilot.tsx`. _Why: new
+  visitors don't know the agent's range; show it and make it 1-click._
+- **Projects rank by recency + live 30-day PR activity.** The grid sorts by **last updated**
+  (`pushed`) by default, with a **🔥 Active 30d** toggle that ranks by how many PRs each repo got in
+  the last 30 days, and a per-card `🔥 N PR·30d` badge. The activity is fetched with ONE GitHub
+  search (the owner's PRs in the window, aggregated by repo) via `/api/repo-activity` — efficient
+  vs. N per-repo calls — and degrades to date-sort on throttle. `components/Projects.tsx`,
+  `app/api/repo-activity/route.ts`. _Verified live: 130 PRs/30d, top repos surfaced
+  (loop-engineering-anything 34, FDE-os 28, …)._ _Why: surface what's actually hot right now, not
+  a static list._
+- **The copilot can now CREATE brand-new sections — grounded in a real repo.** Tell it
+  "add a section highlighting my agentic tools (skills, plugins, workflows) from my sos repo"
+  and it builds a custom section of item cards. New owner actions: `getRepoDigest` (fetches a
+  PUBLIC repo's README + file/dir tree + metadata via `/api/repo-digest`) and `addSection`
+  (creates/updates a custom section) + `removeSection`. The agent is instructed to call
+  getRepoDigest FIRST and compose items only from what's actually in the repo — **no invented
+  tool names or links** (the portfolio's no-fabrication ethos). Custom sections (`id: custom-<slug>`)
+  carry their own `items: [{title, body, tag?, url?}]`, persist to `portfolio.yaml` like any layout
+  edit, and render as a cards grid. Built-in sections stay reorder/hide/rename-only; custom ones
+  can also be removed. `lib/portfolio.ts` (model + normalize), `components/Portfolio.tsx`
+  (render + actions), `app/api/repo-digest/route.ts`. _Verified end-to-end: a custom section
+  persists, survives normalize, and SSR-renders; `/api/repo-digest` returns sos's real
+  skills/plugins/tools dirs._ _Why: a portfolio shouldn't be limited to a fixed set of sections._
+
+### Fixed
+- **Newest post no longer buried at the end of the Writing slider.** Posts whose URL has no
+  decodable activity id (some `/posts/` slugs, `ugcPost`/`share` URNs) got publish time `null`
+  and sorted to the far right — so a brand-new post could vanish off the right while an older,
+  datable post showed leftmost. New `lib/linkedin.ts` `orderByRecency()` uses decoded times where
+  available and **slots undatable posts into harvest (feed) order** (LinkedIn serves newest-first),
+  so a new post lands on the LEFT regardless of id type. Tested in `npm test`. `components/Articles.tsx`.
+
+### Added
+- **Extension "⚡ Latest" fast mode — a true 1-click "load what's new."** The LinkedIn extension
+  now shows two buttons: **⚡ Send latest posts** (scrolls only a few screens — recent posts are at
+  the top — ~3s) and **⬆ Send ALL history (slower)** (full scroll, the original behavior). Both feed
+  the same harvester + `importPosts`, which de-dupes by URL+title, so re-clicking ⚡ Latest adds only
+  posts published since your last import. `extension/content-linkedin.js`. _Why: re-importing a long
+  feed to catch one new post was slow; the recent posts are always at the top._
+
+### Changed
+- **Writing section is now a horizontal, newest-first slider** (was a 2-col grid). With many
+  imported LinkedIn posts, the section is a single scroll/snap row — most recent on the **left** —
+  with ‹ › arrows and the category filter retained. Posts are sorted by **real publish time**:
+  imported posts carry no date, so `lib/linkedin.ts` `linkedinActivityTimeMs()` decodes the
+  timestamp from the LinkedIn **activity id** (Snowflake — top 41 bits are ms since epoch);
+  falls back to the manual `date`, else stable feed order. The card shows the decoded date.
+  Covered by `scripts/test-linkedin-url.mjs` (`npm test`). `components/Articles.tsx`.
+- **Agent now leads its LinkedIn-import guidance with the one-click extension, not DevTools.**
+  When a user pastes a feed URL + "fetch all", the agent was (correctly) explaining the
+  *console-script* path — paste `/linkedin-harvest.js` into DevTools, copy JSON, paste back —
+  but never mentioned the **one-click browser extension** we ship in `extension/`, which harvests
+  AND imports automatically. Updated all three grounding sources (`harvestTip()`, the
+  "HOW TO IMPORT" readable, and the page's capabilities string) to recommend the extension FIRST
+  (easiest, no DevTools), with the console as the no-install fallback, and to state the owner-unlock
+  step up front. _Why: the agent was sending people down the harder path for a one-click capability
+  that already exists — the friction, not an error, was the "does not work."_
+
+### Added
+- **Guardrails so a bad input can't break the webapp again.** Two layers: a global **error
+  boundary** (`app/error.tsx` + `app/global-error.tsx`) so any unhandled client render error
+  shows a "Try again / Reload" recovery UI instead of a blank white page; and a **regression
+  test** (`scripts/test-linkedin-url.mjs`, run via `npm test`) that locks in the handling of the
+  exact query a user reported — `…/in/<name>/recent-activity/all/ fetch all` must classify as a
+  login-walled FEED (→ harvester guidance, never a server fetch). The classifier was extracted
+  from `Portfolio.tsx` to `lib/linkedin.ts` so it's importable + testable. _Why: "prevent that
+  happening again" needs a mechanical guard, not another one-off._
+  - _Investigated: the reported "does not work" for that query reproduced as a blank page ONLY in
+    the gstack **headless QA browser**, which crashes ~10s into ANY CopilotKit chat session (plain
+    queries too) — a test-tool artifact, not a site bug. The agent itself responds **correctly**
+    (verified by reading the reply: it gives the unlock + `/linkedin-harvest.js` harvester steps).
+    Root-causing the headless crash was dropped as out-of-scope; the error boundary is the durable
+    safety net regardless of source._
+
+### Fixed
+- **Copilot now leads with the big-quota provider (Gemini), which actually fixes the
+  "❌ An error occurred" chat failure.** Captured the real server error in a browser repro:
+  a Groq **429 daily-token-cap** (`TPD limit 100000, used 94471, requested 6650`) — a single
+  chat turn costs ~6.6k tokens (grounding + ~12 tool schemas + history), so Groq's small free
+  daily budget is exhausted in ~15 turns. Crucially the 429 surfaces **mid-stream** ("event
+  source callback"), *after* `handleRequest` returned a 200, so the init-time failover added
+  earlier couldn't catch it. Fix: `/api/copilotkit` now orders the chain **Gemini-first for the
+  chat** (Gemini's free daily quota is far larger and streams tools cleanly through CopilotKit);
+  Groq/NIM/OpenAI remain fallbacks. _Verified live in a headless browser: with Groq day-capped,
+  the chat streamed a correct, grounded answer via Gemini and the server logged no 429._
+  _Investigated/Rejected: a pre-flight token probe (a 1-token check passes while the real 6.6k
+  request still 429s — can't predict a daily cap); mid-stream retry (CopilotKit returns the stream
+  before the error, so there's nothing left to retry)._
+- **Copilot also fails over at stream-init when a provider is throttled.** The
+  chat request is large (grounding context + ~12 action/tool schemas + history), so one message
+  can trip Groq's free per-minute/daily token limit — and the streaming CopilotKit route was the
+  ONE LLM route still pinned to a single provider, so a throttle killed the chat outright.
+  `/api/copilotkit` now reads the body once and **fails over across `resolveLlmChain()`**: if a
+  provider throws at stream-init (429/413/network) or returns 5xx, it rebuilds the `OpenAIAdapter`
+  with the next provider (Gemini's free quota is far larger, so it's the natural catch). Happy path
+  unchanged (first provider returns immediately). _Why: the daily-quota exhaustion that surfaced
+  during this session's live testing took the live chat down; the survival chain must cover the
+  copilot too, not just the JSON routes._ _Verified: route returns 200 on a normal request, a clear
+  503 when no key is set; the failover mirrors the live-proven `chatWithFailover` (Groq→Gemini)._
+
+### Added
+- **A2A: the portfolio is now an agent other agents can talk to (inbound, Google A2A).**
+  A recruiter's / collaborator's AI agent can **discover** this portfolio via an Agent Card and
+  **query it machine-to-machine** over the Agent2Agent protocol — grounded, honest answers from
+  the portfolio + the verified Receipts (private repos → highlight only; unprovable claims →
+  "unverified"). New: `app/api/agent-card/route.ts` (served at `/.well-known/agent-card.json`
+  **and** legacy `/.well-known/agent.json` via `next.config.mjs` rewrites), `app/api/a2a/route.ts`
+  (JSON-RPC 2.0, **`message/send`** + legacy **`tasks/send`**, synchronous), and a CLI-Anything-style
+  `public/a2a/SKILL.md` so the agent is discoverable in the [CLI-Anything](https://github.com/wjlgatech/CLI-Anything)
+  ecosystem. Skills advertised: `ask_candidate`, `verify_claim`, `role_fit`. _Why: tomorrow's
+  portfolio visitors are agents; this makes the candidate machine-interrogable, honestly._
+  - **Pragmatic-sync profile for reliability.** `capabilities.streaming=false`; both well-known
+    paths and both method names are accepted for maximum client compatibility. Verified live:
+    discovery + `message/send`/`tasks/send` round-trips, honest `verify_claim` (a Genentech claim
+    returned `unverified`), and JSON-RPC `-32601` on unsupported methods.
+  - **Decision: inbound first, sync first.** Outbound seeking (querying other job/collaborator
+    sites + agents as an A2A *client*) and a `printingpress` comms adapter are documented
+    fast-follows. (`printingpress` has no public repo — the message send-path is left a pluggable
+    seam.) The jobs/outbound lane hands off to career-os, not auto-submit.
+- **The free-LLM survival chain now actually survives a throttle.** `lib/llm.ts` gains
+  `resolveLlmChain()` (every configured provider, in order) and `lib/llm-complete.ts`'s
+  `chatWithFailover()` tries each provider until one succeeds — so a 429 (per-minute or daily
+  quota) or 413 on Groq auto-skips to Gemini instead of failing the request. Wired into
+  `/api/a2a`. _Verified live: with Groq's daily 100k-token quota exhausted, a `role_fit` call
+  failed over to Gemini and returned a grounded answer._ _Investigated/Rejected: pinning one
+  provider per request (the old `resolveLlm`) — measured a Groq **429 TPD limit** mid-session that
+  killed calls a real failover survives. (The streaming CopilotKit route still pins one provider —
+  it needs a single adapter; `/api/verify-resume` and `/api/scout` can adopt the helper next.)_
+- **Compass: a proactive scout ("What's Next") that compounds the builder on a cadence.**
+  On a schedule (a free GitHub Action, weekly by default) or on demand (owner "Scout now"),
+  it surfaces the next moves in two lanes, grounded in the real GitHub fleet + the *verified*
+  strengths (Receipts corroborated claims): **projects to deepen** (extend a strength) and
+  **widen** (adjacent whitespace, biased by `widenInterests`), and **collaborators to reach**
+  (real GitHub people discovered in the topic neighborhood). New section `compass`, route
+  `POST /api/scout`, `components/Compass.tsx`, `lib/compass.ts` (+ fs-free
+  `lib/compass-types.ts`), `lib/github-collab.ts`, `content/compass.yaml` (cadence + interests),
+  seed `content/compass.json`, and `.github/workflows/compass-scout.yml`. _Why: a living
+  portfolio should look forward, not just present the past (12X #10 "measure the slope")._
+  - **Human-in-the-loop (career-os ethic).** It DRAFTS the next move — a concrete first step,
+    a suggested intro — and **never sends anything**. The jobs lane (fit-scored leads →
+    hand off to [`career-os`](https://github.com/wjlgatech/career-os)) is a documented fast-follow.
+  - **No invented people.** Collaborators are *discovered* as real GitHub handles
+    (`lib/github-collab.ts`, bounded searches); the LLM may only rank/explain handles from
+    that candidate set — the route filters out anything else. Verified live: 16 real candidates
+    found, 3 grounded picks (`@MervinPraison`, `@Undertone0809`, `@YASSERRMD`) with drafted intros.
+  - **Auth for the cron.** `/api/scout` accepts the owner token OR an `x-scout-secret` matching
+    `SCOUT_SECRET`, so the GitHub Action runs headless. On serverless (read-only fs) the Action
+    commits `content/compass.json`, and the push redeploys the fresh feed.
+  - **Decision: draft-and-queue, NOT auto-apply.** _Investigated/Rejected: auto-submitting job
+    applications — auth-walled portals, ToS/account-ban risk, and bad applications sent in the
+    user's name. career-os's own rule is "stop before Send." So the scout drafts; the human acts._
+- **Self-proof: a résumé "Receipts" section that audits claims against real evidence.**
+  The owner pastes a résumé/CV (chat: “verify this résumé: …”, or the in-section verifier);
+  the agent extracts each claim and checks it against the portfolio's own corpus
+  (projects + articles + profile) **plus live public GitHub** (languages, recency, README
+  text), then renders a per-claim verdict + an aggregate credibility scorecard. New section
+  `receipts`, route `POST /api/verify-resume` (owner-gated), `components/Receipts.tsx`,
+  `lib/verification.ts` (+ fs-free `lib/verification-types.ts`), `lib/github-evidence.ts`,
+  seed `content/verification.json`. _Why: a portfolio should **prove** itself, not assert
+  (12X #4 "Verify, don't vibe")._
+  - **Honesty is the feature.** Verdicts are `corroborated` / `partial` /
+    `unverified — needs external source` / `contradicted`, with `inferred` tags. The auditor
+    is prompted to be skeptical and to flag employment/dates/degrees as Unverified rather
+    than fabricate corroboration — gaps are shown as prominently as green checks. Verified
+    live: a planted "Expert in Rust, 10 years" claim was correctly **contradicted**, and
+    "Leads AI/ML/DS at Genentech" / "PhD" came back **unverified**.
+  - **Trustworthy aggregate.** The LLM judges each *claim*; the scorecard (corroboration
+    index, per-category scores, honest-gaps list) is recomputed **deterministically** in
+    `lib/verification-types.ts` — the model's own arithmetic is never trusted.
+  - **Rubric reused from [`career-os`](https://github.com/wjlgatech/career-os)** — claim
+    taxonomy (cv.template.md), the "proof point = mechanism + metric/status" evidence
+    standard (article-digest.template.md), and the no-fabrication / `[inferred]` / human-in-
+    the-loop disciplines.
+  - **Budget-bounded corpus.** Free-tier LLMs have tight TPM limits (Groq's free tier is
+    ~12k/min); the corpus caps README reads (4 × 700 chars) and hard-trims to ~22k chars so
+    a real verification fits. _Investigated/Rejected: sending the full corpus + 8 × 1600-char
+    READMEs — measured a Groq **413 "request too large" (12,616 > 12,000 TPM)** on a live run._
+- **One-click LinkedIn import via a browser extension (`extension/`)** — kills the
+  DevTools-console step for non-technical owners. A button injected on your LinkedIn
+  activity page harvests your posts **in your own logged-in session** and hands them to
+  your portfolio, which imports + dedupes them through the existing `importPosts`
+  pipeline. _Zero-trust by construction_ (12X #5 "own your data"): the extension has only
+  `storage` + `tabs` permissions, makes **no network requests**, and never sees your
+  credentials — the handoff is local (`chrome.storage.local` → the portfolio page's
+  `localStorage["portfolio-pending-import"]`). Chosen over a server-side computer-use
+  agent precisely because that would require your LinkedIn credentials on a server and
+  trip LinkedIn's automation bans. Files: `extension/manifest.json`,
+  `content-linkedin.js`, `content-portfolio.js`, `background.js`, `extension/README.md`.
+  _Why: the agent should do the digital work, but inside the authenticated browser the
+  user already owns — not a credential-borrowing server._
+- **Shared, unit-tested harvest core (`extension/harvest-core.js`)** — the self-healing
+  union-find dedupe engine is now factored into one UMD module consumed by both the
+  extension's content script and `scripts/test-harvest.mjs`, so the tricky cross-alias
+  fusion (same post via activity-id AND canonical URL) is written once and tested once.
+  The console harvester (`public/linkedin-harvest.js`) keeps the same algorithm as the
+  no-install fallback. `node scripts/test-harvest.mjs` now drives the shared core.
+- **Auto-import handoff in `Portfolio.tsx`** — on mount / on an extension ping / when
+  owner mode unlocks, the page consumes a pending import: owners get an automatic import
+  + a bottom-center toast; visitors get a nudge to unlock (pending posts are kept and
+  applied the instant owner mode turns on). The `importPosts` action and this handoff now
+  share one `runImport()` function.
+- **Conversational portfolio editing → `content/portfolio.yaml`** — a new control file
+  is the single source of truth for section order, visibility, labels, theme, and the
+  articles list. The on-page agent turns natural language ("move Projects to the top",
+  "hide Writing", "add my LinkedIn article …", "switch to the Notion theme") into
+  structured edits via CopilotKit **actions** (`useCopilotAction`) in
+  `components/Portfolio.tsx`. Edits update React state instantly, cache to
+  `localStorage`, and persist to the YAML through `POST /api/portfolio` (writable in
+  local dev; read-only on serverless, where the change stays in the browser until the
+  YAML is committed). New: `lib/portfolio.ts` (read/normalize/write), `app/api/portfolio`.
+  _Why: the portfolio should be authored by talking to it, not hand-editing JSON._
+- **Owner/visitor authorization** — only the owner can APPLY changes; visitors can ask
+  and have the agent PROPOSE edits (clearly labelled, never applied). Proven by a
+  server-side secret `PORTFOLIO_OWNER_TOKEN`: `POST /api/portfolio` returns **403**
+  without a matching `x-portfolio-owner` header (`lib/owner.ts`, `app/api/owner`). The
+  client resolves role on load (`?owner=<token>` once, or a stored token → verified via
+  `/api/owner`), shows a 🔒/🔓 badge, and strips the secret from the URL. No token
+  configured = un-gated local dev (you're the owner). _Why: a public site must not let
+  any visitor rewrite the portfolio._
+- **Reusable voice input (`lib/voice/`)** — a dependency-free, transportable
+  speech-to-text capability: `useSpeechToText` (Web Speech API hook) + `<VoiceInput>`
+  (drop-in mic that attaches to any text field via selector + `MutationObserver` and
+  writes through the React-safe native value setter). Wired into the CopilotKit chat bar
+  so you can dictate instead of type. Copy the folder into any React app; see
+  `lib/voice/README.md`. _Why: voice is a faster input, and the capability should be
+  reusable across apps/agents._
+
+### Fixed
+- **Agent's LinkedIn-import guidance is now actionable (clickable link + steps).** When a
+  user pasted a feed/activity URL and asked to import, the agent answered with a vague "run
+  the harvester (/linkedin-harvest.js)" — no clickable link, no steps. `HARVEST_TIP` is now a
+  `harvestTip()` function that builds an **absolute** `${origin}/linkedin-harvest.js` URL and
+  numbered steps, and a new always-on grounding readable ("HOW TO IMPORT LinkedIn posts")
+  carries the same steps + link so even a conversational answer is actionable. _Why: the
+  reply was a dead end with nothing to click._
+- **Agent now tells visitors HOW to become the owner.** It correctly detected visitor vs
+  owner (an un-unlocked user on a token-gated deploy *is* a visitor), but only said "only the
+  owner can apply" — no path forward. The role grounding now includes a `howToBecomeOwner`
+  field (click the 🔒 "View only" badge bottom-left + passphrase, or `?owner=<token>` once)
+  and instructs the agent to surface it every time it declines an edit. _Why: refusal without
+  a remedy reads as "the agent can't tell who I am."_
+- **Agent no longer chokes on a LinkedIn feed/activity/profile URL.** Asking it to "fetch
+  all posts from `…/recent-activity/all/`" made it call the fetch tool on a login-walled
+  feed (LinkedIn returns HTTP **999** anti-bot → 502/hang → a generic "An error occurred").
+  Now `addArticleFromUrl`/`importPosts` detect feed/profile URLs (`isLinkedInFeedUrl`) and
+  the grounding tells the agent up front: don't fetch the feed — guide the user to the
+  harvester (`/linkedin-harvest.js`) and `importPosts`. Individual `/pulse/` & `/posts/`
+  links still fetch. Classifier verified across feed/profile/pulse/posts/feed-update cases.
+- **Pinned CopilotKit to 1.5.20** (was `^1.5.0`, which silently resolved to **1.61.2**).
+  The 1.6x line is a different **AG-UI agent architecture** the code wasn't written for; it
+  (a) streams model *reasoning* as `reasoning_content` deltas that the chat UI doesn't
+  render (agent looked silent) and (b) raised `RUN_ERROR: "Input contains unsupported
+  content types or unsupported content fields"` on tool round-trips. The classic 1.5.x
+  `CopilotRuntime`/`OpenAIAdapter` runtime the code targets is far more compatible with
+  the free OpenAI-style providers. _Why: align the installed library with the code._
+- **Default LLM is now Groq `llama-3.3-70b-versatile`** (chain reordered Groq → Gemini →
+  NVIDIA → OpenAI). It does tool-calling AND streams plain `content` (not reasoning
+  deltas), which CopilotKit needs. Reasoning models like `openai/gpt-oss-120b` return 200
+  but render nothing. See the constraints note in `lib/llm.ts`.
+- **Copilot went silent once edit actions were added** — CopilotKit attaches the actions
+  as OpenAI *tools*, and the old default model `meta/llama-3.3-70b-instruct` (NIM) can't
+  emit structured `tool_calls` (it returns the call as plain text), so `/api/copilotkit`
+  **400**'d and the chat produced nothing. Switched the tool-capable defaults in
+  `lib/llm.ts` to **`openai/gpt-oss-120b`** for NIM and Groq (verified to return proper
+  `tool_calls`); Gemini `gemini-2.5-flash` and OpenAI `gpt-4o-mini` already support tools.
+  Override with `NIM_MODEL`/`GROQ_MODEL`. _Why: the agent now needs function-calling;
+  the model default must support it. (Found via `/free-llm`.)_
+
+- **Self-healing LinkedIn harvester** — `public/linkedin-harvest.js` no longer depends on
+  LinkedIn's (constantly-changing) CSS class names. It extracts from three STABLE signals —
+  public URL routes (`/feed/update/urn:li:activity:`, `/posts/`, `/pulse/`), `data-urn`
+  attributes, and embedded JSON — and **union-find-dedupes by activity id AND URL**, so the
+  same post reached via different URL forms collapses to one. If all strategies still find
+  nothing (a genuine DOM overhaul), it auto-copies a structured DIAGNOSTIC to the clipboard
+  so the fix is data-driven, not a guessing loop. Class-independence + dedup verified against
+  an obfuscated-markup fixture (`scripts/test-harvest.mjs`-style: 4 unique posts, 0 dupes).
+  _Why: LinkedIn changes its DOM constantly; key off data, not styling._
+- **Bulk-import LinkedIn posts (de-duplicated)** — LinkedIn's activity feed is login-walled
+  (an unauthenticated fetch returns a ~1.5KB sign-in wall), so a `public/linkedin-harvest.js`
+  script runs in the user's own logged-in browser (console paste, CSP-safe), auto-scrolls,
+  reads each post's `{url, title, summary}` from the DOM, and copies a JSON list. The new
+  `importPosts` agent action parses it (or a pasted URL list) and adds the posts, **skipping
+  anything already present** (dedupe by normalized URL + title). _Why: import a whole feed of
+  long+short posts without a server ever touching LinkedIn credentials._
+- **Add an article from just its URL** — new server route `app/api/fetch-article`
+  fetches a page server-side (no browser CORS — that was the "Failed to fetch" error),
+  extracts the title + summary from Open Graph / meta tags, and the new `addArticleFromUrl`
+  agent action fills the article from it. Owner-gated + basic SSRF guard. _Why: paste a
+  LinkedIn link, get a full article card — no typing the title/summary._
+- Voice input now **surfaces errors** (denied mic permission, no-speech, no device) via a
+  console warning + alert, instead of failing silently (`lib/voice/VoiceInput.tsx`).
+
+### Changed
+- Seeded the Writing section with five real LinkedIn articles in `content/portfolio.yaml`.
+- Articles moved from `content/articles.json` (removed) into `content/portfolio.yaml`;
+  the Writing empty-state now points to the agent / `portfolio.yaml`. `app/page.tsx`
+  reads the YAML per request (`force-dynamic`) and renders sections in the YAML's order
+  via `<Portfolio>` (previously a fixed JSX order).
+
+### Added
+- **Brand-style theme seam (`app/themes.css`) + live `StyleSwitcher`** — visual style is now
+  a swappable, config-keyed seam: every component reads CSS-variable design tokens (color,
+  type, radius, shadow, motion) and the active "body" is chosen by `data-theme` on `<html>`.
+  9 researched styles: **anthropic** (default), openai, google, apple, vercel, stripe, swiss,
+  brutalist, notion. A no-flash inline script restores the saved theme before paint; choice
+  persists in `localStorage`. _Why: demonstrate swappable-seams on visual design — adding a
+  brand is one `[data-theme]` block, zero component edits._ Shared with the reusable
+  `/webapp-style` skill.
+- Theme-safe `private` project badge — outline (`border-edge` + `text-muted`) instead of a
+  filled `bg-edge`, which rendered dark-on-dark under themes whose edge color is near-black
+  (brutalist, swiss). Caught by visual verification across themes.
+- Initial agentic portfolio: Next.js 15 (App Router) + CopilotKit on-page agent,
+  grounded in the repo's own content via `useCopilotReadable`. _Why: the portfolio
+  should explain itself — a visitor asks, the agent answers from verified content._
+- Free-LLM survival chain (`lib/llm.ts`): auto-selects NVIDIA NIM → Groq → Gemini →
+  OpenAI from whichever key is present; key stays server-side in `/api/copilotkit`.
+  _Why: $0 to run, never dies on a throttled free tier (per the `/free-llm` policy)._
+- Content as data: `content/profile.ts` (mission, values, love, 12X Future Practices),
+  `content/projects.json` (last-12-months active repos, categorized, IP-safe highlights;
+  private repos show highlight only, no link), `content/articles.json` (self-updating
+  LinkedIn section, grouped by category; `REPLACE ME` seeds hidden until filled).
+- Filterable Projects grid (by category, featured/all toggle) and Articles grid (by category).
+
+### Investigated / Rejected
+- **next/font/google for typography** — rejected: build-time font fetch fails offline /
+  in sandboxed CI. Using a system font stack via CSS variable instead (zero network).
+- **Static GitHub Pages + client-side LLM calls** — rejected: a free-LLM key cannot be
+  safely embedded in a public client bundle. Chose Next.js + a server route that holds
+  the key (the `rbit-ai` pattern).
+- **Next 15.1.6** — rejected: ships with CVE-2025-66478. Pinned to patched `15.5.19`.

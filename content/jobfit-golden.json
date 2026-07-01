@@ -1,0 +1,69 @@
+{
+  "_about": "Golden labeled set for the JD-fit scorer (scripts/eval-jobfit.mjs). Each entry has a human-assigned `expected` fit level for THIS portfolio's owner. JD `text` is a representative excerpt held inline so the ground truth is reproducible even after a posting closes; `url` is kept for provenance. Labels are deliberately spread across all four bands and chosen to be separable (a sales role vs. an agent role) so a competent scorer should land within one band. Add real examples over time — the eval re-runs and re-publishes content/jobfit-eval.json.",
+  "examples": [
+    {
+      "company": "agent-infra startup",
+      "title": "AI Agent Engineer",
+      "url": "",
+      "expected": "strong",
+      "note": "Dead-on: autonomous agents, tool-use, eval harnesses, open-source — matches mission + shipped work.",
+      "text": "We're building autonomous AI agents that plan, use tools, and act reliably in production. You'll design agent loops, tool-calling and orchestration over LLMs, build evaluation harnesses that measure agent reliability, and ship in the open. Strong TypeScript/Python, experience wiring LLMs into real products, and a habit of building and dogfooding your own tooling. Bonus: multi-agent systems, prompt/cache engineering, and a public body of work."
+    },
+    {
+      "company": "Etched",
+      "title": "Applied AI Engineer, Silicon Engineering",
+      "url": "https://jobs.ashbyhq.com/Etched/831bfa22-d883-450b-9b10-2a16421525a0",
+      "expected": "stretch",
+      "note": "Frontier-AI mission is appealing, but the role is ASIC/silicon co-design — hardware, not the agentic-software trajectory. Experience low, skills partial.",
+      "text": "Etched is building hardware for frontier intelligence, co-designing chips, racks, software, and manufacturing. As an Applied AI Engineer on the ASIC team you'll co-design silicon and the software stack for transformer inference, profile and optimize kernels for our accelerator, and work closely with hardware engineers on chip bring-up. Strong systems/low-level performance background, CUDA or hardware-software co-design experience, and deep familiarity with transformer inference internals."
+    },
+    {
+      "company": "devtools startup",
+      "title": "Founding Engineer, Developer Tools",
+      "url": "",
+      "expected": "promising",
+      "note": "Building-in-the-open + tooling aligns; full-stack TS matches, but it's general dev tooling, not agent-core — promising rather than dead-on.",
+      "text": "Founding engineer to build developer tools used by thousands of engineers. Full-stack TypeScript, CLIs, SDKs, and a polished DX. You'll own features end to end in a fast startup, talk to users, and ship weekly. We value people who build in the open and have a public portfolio. Some LLM/AI features on the roadmap but the core is great tooling and developer experience."
+    },
+    {
+      "company": "scale-up",
+      "title": "Senior Engineering Manager",
+      "url": "",
+      "expected": "stretch",
+      "note": "Management role (hiring, roadmaps, manage 8-10). Owner is an IC builder — experience axis low, trajectory pulls toward building, not managing.",
+      "text": "Lead and grow a team of 8-10 engineers. You'll own hiring, performance management, quarterly roadmaps, cross-functional planning, and delivery. 8+ years of engineering experience and 3+ years managing managers or senior ICs. Strong people-leadership, stakeholder communication, and a track record of shipping large org-wide initiatives. This is a people-management role, not hands-on coding."
+    },
+    {
+      "company": "enterprise SaaS",
+      "title": "Enterprise Account Executive",
+      "url": "",
+      "expected": "misaligned",
+      "note": "Pure sales — quota, cold outreach, CRM, no engineering. Misaligned on every axis.",
+      "text": "Drive new-business revenue in a defined enterprise territory. Own the full sales cycle: prospecting, cold outreach, discovery, demos, negotiation, and close. Hit and exceed quarterly quota. 5+ years of enterprise software sales, MEDDIC, Salesforce proficiency, and strong executive relationships. This is a quota-carrying field sales role."
+    },
+    {
+      "company": "consumer app",
+      "title": "Senior iOS Engineer",
+      "url": "",
+      "expected": "misaligned",
+      "note": "Native mobile (Swift/UIKit), no AI/agents. Skill + trajectory mismatch.",
+      "text": "Build and ship our consumer iOS app. Deep Swift, UIKit and SwiftUI, Core Data, and a strong eye for native UX and performance. 5+ years shipping production iOS apps in the App Store. Own features from design to release, optimize for battery and memory, and collaborate with designers. No backend or ML work — this is a dedicated native iOS role."
+    },
+    {
+      "company": "AI product company",
+      "title": "Machine Learning Engineer, LLM Applications",
+      "url": "",
+      "expected": "strong",
+      "note": "RAG, eval, shipping LLM features in Python/TS — strong skill + trajectory match.",
+      "text": "Build LLM-powered product features end to end: retrieval-augmented generation, prompt and context engineering, fine-tuning where it helps, and rigorous offline + online evaluation. Python and TypeScript, experience integrating LLM APIs into production, and a strong instinct for measuring quality rather than vibes. You'll own the eval harness and the reliability of what we ship."
+    },
+    {
+      "company": "research lab",
+      "title": "Research Scientist, ML Theory",
+      "url": "",
+      "expected": "stretch",
+      "note": "Frontier-AI mission yes, but PhD + publications + deep theory — applied builder is a stretch on experience/skills.",
+      "text": "Conduct fundamental research in machine learning theory: optimization, generalization, and the mathematics of deep learning. PhD in ML, CS, statistics or related, with a strong publication record at NeurIPS/ICML/ICLR. You'll formulate and prove theorems, design experiments to validate theory, and publish. This is a research role focused on theoretical contributions, not product engineering."
+    }
+  ]
+}

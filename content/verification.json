@@ -1,0 +1,83 @@
+{
+  "generatedAt": "2026-06-29T00:00:00.000Z",
+  "model": "seed-example",
+  "resumePreview": "(Sample receipts — paste your own to the agent: “verify this résumé: …”.) Paul Jialiang Wu — AI/ML/DS Lead. Builds self-improving agentic operating systems in the open; leads AI/ML/DS at Genentech; PhD.",
+  "claims": [
+    {
+      "claim": "Builds self-improving agentic operating systems, in the open.",
+      "category": "summary",
+      "verdict": "corroborated",
+      "confidence": 0.92,
+      "inferred": false,
+      "evidence": [
+        { "type": "repo", "ref": "sos", "url": "https://github.com/wjlgatech/sos", "detail": "Public Python repo: self-monitoring agents with SMARC output-quality verification + audit trails; last push 2026-06." },
+        { "type": "repo", "ref": "loop-engineering-anything", "url": "https://github.com/wjlgatech/loop-engineering-anything", "detail": "Public: a generate→judge→refactor→re-judge loop orchestrator — the literal 'self-improving' mechanism." },
+        { "type": "repo", "ref": "flywheel", "url": "https://github.com/wjlgatech/flywheel", "detail": "Public: 'flywheel(X) = X self-improved' — closed-loop self-improvement substrate." }
+      ],
+      "context": "The whole public repo fleet is organized around self-improving loops, not one-off apps.",
+      "gapCloser": ""
+    },
+    {
+      "claim": "Strong Python for agent frameworks and verification harnesses.",
+      "category": "skill",
+      "verdict": "corroborated",
+      "confidence": 0.9,
+      "inferred": false,
+      "evidence": [
+        { "type": "repo", "ref": "cli-judge", "url": "https://github.com/wjlgatech/cli-judge", "detail": "Public Python: a reality-grounded benchmark + verification harness for agent-native CLIs and MCP servers." },
+        { "type": "repo", "ref": "company-os", "url": "https://github.com/wjlgatech/company-os", "detail": "Public Python: a governed agent runtime (policy/memory/autonomy)." }
+      ],
+      "context": "Multiple shipped Python repos specifically about agent verification, not just usage.",
+      "gapCloser": ""
+    },
+    {
+      "claim": "Ships TypeScript multi-channel agent frameworks.",
+      "category": "skill",
+      "verdict": "corroborated",
+      "confidence": 0.85,
+      "inferred": false,
+      "evidence": [
+        { "type": "repo", "ref": "openclaw-pro-public", "url": "https://github.com/wjlgatech/openclaw-pro-public", "detail": "Public TypeScript: multi-channel agent framework with one-click installers, 100% local AI (6 stars)." }
+      ],
+      "context": "Open-source TS framework with real adopters (stars), not a toy.",
+      "gapCloser": ""
+    },
+    {
+      "claim": "Teaches a Silicon Valley AI-architect cohort.",
+      "category": "experience",
+      "verdict": "partial",
+      "confidence": 0.6,
+      "inferred": true,
+      "evidence": [
+        { "type": "repo", "ref": "omega-founders", "url": "https://github.com/wjlgatech/omega-founders", "detail": "Public: 'a 12-day Silicon Valley AI-Architect cohort: build, certify, ship agentic AI with Claude' — corroborates the program exists and is public." }
+      ],
+      "context": "The cohort program is real and public; the specific instructor role is inferred from ownership, not independently verified.",
+      "gapCloser": "A cohort syllabus crediting Paul as instructor, or a participant testimonial."
+    },
+    {
+      "claim": "Leads AI/ML/DS at Genentech.",
+      "category": "experience",
+      "verdict": "unverified",
+      "confidence": 0.5,
+      "inferred": false,
+      "evidence": [
+        { "type": "external-needed", "ref": "—", "detail": "No artifact in this portfolio speaks to employment. Employment is not provable from open-source repos." }
+      ],
+      "context": "Stated on the profile, but the portfolio holds no independent evidence of employment.",
+      "gapCloser": "A LinkedIn employment entry, an offer/verification letter, or a Genentech-attributed talk/paper."
+    },
+    {
+      "claim": "Holds a PhD.",
+      "category": "education",
+      "verdict": "unverified",
+      "confidence": 0.4,
+      "inferred": false,
+      "evidence": [
+        { "type": "external-needed", "ref": "—", "detail": "A LinkedIn article slug ('…-wu-phd-…') self-reports it, but a self-authored slug is not independent proof." }
+      ],
+      "context": "Self-reported; no degree record is in scope here.",
+      "gapCloser": "A university degree record, dissertation DOI, or ORCID."
+    }
+  ],
+  "summary": { "headline": "" }
+}

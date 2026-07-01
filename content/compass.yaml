@@ -1,0 +1,9 @@
+# Compass config — the proactive scout's cadence + the adjacent areas to push into.
+# `cadence` is the display label; the ACTUAL schedule is the cron in
+# .github/workflows/compass-scout.yml (keep them in sync). widenInterests biases the
+# "widen" project ideas and the collaborator topic search.
+cadence: weekly
+widenInterests:
+  - agent evaluation & benchmarks
+  - embodied / physical AI
+  - on-device local LLMs

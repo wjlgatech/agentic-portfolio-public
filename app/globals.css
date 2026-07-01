@@ -1,0 +1,71 @@
+@import "./themes.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--hero-bg);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Display type follows the active theme (serif for anthropic/notion, mono for brutalist…). */
+h1,
+h2,
+h3,
+.display {
+  font-family: var(--font-display);
+  letter-spacing: var(--tracking-display);
+  font-weight: var(--display-weight);
+  text-transform: var(--display-transform);
+}
+
+.card {
+  background: var(--surface);
+  border: var(--edge-w) solid var(--edge);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 1.25rem;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+.card:hover {
+  border-color: var(--accent);
+}
+
+.chip {
+  border: var(--edge-w) solid var(--edge);
+  border-radius: 999px;
+  padding: 0.25rem 0.75rem;
+  font-size: 0.875rem;
+  transition: border-color 0.15s ease, color 0.15s ease;
+}
+.chip-active {
+  border-color: var(--accent);
+  background: rgb(var(--c-accent) / 0.14);
+  color: var(--ink);
+}
+
+.section-title {
+  font-size: 1.5rem;
+  line-height: 1.15;
+  font-weight: var(--display-weight);
+  letter-spacing: var(--tracking-display);
+}
+@media (min-width: 640px) {
+  .section-title {
+    font-size: 1.875rem;
+  }
+}
+
+/* Themed rounding helper for non-.card surfaces (honors radius 0 in swiss/brutalist). */
+.rounded-theme {
+  border-radius: var(--radius);
+}

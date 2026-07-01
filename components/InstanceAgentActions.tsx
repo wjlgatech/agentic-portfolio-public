@@ -1,0 +1,94 @@
+"use client";
+
+// ─────────────────────────────────────────────────────────────────────────────
+// InstanceAgentActions — turns a non-portfolio instance's agent from a chatbot into an agent
+// that DOES WORK. Registered inside <CopilotKit> for the instance path. Three actions embody the
+// owner↔visitor split:
+//   • captureLead / bookDemo  → VISITOR: the agent captures the prospect's interest as a durable
+//     lead (no form) and hands off to a demo. This is the business's core job, done in chat.
+//   • viewLeads               → OWNER: read the pipeline the agent generated. The payoff that
+//     turns "nice demo" into "this makes me money 24/7."
+// ─────────────────────────────────────────────────────────────────────────────
+import { useEffect } from "react";
+import { useCopilotAction } from "@copilotkit/react-core";
+
+const TOKEN_KEY = "portfolio-owner-token";
+
+export function InstanceAgentActions({ instanceName, siteUrl }: { instanceName: string; siteUrl?: string }) {
+  // Let an owner unlock by opening the site once with ?owner=<token> (persist it locally).
+  useEffect(() => {
+    try {
+      const t = new URLSearchParams(window.location.search).get("owner");
+      if (t) localStorage.setItem(TOKEN_KEY, t);
+    } catch { /* ignore */ }
+  }, []);
+
+  useCopilotAction({
+    name: "captureLead",
+    description:
+      `Capture a qualified lead for ${instanceName}. Call this once you have the visitor's EMAIL ` +
+      "(and ideally their name, company, and what they need). This does REAL work — it saves the lead " +
+      "to the owner's pipeline. Confirm to the visitor that a human will follow up. Only call it with a " +
+      "real email the visitor gave you; never invent one.",
+    parameters: [
+      { name: "email", type: "string", description: "The visitor's email (required)", required: true },
+      { name: "name", type: "string", description: "Their name", required: false },
+      { name: "company", type: "string", description: "Their company", required: false },
+      { name: "need", type: "string", description: "What they're trying to solve", required: false },
+    ],
+    handler: async ({ email, name, company, need }) => {
+      try {
+        const res = await fetch("/api/lead", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, name, company, need }),
+        });
+        const data = await res.json();
+        if (!res.ok) return `Couldn't capture that: ${data.error || res.status}`;
+        return `✅ Captured — ${data.captured.email} is now in ${instanceName}'s pipeline (${data.total} total)${data.durable ? "" : " (saved for this session)"}. Someone will follow up.`;
+      } catch (e) {
+        return `Couldn't reach the pipeline: ${(e as Error).message}`;
+      }
+    },
+  });
+
+  useCopilotAction({
+    name: "bookDemo",
+    description:
+      `Route a qualified visitor to book a demo of ${instanceName}. Capture their email first (via ` +
+      "captureLead), then return the demo link so they can proceed.",
+    parameters: [{ name: "email", type: "string", description: "Their email, if given", required: false }],
+    handler: async ({ email }) => {
+      if (email) {
+        try { await fetch("/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, need: "requested a demo" }) }); } catch { /* best effort */ }
+      }
+      return siteUrl ? `Great — book your demo here: ${siteUrl}` : `Great — I've flagged you for a demo; the team will reach out.`;
+    },
+  });
+
+  useCopilotAction({
+    name: "viewLeads",
+    description:
+      `OWNER ONLY: show the leads the agent has captured for ${instanceName} (the pipeline it built). ` +
+      "If the caller isn't the owner, tell them this is owner-only and how to unlock (open the site with " +
+      "?owner=<token>).",
+    parameters: [],
+    handler: async () => {
+      let token = "";
+      try { token = localStorage.getItem(TOKEN_KEY) || ""; } catch { /* ignore */ }
+      try {
+        const res = await fetch("/api/lead", { headers: token ? { "x-portfolio-owner": token } : {} });
+        if (res.status === 403) return "🔒 Owner only. Open the site with `?owner=<your token>` once to unlock, then ask again.";
+        const data = await res.json();
+        if (!res.ok) return `Couldn't read the pipeline: ${data.error || res.status}`;
+        if (!data.leads?.length) return `No leads captured yet for ${instanceName}.`;
+        const rows = data.leads.slice(0, 10).map((l: { name: string; email: string; company: string; need: string }) => `• ${l.email}${l.name ? ` (${l.name}${l.company ? `, ${l.company}` : ""})` : ""}${l.need ? ` — ${l.need}` : ""}`).join("\n");
+        return `📈 ${data.count} lead(s) the agent captured for ${instanceName}${data.durable ? " (durable)" : ""}:\n${rows}`;
+      } catch (e) {
+        return `Couldn't reach the pipeline: ${(e as Error).message}`;
+      }
+    },
+  });
+
+  return null;
+}

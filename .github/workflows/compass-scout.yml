@@ -1,0 +1,48 @@
+# Compass scout — the proactive cadence. Calls the deployed /api/scout, writes the
+# fresh report to content/compass.json, and commits it (the push redeploys the site,
+# so the "What's Next" feed updates). Human-in-the-loop: it drafts moves; you act.
+#
+# Setup (one-time):
+#   • Repo secret  SCOUT_SECRET   — must equal the SCOUT_SECRET env var on the deploy.
+#   • Repo variable PORTFOLIO_URL — your deployed origin (defaults to the reference site).
+# Change the cadence by editing the cron below (and content/compass.yaml's label).
+name: Compass scout
+
+on:
+  schedule:
+    - cron: "0 14 * * 1" # weekly — Mondays 14:00 UTC. For monthly: "0 14 1 * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  scout:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run the scout
+        env:
+          PORTFOLIO_URL: ${{ vars.PORTFOLIO_URL || 'https://agentic-portfolio-lovat.vercel.app' }}
+          SCOUT_SECRET: ${{ secrets.SCOUT_SECRET }}
+        run: |
+          set -e
+          if [ -z "$SCOUT_SECRET" ]; then echo "SCOUT_SECRET secret is not set — skipping."; exit 0; fi
+          curl -sS -X POST "$PORTFOLIO_URL/api/scout" \
+            -H "Content-Type: application/json" \
+            -H "x-scout-secret: $SCOUT_SECRET" \
+            --max-time 150 -o /tmp/scout.json
+          node -e "const fs=require('fs');const d=JSON.parse(fs.readFileSync('/tmp/scout.json','utf8'));if(!d.report){console.error('No report returned:',JSON.stringify(d).slice(0,300));process.exit(1);}fs.writeFileSync('content/compass.json',JSON.stringify(d.report,null,2));console.log('Scouted:',d.report.deepen.length,'deepen,',d.report.widen.length,'widen,',d.report.collaborators.length,'collaborators');"
+
+      - name: Commit the refreshed feed
+        run: |
+          if git diff --quiet content/compass.json; then
+            echo "No change this run."
+          else
+            git config user.name "compass-bot"
+            git config user.email "github-actions[bot]@users.noreply.github.com"
+            git add content/compass.json
+            git commit -m "chore(compass): scheduled scout refresh"
+            git push
+          fi

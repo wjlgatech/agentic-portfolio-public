@@ -1,0 +1,72 @@
+{
+  "_about": "The 'deepen' feed — distilled knowledge + tools that super-u's flywheel (kgfy + skillfy) hands to this node via POST /api/ingest-knowledge. The node RECEIVES + grounds + presents; it does not build graphs or forge skills (see docs/DEEPEN-PIPELINE.md). The entry below is a SEED (producedBy: seed-example), hand-built from the real deepseek-ai/Engram repo + paper as the worked example; real ingests merge OVER it (durable KV) and win dedup by id.",
+  "artifacts": [
+    {
+      "id": "engram",
+      "producedBy": "seed-example",
+      "generatedAt": "",
+      "source": {
+        "title": "Engram: Conditional Memory via Scalable Lookup",
+        "kind": "repo+paper",
+        "url": "https://github.com/deepseek-ai/Engram",
+        "discoveredVia": "https://www.linkedin.com/feed/update/urn:li:activity:7477833739348324352/"
+      },
+      "digest": "Transformers scale COMPUTE (Mixture-of-Experts routes tokens to experts) but have no native primitive for looking knowledge UP. DeepSeek's Engram adds that missing primitive: it modernizes classic N-gram embeddings into a deterministically-addressed table with O(1) lookup — a second, complementary axis of sparsity (static memory) alongside MoE's conditional compute. The paper finds a U-shaped scaling law: for a fixed budget there's an interior optimum splitting capacity between compute and memory — going all-in on either side loses. Under iso-parameter and iso-FLOPs constraints, Engram-27B consistently beats MoE baselines on knowledge, reasoning, code, and math. Mechanistically, offloading static recall to Engram frees the early layers from pattern reconstruction, preserving effective depth for reasoning — and the huge embedding tables offload to host memory with minimal inference overhead. Why it matters for you: 'conditional memory as a sparsity axis' is a transferable design move — separate what a system should COMPUTE from what it should LOOK UP, and size each.",
+      "graph": {
+        "title": "Engram — conditional memory as a new axis of sparsity",
+        "graphUrl": "",
+        "nodes": [
+          { "id": "conditional-memory", "type": "concept", "name": "Conditional memory", "summary": "Look knowledge up instead of recomputing it — a sparsity axis complementary to conditional compute." },
+          { "id": "engram", "type": "module", "name": "Engram module", "summary": "Modernized N-gram embeddings giving O(1) knowledge lookup; the paper's core artifact." },
+          { "id": "ngram-embeddings", "type": "technique", "name": "N-gram embeddings", "summary": "Classic static N-gram embeddings — the ancestor Engram modernizes for scale." },
+          { "id": "o1-lookup", "type": "property", "name": "O(1) lookup", "summary": "Constant-time retrieval via deterministic addressing into a memory table." },
+          { "id": "moe", "type": "technique", "name": "Mixture-of-Experts", "summary": "Scales model capacity via conditional COMPUTE (routing), the compute-sparsity axis." },
+          { "id": "sparsity-axes", "type": "concept", "name": "Two sparsity axes", "summary": "Neural compute (MoE) vs static memory (Engram) — substitutable ways to spend capacity." },
+          { "id": "u-shaped-law", "type": "finding", "name": "U-shaped scaling law", "summary": "An interior optimum splits the budget between compute and memory; extremes lose." },
+          { "id": "engram-27b", "type": "result", "name": "Engram-27B", "summary": "Beats MoE baselines at iso-params/FLOPs on knowledge, reasoning, code, and math." },
+          { "id": "deterministic-addressing", "type": "mechanism", "name": "Deterministic addressing", "summary": "Fixed addressing lets massive embedding tables offload to host memory cheaply." },
+          { "id": "effective-depth", "type": "analysis", "name": "Preserved effective depth", "summary": "Offloading static recall frees early layers from pattern reconstruction for reasoning." }
+        ],
+        "edges": [
+          { "source": "engram", "target": "conditional-memory", "type": "instantiates" },
+          { "source": "engram", "target": "ngram-embeddings", "type": "modernizes" },
+          { "source": "engram", "target": "o1-lookup", "type": "enables" },
+          { "source": "conditional-memory", "target": "moe", "type": "complements" },
+          { "source": "sparsity-axes", "target": "moe", "type": "includes" },
+          { "source": "sparsity-axes", "target": "engram", "type": "includes" },
+          { "source": "u-shaped-law", "target": "sparsity-axes", "type": "governs" },
+          { "source": "engram-27b", "target": "moe", "type": "improves-over" },
+          { "source": "engram", "target": "deterministic-addressing", "type": "uses" },
+          { "source": "deterministic-addressing", "target": "o1-lookup", "type": "enables" },
+          { "source": "engram", "target": "effective-depth", "type": "preserves" }
+        ]
+      },
+      "skills": [
+        {
+          "id": "allocate-sparsity-budget",
+          "name": "Allocate the sparsity budget (compute vs memory)",
+          "kind": "skill",
+          "oneLine": "Split a fixed parameter/FLOP budget between MoE compute and Engram memory at the U-curve's interior optimum.",
+          "mechanism": "Treat neural computation (MoE) and static memory (Engram) as two substitutable sparsity axes; the U-shaped scaling law has an interior minimum, so spend on both rather than all-in on either.",
+          "characteristicMove": "There is an interior optimum — adding MORE of whichever axis is currently winning LOWERS quality once you pass the knee.",
+          "goodAt": ["capacity planning for large models", "trading FLOPs for cheap host-memory lookups"],
+          "notGoodAt": ["tiny models where the embedding table would dominate params", "tasks that need dynamic composition, not static recall"],
+          "useWhen": ["deciding how to spend a fixed parameter/compute budget across compute vs recall"],
+          "verified": false
+        },
+        {
+          "id": "add-o1-memory-lookup",
+          "name": "Add an O(1) memory-lookup primitive",
+          "kind": "skill",
+          "oneLine": "Give a model a native 'look it up' primitive via deterministically-addressed N-gram embeddings.",
+          "mechanism": "Modernize N-gram embeddings into a deterministically-addressed table with O(1) lookup that offloads to host RAM with minimal inference overhead.",
+          "characteristicMove": "Offload the massive table to HOST memory — deterministic addressing makes the transfer cheap, so capacity stops being VRAM-bound.",
+          "goodAt": ["knowledge-heavy factual recall", "adding capacity cheaply via host offload"],
+          "notGoodAt": ["problems needing reasoning/composition over lookup", "hardware without host-memory bandwidth"],
+          "useWhen": ["a model under-recalls facts at a fixed compute budget"],
+          "verified": false
+        }
+      ]
+    }
+  ]
+}

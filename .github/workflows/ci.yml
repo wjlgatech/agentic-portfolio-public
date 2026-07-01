@@ -1,0 +1,23 @@
+# CI — runs the real gate (TypeScript/Next build + the unit tests) on every PR and
+# push to main. The doc-sync hook only runs locally; this makes the gate automated so
+# a regression (or a broken build) can't merge silently.
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+      - run: npm ci
+      - run: npm test
+      - run: npm run test:unit
+      - run: npm run build

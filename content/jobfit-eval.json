@@ -1,0 +1,90 @@
+{
+  "ranAt": "2026-06-30T23:45:32.222Z",
+  "model": "groq:llama-3.3-70b-versatile",
+  "n": 8,
+  "exactMatches": 6,
+  "within1": 8,
+  "accuracy": 100,
+  "examples": [
+    {
+      "company": "agent-infra startup",
+      "title": "AI Agent Engineer",
+      "url": "",
+      "expected": "strong",
+      "predicted": "strong",
+      "overall": 89,
+      "exact": true,
+      "hit": true
+    },
+    {
+      "company": "Etched",
+      "title": "Applied AI Engineer, Silicon Engineering",
+      "url": "https://jobs.ashbyhq.com/Etched/831bfa22-d883-450b-9b10-2a16421525a0",
+      "expected": "stretch",
+      "predicted": "promising",
+      "overall": 62,
+      "exact": false,
+      "hit": true
+    },
+    {
+      "company": "devtools startup",
+      "title": "Founding Engineer, Developer Tools",
+      "url": "",
+      "expected": "promising",
+      "predicted": "strong",
+      "overall": 89,
+      "exact": false,
+      "hit": true
+    },
+    {
+      "company": "scale-up",
+      "title": "Senior Engineering Manager",
+      "url": "",
+      "expected": "stretch",
+      "predicted": "stretch",
+      "overall": 38,
+      "exact": true,
+      "hit": true
+    },
+    {
+      "company": "enterprise SaaS",
+      "title": "Enterprise Account Executive",
+      "url": "",
+      "expected": "misaligned",
+      "predicted": "misaligned",
+      "overall": 9,
+      "exact": true,
+      "hit": true
+    },
+    {
+      "company": "consumer app",
+      "title": "Senior iOS Engineer",
+      "url": "",
+      "expected": "misaligned",
+      "predicted": "misaligned",
+      "overall": 0,
+      "exact": true,
+      "hit": true
+    },
+    {
+      "company": "AI product company",
+      "title": "Machine Learning Engineer, LLM Applications",
+      "url": "",
+      "expected": "strong",
+      "predicted": "strong",
+      "overall": 89,
+      "exact": true,
+      "hit": true
+    },
+    {
+      "company": "research lab",
+      "title": "Research Scientist, ML Theory",
+      "url": "",
+      "expected": "stretch",
+      "predicted": "stretch",
+      "overall": 38,
+      "exact": true,
+      "hit": true
+    }
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "entries": [
+    {
+      "handle": "wjlgatech",
+      "name": "Paul Jialiang Wu — Portfolio Agent",
+      "url": "https://agentic-portfolio-lovat.vercel.app",
+      "cardUrl": "https://agentic-portfolio-lovat.vercel.app/.well-known/agent-card.json",
+      "a2aUrl": "https://agentic-portfolio-lovat.vercel.app/api/a2a",
+      "description": "Builds self-improving agentic operating systems, in the open. Ask its agent about his work, verify a claim against real evidence, or assess role fit — all grounded and honest.",
+      "skills": [
+        { "id": "ask_candidate", "name": "Ask about the candidate" },
+        { "id": "verify_claim", "name": "Verify a claim" },
+        { "id": "role_fit", "name": "Assess role fit" }
+      ],
+      "tags": ["agentic-os", "verification", "ai-ml", "portfolio", "a2a"],
+      "addedAt": "2026-06-29T00:00:00.000Z"
+    }
+  ]
+}
