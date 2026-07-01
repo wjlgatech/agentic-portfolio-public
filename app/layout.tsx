@@ -1,17 +1,17 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { StyleSwitcher } from "@/components/StyleSwitcher";
+import { MadeWith } from "@/components/MadeWith";
 import { getActiveInstance } from "@/content/instances";
 
 export const metadata: Metadata = {
-  title: "Paul Jialiang Wu — Agentic Portfolio",
+  title: "agentic-portfolio — your AI portfolio + a self-propelling network",
   description:
-    "AI/ML/DS Lead · Inventor · Investor · Creator. Self-improving agentic operating systems, built in the open. Ask the on-page agent anything.",
-  metadataBase: new URL("https://github.com/wjlgatech"),
+    "An open-source portfolio that is itself an agent, and joins a network of agent-portfolios. Make yours free in one click.",
+  metadataBase: new URL("https://github.com/wjlgatech/agentic-portfolio-public"),
   openGraph: {
-    title: "Paul Jialiang Wu — Agentic Portfolio",
-    description:
-      "Self-improving agentic operating systems, built in the open. An agentic portfolio powered by free LLMs.",
+    title: "agentic-portfolio — your AI portfolio + a self-propelling network",
+    description: "Make a free agentic portfolio in one click. It has its own AI agent and joins the network.",
     type: "website",
   },
 };
@@ -35,6 +35,11 @@ export default function RootLayout({
       <body>
         <StyleSwitcher />
         {children}
+        {/* Global brand-contact footer on EVERY page — max surface for the creator credit + the
+            viral CTAs (make your own · join the network · star the repo). */}
+        <footer className="mx-auto max-w-6xl px-5 pb-10">
+          <MadeWith />
+        </footer>
       </body>
     </html>
   );

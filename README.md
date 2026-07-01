@@ -22,6 +22,16 @@ card at `/.well-known/agent-card.json`, so agents (and people) can find and quer
 portfolio; set the `INSTANCE` env var and the *same code* renders a whole other business (a dentist, an
 agency, a learning center…) from a data pack.
 
+## ✨ Make yours in one click (no code)
+
+Not a developer? Go to **`/make`**: type your name + email, paste your résumé (and optional LinkedIn/X/FB/IG),
+click once — and you get a **live portfolio with its own AI agent**, hosted on the shared network at `/p/<you>`.
+No fork, no deploy. Recruiters can just *ask your agent* about you. (Hosting the shared `/make` needs an LLM key +
+a Postgres/Neon store on the deploy; without them it hands back a downloadable pack.)
+
+Every page carries a small credit to the creator and a *make-your-own / join-the-network* invite — open source
+and free, but each portfolio grows the network and the brand. That's the point.
+
 ## ⚡ Quick start
 
 ```bash
