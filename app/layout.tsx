@@ -22,6 +22,9 @@ export const metadata: Metadata = {
     description: "Make a free agentic portfolio in one click. It has its own AI agent and joins the network.",
     type: "website",
   },
+  // Every page's opengraph-image is auto-wired as twitter:image; make it unfurl LARGE by default.
+  // A page's own generateMetadata can override title/description (e.g. /p/<slug>).
+  twitter: { card: "summary_large_image" },
 };
 
 export default function RootLayout({
