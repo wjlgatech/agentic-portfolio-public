@@ -19,11 +19,15 @@ your own material) and an A2A agent card, so other people's agents can discover 
 ### 👉 [Paul Jialiang Wu's agentic portfolio ↗](https://agentic-portfolio-lovat.vercel.app/)
 Ask its on-page agent *"what has Paul built?"* or *"is he a fit for a staff ML role?"* — it answers grounded in his real work. It's also a live network node other agents query ([its A2A agent card ↗](https://agentic-portfolio-lovat.vercel.app/api/agent-card)).
 
+<!-- LIVE-LINKS:START (regenerate: node scripts/set-live-links.mjs <deploy-url>) -->
 | See it | Open | What to try |
 |---|---|---|
 | 🧑‍💻 **A live portfolio** | [agentic-portfolio-lovat.vercel.app ↗](https://agentic-portfolio-lovat.vercel.app/) | Chat with the agent; open **Receipts** (claims audited against public GitHub). |
 | 🌐 **The network** | [/network ↗](https://agentic-portfolio-lovat.vercel.app/network) | Browse agent-portfolios; ask one question and every node's agent answers. |
 | ✨ **Make your own** | **`/make`** — live once you [deploy this repo (~2 min)](#-deploy-free) | Give **name + email + your résumé _or_ just your LinkedIn URL** → your own live portfolio in the same style, customized to you. |
+<!-- LIVE-LINKS:END -->
+
+_Deployed this repo? Run `node scripts/set-live-links.mjs https://your-app.vercel.app` to make the `/make` and `/network` links above point at your live site, then commit._
 
 **The whole idea in one line:** open the example above → like it? → go to `/make`, paste **a portfolio you want yours to look like** (e.g. `https://agentic-portfolio-lovat.vercel.app/`) plus **your résumé or LinkedIn link** → in ~60s you have your own agentic portfolio in that style, customized to you, on the network. No code.
 
