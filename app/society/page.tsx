@@ -13,6 +13,21 @@ export default function Society() {
   const [busy, setBusy] = useState(false);
   const [res, setRes] = useState<{ ok?: boolean; message?: string; error?: string } | null>(null);
 
+  // TRUE standing — measured from your live portfolio, mapped to your leverage.
+  const [surl, setSurl] = useState("");
+  const [checking, setChecking] = useState(false);
+  type St = { overall: number; tier: string; leverage: number; byTenet: Record<string, number>; gaps: string[] };
+  const [st, setSt] = useState<{ standing?: St; error?: string } | null>(null);
+  async function checkStanding() {
+    if (!surl.trim()) return;
+    setChecking(true); setSt(null);
+    try {
+      const r = await fetch("/api/standing", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ url: surl.trim() }) });
+      setSt(await r.json());
+    } catch (e) { setSt({ error: (e as Error).message }); }
+    setChecking(false);
+  }
+
   async function apply() {
     setBusy(true); setRes(null);
     try {
@@ -53,6 +68,38 @@ export default function Society() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* ── TRUE standing — measured, not vibes ── */}
+      <section className="mt-12">
+        <h2 className="section-title">Your TRUE standing = your leverage</h2>
+        <p className="mt-1 text-sm text-muted">Standing is <em>computed from your live portfolio</em>, not asserted. It maps to your <strong className="text-ink">leverage</strong> — how much AI + trust you can mobilize to make a dream true in a fraction of the time. Passivity decays it.</p>
+        <div className="mt-4 flex flex-wrap items-center gap-2">
+          <input value={surl} onChange={(e) => setSurl(e.target.value)} onKeyDown={(e) => e.key === "Enter" && checkStanding()} placeholder="https://your-portfolio-url (make one at /make)" className="min-w-[16rem] flex-1 rounded-theme border border-edge bg-surface px-3 py-2 text-sm text-ink" />
+          <button onClick={checkStanding} disabled={checking} className="chip border-accent/50 text-accent disabled:opacity-50">{checking ? "Measuring…" : "Check my standing"}</button>
+        </div>
+        {st?.error && <p className="mt-2 text-sm text-red-500">{st.error}</p>}
+        {st?.standing && (
+          <div className="mt-4 card grid gap-4 sm:grid-cols-[auto_1fr] sm:items-center">
+            <div className="text-center">
+              <div className="text-4xl font-extrabold text-ink">{st.standing.leverage}×</div>
+              <div className="text-xs uppercase tracking-widest text-accent">leverage · {st.standing.tier}</div>
+              <div className="mt-1 text-xs text-muted">standing {st.standing.overall}/100</div>
+            </div>
+            <div className="grid gap-2">
+              <div className="flex flex-wrap gap-2 text-sm">
+                {Object.entries(st.standing.byTenet).map(([k, v]) => (
+                  <span key={k} className="chip border-edge text-muted"><span className="font-black text-accent">{k}</span> {v}</span>
+                ))}
+              </div>
+              {st.standing.gaps.length > 0 && (
+                <ul className="grid gap-1 text-sm text-muted">
+                  {st.standing.gaps.slice(0, 4).map((g, i) => <li key={i}><span className="text-accent">rise:</span> {g}</li>)}
+                </ul>
+              )}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* ── The creed / culture ── */}

@@ -99,6 +99,14 @@ Using this repo invites you to apply to a **selective builders' society** govern
 Experimentable* — for humans **and** their agents (skill / plugin / workflow / hook). Standing is *earned*
 from real artifacts, not granted; passivity forfeits it; every complaint becomes a 10X you own. See **`/society`**.
 
+**Your standing = your leverage.** On `/society`, paste your portfolio URL and *check your standing*: it's
+**measured, not claimed** — computed in code (`packages/core/src/society-types.ts`) from observed signals (is
+your portfolio live? does it expose an A2A agent card with skills? does it teach?) plus reputation-weighted
+vouches, with passivity decaying it automatically. The score maps to a **leverage multiplier (1×–10×)** — how
+much AI + trusted people you can mobilize to *make any dream true in a fraction of the time & effort, backed
+by people who trust you via the TRUE contract*. Rise a tier (applicant → member → steward → fellow) by
+shipping, teaching, and lifting others — the `gaps` tell you exactly what to build next.
+
 ## Contributing
 
 PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Good first issues: new `[data-theme]` brands, new
