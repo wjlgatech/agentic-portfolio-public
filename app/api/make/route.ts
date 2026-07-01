@@ -16,6 +16,7 @@ import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { kvConfigured, kvSetJSON } from "@/lib/storage";
 import { upsertEntry, cleanEntry } from "@/lib/registry";
 import { recordReferral } from "@/lib/referrals";
+import { fetchLinkedInPublic, isLinkedInProfileUrl } from "@/lib/linkedin-public";
 import { validateInstance, type InstanceConfig } from "@core/instance-types";
 
 export const runtime = "nodejs";
@@ -116,7 +117,21 @@ export async function POST(req: NextRequest) {
     const v = str(body[key], 200);
     if (/^https?:\/\//i.test(v)) links[k] = v;
   }
-  const resume = str(body.resume, 12000);
+  let resume = str(body.resume, 12000);
+
+  // 1-CLICK, NON-TECH: résumé OR LinkedIn is enough. If they gave no (real) résumé but a LinkedIn
+  // profile URL, pull its PUBLIC metadata (best-effort, may be IP-blocked) and ground on that.
+  let source: "resume" | "linkedin" | "thin" = resume.length >= 40 ? "resume" : "thin";
+  let thinNote = "";
+  if (resume.length < 40 && links.linkedin && isLinkedInProfileUrl(links.linkedin)) {
+    const li = await fetchLinkedInPublic(links.linkedin).catch(() => null);
+    if (li) { resume = li.resumeText; source = "linkedin"; }
+    else { thinNote = "We couldn't read your LinkedIn automatically (LinkedIn blocks server reads). Your portfolio is a starter — paste a few lines about yourself and re-make to enrich it."; }
+  }
+  // Require at least ONE grounding source (name+email alone is too thin for a real portfolio).
+  if (resume.length < 40 && !links.linkedin) {
+    return NextResponse.json({ error: "Add your résumé (paste a few lines) OR your LinkedIn profile URL — we need something to ground your portfolio in." }, { status: 400 });
+  }
   // Who invited them (their referrer's slug). Attribution flows from a shared portfolio's footer
   // link (?ref=<slug>) — a public handle, never a contact list. Sanitized to the slug charset.
   const ref = str(body.ref, 48).toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 48);
@@ -129,7 +144,7 @@ export async function POST(req: NextRequest) {
 
   if (!kvConfigured()) {
     // No shared store → hand back the pack to fork+deploy (the technical path).
-    return NextResponse.json({ hosted: false, slug, pack: config, note: "No shared host configured — download this pack, drop it in content/instances/, deploy, set INSTANCE=" + slug });
+    return NextResponse.json({ hosted: false, slug, source, note: thinNote || ("No shared host configured — download this pack, drop it in content/instances/, deploy, set INSTANCE=" + slug), pack: config });
   }
 
   const stored = await kvSetJSON(`portfolio:${slug}`, config);
@@ -146,5 +161,5 @@ export async function POST(req: NextRequest) {
   // rises). The invitee is `live` because they're now hosted + in the network.
   if (ref && ref !== slug && stored) await recordReferral(ref, slug, true).catch(() => {});
 
-  return NextResponse.json({ hosted: stored, url: hostedUrl, slug, tagline: config.entity.tagline, referredBy: ref || null });
+  return NextResponse.json({ hosted: stored, url: hostedUrl, slug, tagline: config.entity.tagline, source, note: thinNote || undefined, referredBy: ref || null });
 }

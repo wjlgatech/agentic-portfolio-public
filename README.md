@@ -24,10 +24,14 @@ agency, a learning center…) from a data pack.
 
 ## ✨ Make yours in one click (no code)
 
-Not a developer? Go to **`/make`**: type your name + email, paste your résumé (and optional LinkedIn/X/FB/IG),
-click once — and you get a **live portfolio with its own AI agent**, hosted on the shared network at `/p/<you>`.
-No fork, no deploy. Recruiters can just *ask your agent* about you. (Hosting the shared `/make` needs an LLM key +
-a Postgres/Neon store on the deploy; without them it hands back a downloadable pack.)
+Not a developer? Go to **`/make`**: type your name + email, and **either paste a few lines of your résumé OR
+give your LinkedIn profile URL** — click once, and you get a **live portfolio with its own AI agent**, hosted on
+the shared network at `/p/<you>`. No fork, no deploy. Recruiters can just *ask your agent* about you.
+
+> **LinkedIn auto-fill** reads only your **public** profile metadata (the same info Google sees — no login, we
+> never post as you). LinkedIn sometimes blocks server reads from datacenter IPs; if so, your portfolio is a
+> starter and you just paste a few lines to enrich it. Hosting the shared `/make` needs an LLM key + a Postgres/Neon
+> store on the deploy (see [Deploy](#-deploy-free)); without them it hands back a downloadable pack.
 
 Every page carries a small credit to the creator and a *make-your-own / join-the-network* invite — open source
 and free, but each portfolio grows the network and the brand. That's the point.
@@ -102,9 +106,17 @@ zero component edits. Live theme switcher included.
 ## 🚀 Deploy (free)
 
 1. Import your fork at [vercel.com/new](https://vercel.com/new).
-2. Add one free LLM key (e.g. `GROQ_API_KEY`). Optional: `PORTFOLIO_OWNER_TOKEN` to lock editing to you;
-   a Postgres/Neon store to make Network joins durable + shared.
+2. Set the environment variables below.
 3. Deploy. Then open `/network` and **Join** with your new URL.
+
+| Env var | Needed for | Notes |
+|---|---|---|
+| `GROQ_API_KEY` (or `GEMINI_API_KEY` / `OPENAI_API_KEY` / `NVIDIA_API_KEY`) | the chat agent **and** `/make` portfolio generation | at least one; free tiers work. Server-side only — never `NEXT_PUBLIC_*`. |
+| `POSTGRES_URL` (or `DATABASE_URL`) | durable + **shared** hosting: `/make` → `/p/<slug>`, the Network registry, TRUE standing, the referral tree | a free Neon/Vercel Postgres. Without it, `/make` hands back a downloadable pack instead of hosting. |
+| `NEXT_PUBLIC_SITE_URL` | share **thumbnails** unfurling on X/LinkedIn/Slack | your production URL, e.g. `https://your-app.vercel.app`. Falls back to Vercel's auto URL. |
+| `PORTFOLIO_OWNER_TOKEN` | locking edits/owner routes to you | optional but recommended. The real security boundary. |
+
+CLI alternative (after `vercel link`): `printf '%s' "<value>" | vercel env add GROQ_API_KEY production` (repeat per var), then `vercel --prod`.
 
 ## Architecture in one pass
 

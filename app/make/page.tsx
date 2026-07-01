@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { CREATOR, CREATOR_URL, REPO_URL } from "@/components/MadeWith";
 import { SharePanel } from "@/components/SharePanel";
 
-type Result = { url?: string; hosted?: boolean; slug?: string; pack?: unknown; note?: string; error?: string; tagline?: string; referredBy?: string | null };
+type Result = { url?: string; hosted?: boolean; slug?: string; pack?: unknown; note?: string; source?: "resume" | "linkedin" | "thin"; error?: string; tagline?: string; referredBy?: string | null };
 
 export default function Make() {
   const [f, setF] = useState({ name: "", email: "", linkedin: "", resume: "", x: "", fb: "", ig: "" });
@@ -24,6 +24,9 @@ export default function Make() {
 
   async function make() {
     if (!f.name.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email)) { setRes({ error: "Please add your name and a valid email." }); return; }
+    if (f.resume.trim().length < 40 && !/^https?:\/\/(www\.)?linkedin\.com\/in\//i.test(f.linkedin.trim())) {
+      setRes({ error: "Add your LinkedIn profile URL OR paste a few lines of your résumé — either one works." }); return;
+    }
     setBusy(true); setRes(null);
     try {
       const r = await fetch("/api/make", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...f, ref }) });
@@ -49,7 +52,8 @@ export default function Make() {
         <h1 className="text-3xl font-extrabold tracking-tight text-ink">✨ Your portfolio is ready!</h1>
         {live ? (
           <div className="mt-6 grid gap-4">
-            <p className="text-muted">It&apos;s live and already discoverable on the network — no code, no deploy.</p>
+            <p className="text-muted">It&apos;s live and already discoverable on the network — no code, no deploy.{res.source === "linkedin" ? " Built from your public LinkedIn." : ""}</p>
+            {res.note && <p className="rounded-theme border border-edge bg-surface p-3 text-sm text-muted">ℹ️ {res.note}</p>}
             <div className="card flex flex-wrap items-center gap-3 border-accent/30 bg-accent/5">
               <a href={live} target="_blank" rel="noreferrer" className="text-lg font-semibold text-accent hover:underline">{live}</a>
               <button onClick={() => { navigator.clipboard?.writeText(live); setCopied(true); setTimeout(() => setCopied(false), 1500); }} className="chip border-accent/50 text-accent">{copied ? "copied ✓" : "copy link"}</button>
@@ -79,16 +83,16 @@ export default function Make() {
     <main className="mx-auto max-w-2xl px-5 py-16">
       <h1 className="text-3xl font-extrabold tracking-tight text-ink">Make your agentic portfolio — free</h1>
       <p className="mt-3 text-muted">
-        Fill this in, click once, and you get a live portfolio with its own AI agent that answers questions about you —
-        grounded in what you paste, hosted on <a href="/network" className="text-accent hover:underline">the network</a>. No code. No cost.
+        Fill in your name, email, and <strong className="text-ink">either your LinkedIn URL or a few lines about yourself</strong> —
+        click once, and you get a live portfolio with its own AI agent, hosted on <a href="/network" className="text-accent hover:underline">the network</a>. No code. No cost.
       </p>
       <p className="mt-1 text-xs text-muted">Built on <a href={REPO_URL} target="_blank" rel="noreferrer" className="text-accent hover:underline">agentic-portfolio</a> by <a href={CREATOR_URL} target="_blank" rel="noreferrer" className="text-ink hover:text-accent">{CREATOR}</a>.</p>
 
       <div className="mt-8 grid gap-5">
         <Field label="Your name *" k="name" ph="Jane Doe" />
         <Field label="Email *" k="email" ph="jane@example.com" hint="Used only to key your portfolio (re-run to update it). Not shown publicly." />
-        <Field label="LinkedIn profile" k="linkedin" ph="https://www.linkedin.com/in/…" hint="We link to it (we don't log in on your behalf)." />
-        <Field label="Your résumé / about you *" k="resume" ph="Paste your résumé or a few paragraphs about your work, skills, and highlights…" hint="This is what your agent is grounded in — the more real detail, the better." textarea />
+        <Field label="LinkedIn profile — or paste your résumé below" k="linkedin" ph="https://www.linkedin.com/in/…" hint="We auto-fill from your PUBLIC profile (best-effort — no login, we never post as you). If LinkedIn blocks it, just paste a few lines below." />
+        <Field label="Your résumé / about you" k="resume" ph="Optional if you gave LinkedIn above. Paste your résumé or a few paragraphs about your work, skills, and highlights…" hint="The more real detail here, the richer your agent. Either this OR LinkedIn is enough to start." textarea />
         <details className="text-sm">
           <summary className="cursor-pointer text-accent">+ optional social links</summary>
           <div className="mt-3 grid gap-3">
