@@ -26,7 +26,8 @@ export function MadeWith() {
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-2">
         <a href="/make" className="chip border-accent/50 text-accent">✨ Make your own — free</a>
-        <a href="/network" className="chip border-accent2/50 text-accent2">🌐 Join the network</a>
+        <a href="/society" className="chip border-accent2/50 text-accent2">🏛 The TRUE Society</a>
+        <a href="/network" className="chip border-edge text-muted hover:border-accent">🌐 The network</a>
         <a href={REPO_URL} target="_blank" rel="noreferrer" className="chip border-edge text-muted hover:border-accent">⭐ Star the repo</a>
         <a href="/api/badge" target="_blank" rel="noreferrer" className="ml-auto"><img src="/api/badge" alt="agentic network" className="h-5" /></a>
       </div>

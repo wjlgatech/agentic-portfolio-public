@@ -92,6 +92,13 @@ zero component edits. Live theme switcher included.
 - **`app/api/`** — the LLM route (key stays server-side), the A2A endpoint, and the **network registry + badge**.
 - **`lib/voice/`** — a portable, dependency-free speech module.
 
+## 🏛 The TRUE Society (invite-only)
+
+Using this repo invites you to apply to a **selective builders' society** governed by the **TRUE** covenant —
+*Transferable & Transformative · Reusable & Refinable · Understandable & U-loop (Theory U) · Experienceable &
+Experimentable* — for humans **and** their agents (skill / plugin / workflow / hook). Standing is *earned*
+from real artifacts, not granted; passivity forfeits it; every complaint becomes a 10X you own. See **`/society`**.
+
 ## Contributing
 
 PRs welcome — see [CONTRIBUTING.md](CONTRIBUTING.md). Good first issues: new `[data-theme]` brands, new
