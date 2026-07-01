@@ -9,6 +9,23 @@ import { SharePanel } from "@/components/SharePanel";
 
 type Result = { url?: string; hosted?: boolean; slug?: string; pack?: unknown; note?: string; source?: "resume" | "linkedin" | "thin"; error?: string; tagline?: string; ownerUrl?: string; referredBy?: string | null };
 
+// MODULE-SCOPE (stable identity). Defining this INSIDE Make() remounts the input on every
+// keystroke → focus is lost after each character. Keep it out here; pass value + onChange.
+function Field({ label, value, onChange, ph, hint, textarea }: {
+  label: string; value: string; ph: string; hint?: string; textarea?: boolean;
+  onChange: (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
+}) {
+  return (
+    <label className="grid gap-1">
+      <span className="text-sm font-medium text-ink">{label}</span>
+      {textarea
+        ? <textarea value={value} onChange={onChange} rows={6} placeholder={ph} className="rounded-theme border border-edge bg-surface p-3 text-sm text-ink" />
+        : <input value={value} onChange={onChange} placeholder={ph} className="rounded-theme border border-edge bg-surface px-3 py-2 text-sm text-ink" />}
+      {hint && <span className="text-xs text-muted">{hint}</span>}
+    </label>
+  );
+}
+
 export default function Make() {
   const [f, setF] = useState({ name: "", email: "", linkedin: "", resume: "", x: "", fb: "", ig: "", github: "", youtube: "" });
   const [busy, setBusy] = useState(false);
@@ -37,16 +54,6 @@ export default function Make() {
     } catch (e) { setRes({ error: (e as Error).message }); }
     setBusy(false);
   }
-
-  const Field = ({ label, k, ph, hint, textarea }: { label: string; k: keyof typeof f; ph: string; hint?: string; textarea?: boolean }) => (
-    <label className="grid gap-1">
-      <span className="text-sm font-medium text-ink">{label}</span>
-      {textarea
-        ? <textarea value={f[k]} onChange={set(k)} rows={6} placeholder={ph} className="rounded-theme border border-edge bg-surface p-3 text-sm text-ink" />
-        : <input value={f[k]} onChange={set(k)} placeholder={ph} className="rounded-theme border border-edge bg-surface px-3 py-2 text-sm text-ink" />}
-      {hint && <span className="text-xs text-muted">{hint}</span>}
-    </label>
-  );
 
   if (res?.url || (res && res.hosted === false)) {
     const live = res.url;
@@ -115,18 +122,18 @@ export default function Make() {
       </div>
 
       <div className="mt-6 grid gap-5">
-        <Field label="Your name *" k="name" ph="Jane Doe" />
-        <Field label="Email *" k="email" ph="jane@example.com" hint="Used only to key your portfolio (re-run to update it). Not shown publicly." />
-        <Field label="LinkedIn profile — or paste your résumé below" k="linkedin" ph="https://www.linkedin.com/in/…" hint="We auto-fill from your PUBLIC profile (best-effort — no login, we never post as you). If LinkedIn blocks it, just paste a few lines below." />
-        <Field label="Your résumé / about you" k="resume" ph="Optional if you gave LinkedIn above. Paste your résumé or a few paragraphs about your work, skills, and highlights…" hint="The more real detail here, the richer your agent. Either this OR LinkedIn is enough to start." textarea />
+        <Field label="Your name *" value={f.name} onChange={set("name")} ph="Jane Doe" />
+        <Field label="Email *" value={f.email} onChange={set("email")} ph="jane@example.com" hint="Used only to key your portfolio (re-run to update it). Not shown publicly." />
+        <Field label="LinkedIn profile — or paste your résumé below" value={f.linkedin} onChange={set("linkedin")} ph="https://www.linkedin.com/in/…" hint="We auto-fill from your PUBLIC profile (best-effort — no login, we never post as you). If LinkedIn blocks it, just paste a few lines below." />
+        <Field label="Your résumé / about you" value={f.resume} onChange={set("resume")} ph="Optional if you gave LinkedIn above. Paste your résumé or a few paragraphs about your work, skills, and highlights…" hint="The more real detail here, the richer your agent. Either this OR LinkedIn is enough to start." textarea />
         <details className="text-sm" open>
           <summary className="cursor-pointer text-accent">+ links to keep your portfolio auto-fresh</summary>
           <div className="mt-3 grid gap-3">
-            <Field label="GitHub" k="github" ph="https://github.com/yourname" hint="Your recent repos sync in automatically." />
-            <Field label="YouTube channel" k="youtube" ph="https://youtube.com/@yourchannel" hint="Your latest videos sync in (public RSS, no login)." />
-            <Field label="X / Twitter" k="x" ph="https://x.com/…" hint="Linked only — X can't be auto-synced (paid/login)." />
-            <Field label="Facebook" k="fb" ph="https://facebook.com/…" />
-            <Field label="Instagram" k="ig" ph="https://instagram.com/…" />
+            <Field label="GitHub" value={f.github} onChange={set("github")} ph="https://github.com/yourname" hint="Your recent repos sync in automatically." />
+            <Field label="YouTube channel" value={f.youtube} onChange={set("youtube")} ph="https://youtube.com/@yourchannel" hint="Your latest videos sync in (public RSS, no login)." />
+            <Field label="X / Twitter" value={f.x} onChange={set("x")} ph="https://x.com/…" hint="Linked only — X can't be auto-synced (paid/login)." />
+            <Field label="Facebook" value={f.fb} onChange={set("fb")} ph="https://facebook.com/…" />
+            <Field label="Instagram" value={f.ig} onChange={set("ig")} ph="https://instagram.com/…" />
           </div>
           <p className="mt-2 text-xs text-muted">GitHub + YouTube <strong className="text-ink">auto-sync</strong> to keep your portfolio current (1-click or on a schedule). LinkedIn &amp; X can&apos;t be pulled server-side — you add those in your browser.</p>
         </details>

@@ -113,6 +113,12 @@ So: `Agentize` is the meta-template ("one core, any business"); `agentic` only e
 
 - **No IP leakage.** Private projects (`"private": true`) must keep `url: null` and a
   high-level highlight only — never add internal architecture, file paths, or links.
+- **Never define a React component inside another component.** A `const Field = (...) => …` (or
+  `function`) declared inside a `"use client"` component gets a NEW identity every render, so React
+  remounts its subtree — **a form input loses focus after every keystroke** (you can only type one
+  character at a time). Hoist components to module scope; pass `value`/`onChange` as props. **Validate
+  forms with REAL typing** (`npm run test:e2e` → Playwright `pressSequentially`), never just curl/SSR —
+  server checks cannot catch focus loss. (Caught only after shipping because verification was API-only.)
 - **Viral growth is user-initiated + privacy-first — never harvest contacts.** Growth is the
   *artifact as invite* (a `?ref=<slug>` link on the user's own portfolio + `SharePanel` share
   intents the **user** clicks). Do **not** add LinkedIn-connection / Gmail-contact / Facebook-friend
