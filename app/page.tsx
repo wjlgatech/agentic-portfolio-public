@@ -1,5 +1,6 @@
 import { CopilotProvider } from "@/components/Copilot";
 import { Portfolio } from "@/components/Portfolio";
+import { MakerLanding } from "@/components/MakerLanding";
 import { InstanceSite } from "@/components/InstanceSite";
 import { InstanceAgentActions } from "@/components/InstanceAgentActions";
 import { getActiveInstance } from "@/content/instances";
@@ -30,6 +31,11 @@ const projects = projectsData as Project[];
 // Per-instance <title>/OG so a non-portfolio deploy isn't titled "Paul Jialiang Wu".
 // Returning {} for the portfolio inherits the layout default (portfolio unchanged).
 export async function generateMetadata() {
+  if (process.env.MAKER_HOME) {
+    const title = "Make your own agentic portfolio — free, in 60 seconds";
+    const description = "A live portfolio with its own AI agent that answers about you 24/7. Enter your basics, click once. No code.";
+    return { title, description, openGraph: { title, description } };
+  }
   const inst = getActiveInstance();
   if (inst.slug === "portfolio") return {};
   const title = `${inst.entity.name} — ${inst.entity.tagline}`;
@@ -38,6 +44,11 @@ export async function generateMetadata() {
 }
 
 export default async function Home() {
+  // The HOSTED MAKER deploy sets MAKER_HOME → `/` is the maker front door (make-your-own), NOT a
+  // personal portfolio. A forker who deploys the template as THEIR site leaves it unset and gets
+  // the personal portfolio below. (Keeps this repo dual-purpose: a template AND the maker service.)
+  if (process.env.MAKER_HOME) return <MakerLanding />;
+
   // Agentize: a non-portfolio INSTANCE renders the generic visual site straight
   // from its InstanceConfig (hero + content), with its OWN grounded agent. The portfolio
   // (default) keeps its full, agent-editable site below — this branch leaves it untouched.

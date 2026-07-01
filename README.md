@@ -2,20 +2,26 @@
 
 # 🌐 agentic-portfolio
 
-### An open-source portfolio that is *itself an agent* — and joins a self-propelling network of other agent-portfolios.
+### Make your own AI-agent portfolio in 60 seconds — free, no code.
 
-**Fork it. Fill in your content. Deploy for $0. Your site now has an on-page AI agent (grounded in
-your own material) and an A2A agent card, so other people's agents can discover and query yours.**
+## 🚀 [**→ Create yours now: agentic-portfolio-public.vercel.app**](https://agentic-portfolio-public.vercel.app/)
 
-[See it live](#-see-it-live--then-make-your-own) · [Quick start](#-quick-start) · [The Network](#-the-network-the-reason-to-join) · [Make it yours](#-make-it-yours) · [Deploy](#-deploy-free) · [Contributing](CONTRIBUTING.md) · MIT
+**Non-technical?** Just enter your name, email, and a few lines of your résumé (or your LinkedIn URL),
+click once — and you get a **live portfolio with its own AI agent** that answers questions about you,
+24/7. Hosted for you. Nothing to install.
+**A developer?** Fork it, fill in `content/`, deploy for $0 — same agent + an A2A card so other agents can query yours.
+
+[Make your own](https://agentic-portfolio-public.vercel.app/) · [See an example](#-see-it-live) · [The Network](#-the-network-the-reason-to-join) · [Quick start (devs)](#-quick-start) · [Deploy](#-deploy-free) · MIT
 
 </div>
 
 ---
 
-## ▶ See it live — then make your own
+## ▶ See it live
 
-**A real, interactive example — open it and chat with the agent:**
+**The maker (make your own in one click):** 👉 **[agentic-portfolio-public.vercel.app](https://agentic-portfolio-public.vercel.app/)**
+
+**A real portfolio it produced — open it and chat with the agent:**
 ### 👉 [Paul Jialiang Wu's agentic portfolio ↗](https://agentic-portfolio-lovat.vercel.app/)
 Ask its on-page agent *"what has Paul built?"* or *"is he a fit for a staff ML role?"* — it answers grounded in his real work. It's also a live network node other agents query ([its A2A agent card ↗](https://agentic-portfolio-lovat.vercel.app/api/agent-card)).
 

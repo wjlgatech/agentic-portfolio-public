@@ -1,48 +1,31 @@
 # This file is edited by the on-page agent (and by hand). It controls the
 # section order, visibility, labels, theme, and articles of the portfolio.
 # See lib/portfolio.ts for the schema.
+#
+# TEMPLATE DEFAULT — replace the placeholders below with your own content
+# (or, easier: make your portfolio at /make and it fills this in for you).
 
 theme: anthropic
 sections:
   - id: practices
-    title: 12X Future Practices
-    eyebrow: How I compound
+    title: How I Work
+    eyebrow: My principles
     visible: true
   - id: projects
     title: Projects
-    eyebrow: Built in the open (last 12 months)
+    eyebrow: What I've built
     visible: true
   - id: writing
     title: Writing
-    eyebrow: Long-form on LinkedIn
+    eyebrow: Things I've written
     visible: true
   - id: values
-    title: Values & Love
+    title: Values
     eyebrow: The why under the work
     visible: true
 articles:
-  - title: The Fastest-Growing Job in AI Has No School — So I'm Building One That Learns From Its Own Mistakes
-    url: https://www.linkedin.com/pulse/fastest-growing-job-ai-has-school-so-im-building-one-learns-wu-phd-uoasc/
+  - title: "Example article — replace me"
+    url: https://example.com/your-article
     date: ""
-    category: Future of Work
-    summary: Forward-Deployed Engineers bridge AI models and real-world operations by embedding with customers — turning local fixes into reusable product capabilities.
-  - title: Language Is Becoming Infrastructure. But Trust Requires Formal Semantics.
-    url: https://www.linkedin.com/pulse/language-becoming-infrastructure-trust-requires-formal-wu-phd-qfykc/
-    date: ""
-    category: Agentic AI
-    summary: As natural language starts controlling real systems, prompts alone can't guarantee trust — formal semantics (logic, ontologies, verification) are the missing dependable layer.
-  - title: A Confident Experiment for Anxious Parents in the Age of AI
-    url: https://www.linkedin.com/pulse/im-raising-my-sons-chase-billions-paul-jialiang-wu-phd-esy4c/
-    date: ""
-    category: Family & Faith
-    summary: "An open-source family learning framework: raise kids into capable builders and ethical thinkers through real ventures, hard questions, and AI-assisted work grounded in character."
-  - title: The Tongue Is Not a Magic Wand. It Is a Steering Wheel, a Thermostat, and Occasionally a Flamethrower.
-    url: https://www.linkedin.com/pulse/tongue-magic-wand-steering-wheel-thermostat-paul-jialiang-wu-phd-bbswc/
-    date: ""
-    category: AI for Good · Faith
-    summary: Words steer attention, emotion, and behavior far more than we admit — calling for sanctified speech grounded in both biblical wisdom and psychological evidence.
-  - title: 舌头不是魔杖，它更像方向盘、恒温器——有时候，还是一把带 Wi-Fi 的喷火器
-    url: https://www.linkedin.com/pulse/%E8%88%8C%E5%A4%B4%E4%B8%8D%E6%98%AF%E9%AD%94%E6%9D%96-%E5%AE%83%E6%9B%B4%E5%83%8F%E6%96%B9%E5%90%91%E7%9B%98%E6%81%92%E6%B8%A9%E5%99%A8%E6%9C%89%E6%97%B6%E5%80%99%E8%BF%98%E6%98%AF%E4%B8%80%E6%8A%8A%E5%B8%A6-wi-fi-%E7%9A%84%E5%96%B7%E7%81%AB%E5%99%A8-paul-jialiang-wu-phd-gkj1c/
-    date: ""
-    category: AI for Good · Faith
-    summary: 中文版：我们的言语塑造注意力、情绪、关系与结果——它影响信念与行为，而非像魔法般直接控制现实。
+    category: Writing
+    summary: A short summary of something you wrote. Add your own articles here, or ask the on-page agent to import them.
