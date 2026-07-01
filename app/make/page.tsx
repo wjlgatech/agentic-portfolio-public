@@ -15,11 +15,14 @@ export default function Make() {
   const [res, setRes] = useState<Result | null>(null);
   const [copied, setCopied] = useState(false);
   const [ref, setRef] = useState(""); // who invited you (?ref=<slug>) — public handle, never a contact list
+  const [example, setExample] = useState(CREATOR_URL); // a portfolio you want yours to look like (a style reference)
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF({ ...f, [k]: e.target.value });
 
   useEffect(() => {
-    const r = new URLSearchParams(window.location.search).get("ref") || "";
-    setRef(r.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 48));
+    const q = new URLSearchParams(window.location.search);
+    setRef((q.get("ref") || "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 48));
+    const ex = (q.get("example") || "").trim();
+    if (/^https?:\/\//i.test(ex)) setExample(ex.slice(0, 200)); // an example portfolio to model yours on
   }, []);
 
   async function make() {
@@ -98,7 +101,20 @@ export default function Make() {
       </p>
       <p className="mt-1 text-xs text-muted">Built on <a href={REPO_URL} target="_blank" rel="noreferrer" className="text-accent hover:underline">agentic-portfolio</a> by <a href={CREATOR_URL} target="_blank" rel="noreferrer" className="text-ink hover:text-accent">{CREATOR}</a>.</p>
 
-      <div className="mt-8 grid gap-5">
+      {/* Model yours on an example — a live portfolio you like. It's a style reference: your CONTENT
+          comes from your résumé/LinkedIn below; every portfolio here shares this structure. */}
+      <div className="mt-6 card border-accent/30 bg-accent/5">
+        <label className="grid gap-1">
+          <span className="text-sm font-medium text-ink">✨ Make one like this example</span>
+          <div className="flex flex-wrap items-center gap-2">
+            <input value={example} onChange={(e) => setExample(e.target.value)} placeholder="https://a-portfolio-you-like" className="min-w-[14rem] flex-1 rounded-theme border border-edge bg-surface px-3 py-2 text-sm text-ink" />
+            {/^https?:\/\//i.test(example) && <a href={example} target="_blank" rel="noreferrer" className="chip border-accent/50 text-accent">open example ↗</a>}
+          </div>
+          <span className="text-xs text-muted">Open it to see the style you&apos;ll get. Yours will look like this, <strong className="text-ink">customized to your résumé or LinkedIn</strong> below — every portfolio here shares this structure.</span>
+        </label>
+      </div>
+
+      <div className="mt-6 grid gap-5">
         <Field label="Your name *" k="name" ph="Jane Doe" />
         <Field label="Email *" k="email" ph="jane@example.com" hint="Used only to key your portfolio (re-run to update it). Not shown publicly." />
         <Field label="LinkedIn profile — or paste your résumé below" k="linkedin" ph="https://www.linkedin.com/in/…" hint="We auto-fill from your PUBLIC profile (best-effort — no login, we never post as you). If LinkedIn blocks it, just paste a few lines below." />

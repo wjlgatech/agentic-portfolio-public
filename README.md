@@ -7,9 +7,25 @@
 **Fork it. Fill in your content. Deploy for $0. Your site now has an on-page AI agent (grounded in
 your own material) and an A2A agent card, so other people's agents can discover and query yours.**
 
-[Quick start](#-quick-start) · [The Network](#-the-network-the-reason-to-join) · [Make it yours](#-make-it-yours) · [Deploy](#-deploy-free) · [Contributing](CONTRIBUTING.md) · MIT
+[See it live](#-see-it-live--then-make-your-own) · [Quick start](#-quick-start) · [The Network](#-the-network-the-reason-to-join) · [Make it yours](#-make-it-yours) · [Deploy](#-deploy-free) · [Contributing](CONTRIBUTING.md) · MIT
 
 </div>
+
+---
+
+## ▶ See it live — then make your own
+
+**A real, interactive example — open it and chat with the agent:**
+### 👉 [Paul Jialiang Wu's agentic portfolio ↗](https://agentic-portfolio-lovat.vercel.app/)
+Ask its on-page agent *"what has Paul built?"* or *"is he a fit for a staff ML role?"* — it answers grounded in his real work. It's also a live network node other agents query ([its A2A agent card ↗](https://agentic-portfolio-lovat.vercel.app/api/agent-card)).
+
+| See it | Open | What to try |
+|---|---|---|
+| 🧑‍💻 **A live portfolio** | [agentic-portfolio-lovat.vercel.app ↗](https://agentic-portfolio-lovat.vercel.app/) | Chat with the agent; open **Receipts** (claims audited against public GitHub). |
+| 🌐 **The network** | [/network ↗](https://agentic-portfolio-lovat.vercel.app/network) | Browse agent-portfolios; ask one question and every node's agent answers. |
+| ✨ **Make your own** | **`/make`** — live once you [deploy this repo (~2 min)](#-deploy-free) | Give **name + email + your résumé _or_ just your LinkedIn URL** → your own live portfolio in the same style, customized to you. |
+
+**The whole idea in one line:** open the example above → like it? → go to `/make`, paste **a portfolio you want yours to look like** (e.g. `https://agentic-portfolio-lovat.vercel.app/`) plus **your résumé or LinkedIn link** → in ~60s you have your own agentic portfolio in that style, customized to you, on the network. No code.
 
 ---
 
