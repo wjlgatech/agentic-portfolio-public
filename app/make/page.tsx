@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { CREATOR, CREATOR_URL, REPO_URL } from "@/components/MadeWith";
 import { SharePanel } from "@/components/SharePanel";
 
-type Result = { url?: string; hosted?: boolean; slug?: string; pack?: unknown; note?: string; error?: string; referredBy?: string | null };
+type Result = { url?: string; hosted?: boolean; slug?: string; pack?: unknown; note?: string; error?: string; tagline?: string; referredBy?: string | null };
 
 export default function Make() {
   const [f, setF] = useState({ name: "", email: "", linkedin: "", resume: "", x: "", fb: "", ig: "" });
@@ -58,8 +58,8 @@ export default function Make() {
             <p className="text-sm text-muted">Put it in your bio, or <a href="/network" className="text-accent hover:underline">browse the network</a> you just joined. It has its own AI agent — recruiters can just ask it about you.</p>
             <div className="card border-accent2/30 bg-accent2/5">
               <p className="text-sm font-semibold text-ink">Now grow your network — share it 👇</p>
-              <p className="mt-1 text-xs text-muted">Every person who makes their own from your portfolio lifts your TRUE standing. This is how 1 becomes 2 becomes 4 — without ever touching anyone&apos;s contacts.</p>
-              <SharePanel url={live} className="mt-3" />
+              <p className="mt-1 text-xs text-muted">Grab your thumbnail + a ready-made caption, and post in one click. Every person who makes their own from your portfolio lifts your TRUE standing — this is how 1 becomes 2 becomes 4, without ever touching anyone&apos;s contacts.</p>
+              <SharePanel url={live} name={f.name} tagline={res.tagline || ""} className="mt-3" />
             </div>
             {res?.referredBy && <p className="text-xs text-muted">You were invited by <span className="text-ink">{res.referredBy}</span> — you just lifted their standing. Pay it forward. 🌱</p>}
           </div>

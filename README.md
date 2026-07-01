@@ -68,8 +68,14 @@ We grow **virally without ever touching your contacts.** No LinkedIn/Gmail/Faceb
 no OAuth into your connections, no bulk-spam. Instead:
 
 - **The artifact is the invite.** Every hosted portfolio's footer carries a personal `?ref=<you>` link,
-  and a **share panel** (LinkedIn / X / email / copy — *you* click, on *your* feed) lets you broadcast
-  **your own** portfolio. Recipients choose to make theirs.
+  and a **Share Studio** lets you broadcast **your own** portfolio — *you* click, on *your* feed.
+- **An amazing thumbnail, automatically.** Each portfolio gets a dynamic branded card
+  (`/p/<slug>/opengraph-image`, 1200×630) built from your name + tagline. Paste your link anywhere
+  (X, LinkedIn, Slack, Discord) and it **unfurls the card with zero work** — or download it for
+  YouTube/Instagram.
+- **1-paste captions.** Ready-made, per-platform copy (X ≤280, LinkedIn long-form, YouTube description,
+  Instagram caption) with a copy button each, plus **1-click post** intents for X/LinkedIn/Facebook/Bluesky.
+  Honest where a platform takes no link post (YouTube/IG): download the image, paste the caption.
 - **Referrals are earned, not sprayed.** When someone you invited actually **ships a live portfolio**,
   *your* [TRUE standing](#-the-true-society-invite-only) rises — credit flows only on a real result,
   never for sending an invite.

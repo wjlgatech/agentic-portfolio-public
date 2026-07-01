@@ -4,11 +4,19 @@ import { StyleSwitcher } from "@/components/StyleSwitcher";
 import { MadeWith } from "@/components/MadeWith";
 import { getActiveInstance } from "@/content/instances";
 
+// The deploy's own origin — so og:image / twitter:image (the share thumbnails) resolve to ABSOLUTE
+// URLs external unfurlers can fetch. Prefer an explicit site URL, then Vercel's, then a safe default.
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ||
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL && `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`) ||
+  (process.env.VERCEL_URL && `https://${process.env.VERCEL_URL}`) ||
+  "http://localhost:3000";
+
 export const metadata: Metadata = {
   title: "agentic-portfolio — your AI portfolio + a self-propelling network",
   description:
     "An open-source portfolio that is itself an agent, and joins a network of agent-portfolios. Make yours free in one click.",
-  metadataBase: new URL("https://github.com/wjlgatech/agentic-portfolio-public"),
+  metadataBase: new URL(SITE_URL),
   openGraph: {
     title: "agentic-portfolio — your AI portfolio + a self-propelling network",
     description: "Make a free agentic portfolio in one click. It has its own AI agent and joins the network.",

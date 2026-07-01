@@ -146,5 +146,5 @@ export async function POST(req: NextRequest) {
   // rises). The invitee is `live` because they're now hosted + in the network.
   if (ref && ref !== slug && stored) await recordReferral(ref, slug, true).catch(() => {});
 
-  return NextResponse.json({ hosted: stored, url: hostedUrl, slug, referredBy: ref || null });
+  return NextResponse.json({ hosted: stored, url: hostedUrl, slug, tagline: config.entity.tagline, referredBy: ref || null });
 }

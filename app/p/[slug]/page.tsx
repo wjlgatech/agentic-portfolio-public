@@ -26,7 +26,15 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const c = await load(slug);
   if (!c) return { title: "Portfolio not found" };
   const title = `${c.entity.name} — ${c.entity.tagline}`;
-  return { title, description: c.entity.blurb || c.entity.tagline, openGraph: { title } };
+  const description = c.entity.blurb || c.entity.tagline;
+  // og:image / twitter:image are auto-wired from opengraph-image.tsx; force the LARGE card so the
+  // thumbnail unfurls big on X/LinkedIn/Slack/Discord.
+  return {
+    title,
+    description,
+    openGraph: { title, description, type: "profile" },
+    twitter: { card: "summary_large_image", title, description },
+  };
 }
 
 export default async function HostedPortfolio({ params }: { params: Promise<{ slug: string }> }) {
