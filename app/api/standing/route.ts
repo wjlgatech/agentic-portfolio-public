@@ -16,7 +16,11 @@ const UA = "agentic-portfolio TRUE-standing (reads public agent cards)";
 
 function handleFor(url: string): string {
   try {
-    const h = new URL(url).hostname.replace(/^www\./, "");
+    const u = new URL(url);
+    // A hosted portfolio (/p/<slug>) IS its slug — the stable identity referrals/vouches key off.
+    const p = u.pathname.match(/^\/p\/([a-z0-9-]{1,48})/i);
+    if (p) return p[1].toLowerCase();
+    const h = u.hostname.replace(/^www\./, "");
     return h.replace(/[^a-z0-9]+/gi, "-").toLowerCase().slice(0, 48) || "node";
   } catch {
     return "node";

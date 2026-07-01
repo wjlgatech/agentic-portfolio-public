@@ -3,23 +3,30 @@
 // /make — the non-technical Portfolio Maker. Fill a short form → 1 click → your agentic portfolio
 // is live (hosted on the shared network, no code, no deploy). Friendly, low-pressure, honest.
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CREATOR, CREATOR_URL, REPO_URL } from "@/components/MadeWith";
+import { SharePanel } from "@/components/SharePanel";
 
-type Result = { url?: string; hosted?: boolean; slug?: string; pack?: unknown; note?: string; error?: string };
+type Result = { url?: string; hosted?: boolean; slug?: string; pack?: unknown; note?: string; error?: string; referredBy?: string | null };
 
 export default function Make() {
   const [f, setF] = useState({ name: "", email: "", linkedin: "", resume: "", x: "", fb: "", ig: "" });
   const [busy, setBusy] = useState(false);
   const [res, setRes] = useState<Result | null>(null);
   const [copied, setCopied] = useState(false);
+  const [ref, setRef] = useState(""); // who invited you (?ref=<slug>) — public handle, never a contact list
   const set = (k: keyof typeof f) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => setF({ ...f, [k]: e.target.value });
+
+  useEffect(() => {
+    const r = new URLSearchParams(window.location.search).get("ref") || "";
+    setRef(r.toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 48));
+  }, []);
 
   async function make() {
     if (!f.name.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email)) { setRes({ error: "Please add your name and a valid email." }); return; }
     setBusy(true); setRes(null);
     try {
-      const r = await fetch("/api/make", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(f) });
+      const r = await fetch("/api/make", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...f, ref }) });
       setRes(await r.json());
     } catch (e) { setRes({ error: (e as Error).message }); }
     setBusy(false);
@@ -48,7 +55,13 @@ export default function Make() {
               <button onClick={() => { navigator.clipboard?.writeText(live); setCopied(true); setTimeout(() => setCopied(false), 1500); }} className="chip border-accent/50 text-accent">{copied ? "copied ✓" : "copy link"}</button>
               <a href={live} target="_blank" rel="noreferrer" className="chip border-accent2/50 text-accent2">open it →</a>
             </div>
-            <p className="text-sm text-muted">Share it, put it in your bio, or <a href="/network" className="text-accent hover:underline">browse the network</a> you just joined. It has its own AI agent — recruiters can just ask it about you.</p>
+            <p className="text-sm text-muted">Put it in your bio, or <a href="/network" className="text-accent hover:underline">browse the network</a> you just joined. It has its own AI agent — recruiters can just ask it about you.</p>
+            <div className="card border-accent2/30 bg-accent2/5">
+              <p className="text-sm font-semibold text-ink">Now grow your network — share it 👇</p>
+              <p className="mt-1 text-xs text-muted">Every person who makes their own from your portfolio lifts your TRUE standing. This is how 1 becomes 2 becomes 4 — without ever touching anyone&apos;s contacts.</p>
+              <SharePanel url={live} className="mt-3" />
+            </div>
+            {res?.referredBy && <p className="text-xs text-muted">You were invited by <span className="text-ink">{res.referredBy}</span> — you just lifted their standing. Pay it forward. 🌱</p>}
           </div>
         ) : (
           <div className="mt-6 grid gap-3">

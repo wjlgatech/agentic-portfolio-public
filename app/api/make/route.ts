@@ -15,6 +15,7 @@ import { resolveLlm } from "@/lib/llm";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { kvConfigured, kvSetJSON } from "@/lib/storage";
 import { upsertEntry, cleanEntry } from "@/lib/registry";
+import { recordReferral } from "@/lib/referrals";
 import { validateInstance, type InstanceConfig } from "@core/instance-types";
 
 export const runtime = "nodejs";
@@ -116,6 +117,9 @@ export async function POST(req: NextRequest) {
     if (/^https?:\/\//i.test(v)) links[k] = v;
   }
   const resume = str(body.resume, 12000);
+  // Who invited them (their referrer's slug). Attribution flows from a shared portfolio's footer
+  // link (?ref=<slug>) — a public handle, never a contact list. Sanitized to the slug charset.
+  const ref = str(body.ref, 48).toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 48);
 
   const slug = slugFor(name, email);
   const config = buildInstance(name, slug, links, await generate(resume, name));
@@ -138,5 +142,9 @@ export async function POST(req: NextRequest) {
   });
   if (entry) await upsertEntry(entry).catch(() => {});
 
-  return NextResponse.json({ hosted: stored, url: hostedUrl, slug });
+  // Viral attribution: a LIVE portfolio shipped via an invite credits the referrer (their standing
+  // rises). The invitee is `live` because they're now hosted + in the network.
+  if (ref && ref !== slug && stored) await recordReferral(ref, slug, true).catch(() => {});
+
+  return NextResponse.json({ hosted: stored, url: hostedUrl, slug, referredBy: ref || null });
 }

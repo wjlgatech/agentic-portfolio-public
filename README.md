@@ -62,6 +62,22 @@ A directory is linear; a **network** is superlinear — the value to each node r
 **Come for the tool (a great $0 agentic portfolio), stay for the network** (each site makes the next one
 worth more).
 
+### Grow it 1→2→4→8 — the honorable way
+
+We grow **virally without ever touching your contacts.** No LinkedIn/Gmail/Facebook address-book import,
+no OAuth into your connections, no bulk-spam. Instead:
+
+- **The artifact is the invite.** Every hosted portfolio's footer carries a personal `?ref=<you>` link,
+  and a **share panel** (LinkedIn / X / email / copy — *you* click, on *your* feed) lets you broadcast
+  **your own** portfolio. Recipients choose to make theirs.
+- **Referrals are earned, not sprayed.** When someone you invited actually **ships a live portfolio**,
+  *your* [TRUE standing](#-the-true-society-invite-only) rises — credit flows only on a real result,
+  never for sending an invite.
+- **K is measured.** `GET /api/growth` computes the real viral coefficient **K** (live invites per active
+  referrer — self-propelling at K≥1) and the depth of the tree, in code (`packages/core/src/referrals-types.ts`).
+
+That's why a portfolio in this network is *trusted*: we never harvested anyone. **Privacy is the product.**
+
 ## 🎨 Make it yours
 
 All copy is **data-driven** — never hardcoded in components. Edit these:
