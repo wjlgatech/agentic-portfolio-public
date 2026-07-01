@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 import { CREATOR, CREATOR_URL, REPO_URL } from "@/components/MadeWith";
 import { SharePanel } from "@/components/SharePanel";
 
-type Result = { url?: string; hosted?: boolean; slug?: string; pack?: unknown; note?: string; source?: "resume" | "linkedin" | "thin"; error?: string; tagline?: string; referredBy?: string | null };
+type Result = { url?: string; hosted?: boolean; slug?: string; pack?: unknown; note?: string; source?: "resume" | "linkedin" | "thin"; error?: string; tagline?: string; ownerUrl?: string; referredBy?: string | null };
 
 export default function Make() {
   const [f, setF] = useState({ name: "", email: "", linkedin: "", resume: "", x: "", fb: "", ig: "" });
@@ -60,6 +60,16 @@ export default function Make() {
               <a href={live} target="_blank" rel="noreferrer" className="chip border-accent2/50 text-accent2">open it →</a>
             </div>
             <p className="text-sm text-muted">Put it in your bio, or <a href="/network" className="text-accent hover:underline">browse the network</a> you just joined. It has its own AI agent — recruiters can just ask it about you.</p>
+            {res.ownerUrl && (
+              <div className="card border-amber-400/40 bg-amber-400/5">
+                <p className="text-sm font-semibold text-ink">🔑 Your private owner link — save this now</p>
+                <p className="mt-1 text-xs text-muted">Open this once to become the <strong className="text-ink">owner</strong> of your portfolio (manage it + see who your agent captured). Anyone without it is just a visitor. We show it only once and can&apos;t recover it — re-making rotates it.</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <code className="max-w-full overflow-x-auto rounded bg-surface px-2 py-1 text-xs text-ink">{res.ownerUrl}</code>
+                  <button onClick={() => { navigator.clipboard?.writeText(res.ownerUrl!); setCopied(true); setTimeout(() => setCopied(false), 1500); }} className="chip border-accent/50 text-accent">{copied ? "copied ✓" : "copy owner link"}</button>
+                </div>
+              </div>
+            )}
             <div className="card border-accent2/30 bg-accent2/5">
               <p className="text-sm font-semibold text-ink">Now grow your network — share it 👇</p>
               <p className="mt-1 text-xs text-muted">Grab your thumbnail + a ready-made caption, and post in one click. Every person who makes their own from your portfolio lifts your TRUE standing — this is how 1 becomes 2 becomes 4, without ever touching anyone&apos;s contacts.</p>

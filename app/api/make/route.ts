@@ -17,6 +17,7 @@ import { kvConfigured, kvSetJSON } from "@/lib/storage";
 import { upsertEntry, cleanEntry } from "@/lib/registry";
 import { recordReferral } from "@/lib/referrals";
 import { fetchLinkedInPublic, isLinkedInProfileUrl } from "@/lib/linkedin-public";
+import { mintOwnerToken, hashOwnerToken, ownerKey } from "@/lib/portfolio-owner";
 import { validateInstance, type InstanceConfig } from "@core/instance-types";
 
 export const runtime = "nodejs";
@@ -148,6 +149,14 @@ export async function POST(req: NextRequest) {
   }
 
   const stored = await kvSetJSON(`portfolio:${slug}`, config);
+
+  // Per-portfolio OWNERSHIP: mint this portfolio's own owner secret so the MAKER (not just the deploy
+  // admin) owns their page — view their leads, manage it. Store only the hash; return the token ONCE.
+  // Re-making (same slug) rotates the token, so only the latest maker holds it.
+  const ownerToken = mintOwnerToken();
+  await kvSetJSON(ownerKey(slug), hashOwnerToken(ownerToken));
+  const ownerUrl = `${hostedUrl}?owner=${ownerToken}`;
+
   // Auto-join the network so the new portfolio is instantly discoverable.
   const entry = cleanEntry({
     name, url: hostedUrl, description: config.entity.tagline,
@@ -161,5 +170,5 @@ export async function POST(req: NextRequest) {
   // rises). The invitee is `live` because they're now hosted + in the network.
   if (ref && ref !== slug && stored) await recordReferral(ref, slug, true).catch(() => {});
 
-  return NextResponse.json({ hosted: stored, url: hostedUrl, slug, tagline: config.entity.tagline, source, note: thinNote || undefined, referredBy: ref || null });
+  return NextResponse.json({ hosted: stored, url: hostedUrl, slug, tagline: config.entity.tagline, source, note: thinNote || undefined, ownerUrl, ownerToken, referredBy: ref || null });
 }

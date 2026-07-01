@@ -33,6 +33,11 @@ the shared network at `/p/<you>`. No fork, no deploy. Recruiters can just *ask y
 > starter and you just paste a few lines to enrich it. Hosting the shared `/make` needs an LLM key + a Postgres/Neon
 > store on the deploy (see [Deploy](#-deploy-free)); without them it hands back a downloadable pack.
 
+**You own your page.** When you make a portfolio you get a **private owner link** (`/p/<you>?owner=…`) — save it.
+Open it and you're in **🔓 Owner mode**: manage your portfolio and ask your agent to *show your leads* (everyone your
+agent captured). Everyone else is a **🔒 visitor** — they can chat with your agent and it can capture *their* interest,
+but only you can read your pipeline. Each portfolio has its own owner key; no one can see anyone else's.
+
 Every page carries a small credit to the creator and a *make-your-own / join-the-network* invite — open source
 and free, but each portfolio grows the network and the brand. That's the point.
 

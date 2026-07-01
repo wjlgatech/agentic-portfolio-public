@@ -12,16 +12,17 @@
 import { useEffect } from "react";
 import { useCopilotAction } from "@copilotkit/react-core";
 
-const TOKEN_KEY = "portfolio-owner-token";
+// Owner token is scoped PER portfolio (a maker owns their page, not everyone's).
+const tokenKey = (slug?: string) => (slug ? `portfolio-owner:${slug}` : "portfolio-owner-token");
 
-export function InstanceAgentActions({ instanceName, siteUrl }: { instanceName: string; siteUrl?: string }) {
-  // Let an owner unlock by opening the site once with ?owner=<token> (persist it locally).
+export function InstanceAgentActions({ instanceName, siteUrl, slug }: { instanceName: string; siteUrl?: string; slug?: string }) {
+  // Let the owner unlock by opening THEIR portfolio once with ?owner=<token> (persist it locally, per slug).
   useEffect(() => {
     try {
       const t = new URLSearchParams(window.location.search).get("owner");
-      if (t) localStorage.setItem(TOKEN_KEY, t);
+      if (t) localStorage.setItem(tokenKey(slug), t);
     } catch { /* ignore */ }
-  }, []);
+  }, [slug]);
 
   useCopilotAction({
     name: "captureLead",
@@ -41,7 +42,7 @@ export function InstanceAgentActions({ instanceName, siteUrl }: { instanceName: 
         const res = await fetch("/api/lead", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, name, company, need }),
+          body: JSON.stringify({ email, name, company, need, instance: slug }),
         });
         const data = await res.json();
         if (!res.ok) return `Couldn't capture that: ${data.error || res.status}`;
@@ -60,7 +61,7 @@ export function InstanceAgentActions({ instanceName, siteUrl }: { instanceName: 
     parameters: [{ name: "email", type: "string", description: "Their email, if given", required: false }],
     handler: async ({ email }) => {
       if (email) {
-        try { await fetch("/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, need: "requested a demo" }) }); } catch { /* best effort */ }
+        try { await fetch("/api/lead", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, need: "requested a demo", instance: slug }) }); } catch { /* best effort */ }
       }
       return siteUrl ? `Great — book your demo here: ${siteUrl}` : `Great — I've flagged you for a demo; the team will reach out.`;
     },
@@ -75,10 +76,11 @@ export function InstanceAgentActions({ instanceName, siteUrl }: { instanceName: 
     parameters: [],
     handler: async () => {
       let token = "";
-      try { token = localStorage.getItem(TOKEN_KEY) || ""; } catch { /* ignore */ }
+      try { token = localStorage.getItem(tokenKey(slug)) || ""; } catch { /* ignore */ }
       try {
-        const res = await fetch("/api/lead", { headers: token ? { "x-portfolio-owner": token } : {} });
-        if (res.status === 403) return "🔒 Owner only. Open the site with `?owner=<your token>` once to unlock, then ask again.";
+        const qs = slug ? `?instance=${encodeURIComponent(slug)}` : "";
+        const res = await fetch(`/api/lead${qs}`, { headers: token ? { "x-portfolio-owner": token } : {} });
+        if (res.status === 403) return "🔒 Owner only. Open your portfolio with `?owner=<your token>` once to unlock, then ask again.";
         const data = await res.json();
         if (!res.ok) return `Couldn't read the pipeline: ${data.error || res.status}`;
         if (!data.leads?.length) return `No leads captured yet for ${instanceName}.`;

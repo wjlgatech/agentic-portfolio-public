@@ -9,6 +9,7 @@ import { notFound } from "next/navigation";
 import { CopilotProvider } from "@/components/Copilot";
 import { InstanceSite } from "@/components/InstanceSite";
 import { InstanceAgentActions } from "@/components/InstanceAgentActions";
+import { HostedOwnerBadge } from "@/components/HostedOwnerBadge";
 import { kvGetJSON } from "@/lib/storage";
 import { validateInstance, instanceEvidence, type InstanceConfig } from "@core/instance-types";
 
@@ -52,10 +53,11 @@ export default async function HostedPortfolio({ params }: { params: Promise<{ sl
         { label: "🤔 A fit?", prompt: "I'm hiring for <role> — are they a fit? Be honest." },
         { label: "📇 Contact", prompt: "How do I reach them?" },
       ]}
-      agentActions={<InstanceAgentActions instanceName={c.entity.name} siteUrl={c.entity.links?.site} />}
+      agentActions={<InstanceAgentActions instanceName={c.entity.name} siteUrl={c.entity.links?.site} slug={slug} />}
     >
       <div data-theme={c.theme} className="min-h-screen bg-surface text-ink">
         <InstanceSite config={c} />
+        <HostedOwnerBadge slug={slug} name={c.entity.name} />
       </div>
     </CopilotProvider>
   );
