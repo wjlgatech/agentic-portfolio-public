@@ -1,28 +1,31 @@
 <!doctype html>
-<!-- Infographic 2: dead PDF vs living portfolio. Identity is icon+label, never color alone. 1080×1350. -->
+<!-- Infographic 2: dead PDF vs living portfolio. Anthropic style. Status pair = dark rust /
+     dark green (WCAG-dark for small text) and ALWAYS icon+words, never color alone. 1080×1350. -->
 <html><head><meta charset="utf-8"><style>
   * { margin:0; box-sizing:border-box; }
-  body { width:1080px; height:1350px; font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
-         background:linear-gradient(135deg,#0b0b12 0%,#171733 55%,#0d0d1a 100%); color:#f5f5fa;
-         display:flex; flex-direction:column; padding:72px 72px 56px; }
-  .eyebrow { font-size:26px; color:#7dd3fc; margin-bottom:14px; }
-  h1 { font-size:56px; font-weight:800; letter-spacing:-1px; line-height:1.1; margin-bottom:40px; }
+  body { width:1080px; height:1350px;
+         font-family:ui-sans-serif,system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
+         background:#F0EEE6; color:#191919; display:flex; flex-direction:column; padding:72px 72px 56px; }
+  .eyebrow { font-size:23px; color:#b05730; letter-spacing:2.5px; text-transform:uppercase; font-weight:600; margin-bottom:16px; }
+  h1 { font-family:"Iowan Old Style",Palatino,Georgia,serif; font-size:58px; font-weight:600;
+       letter-spacing:-.5px; line-height:1.1; margin-bottom:38px; }
   table { width:100%; border-collapse:separate; border-spacing:0 10px; flex:1; }
-  th { font-size:30px; font-weight:800; padding:18px 22px; border-radius:14px; text-align:left; }
-  th.rowlabel { width:44%; background:transparent; }
-  th.dead   { background:rgba(244,63,94,.16);  border:1px solid rgba(244,63,94,.45);  color:#f5f5fa; }
-  th.living { background:rgba(2,132,199,.20); border:1px solid rgba(2,132,199,.55); color:#f5f5fa; }
-  td { padding:20px 22px; font-size:29px; background:rgba(255,255,255,.04); }
-  td.rowlabel { color:#f5f5fa; border-radius:14px 0 0 14px; line-height:1.25; }
-  td.v { text-align:center; font-weight:700; }
-  td.no  { color:#f43f5e; }
-  td.yes { color:#7dd3fc; }
-  td:last-child { border-radius:0 14px 14px 0; }
-  .foot { display:flex; justify-content:space-between; font-size:24px; margin-top:30px; }
-  .foot .cta { color:#7dd3fc; } .foot .brand { color:#7a7aa8; }
-  .tag { font-size:22px; font-weight:400; color:#c9c9e8; display:block; margin-top:4px; }
+  th { font-size:29px; font-weight:700; padding:18px 22px; border-radius:14px; text-align:left; }
+  th.rowlabel { width:42%; }
+  th.dead   { background:#FAF9F5; border:1.5px solid #B0AEA5; color:#191919; }
+  th.living { background:rgba(217,119,87,.12); border:1.5px solid #d97757; color:#191919; }
+  .tag { font-size:21px; font-weight:400; color:#6B6657; display:block; margin-top:4px; }
+  td { padding:19px 22px; font-size:28px; background:#FAF9F5; border-top:1px solid #E2DED3; border-bottom:1px solid #E2DED3; }
+  td.rowlabel { color:#191919; border-radius:14px 0 0 14px; border-left:1px solid #E2DED3; line-height:1.25; }
+  td.v { text-align:center; font-weight:600; }
+  td.no  { color:#8E3B1F; }
+  td.yes { color:#4E6A3D; }
+  td:last-child { border-radius:0 14px 14px 0; border-right:1px solid #E2DED3; }
+  .foot { display:flex; justify-content:space-between; font-size:23px; margin-top:26px;
+          border-top:1px solid #E2DED3; padding-top:22px; }
+  .foot .cta { color:#b05730; font-weight:600; } .foot .brand { color:#6B6657; }
 </style></head><body>
-  <div class="eyebrow">🪦 VS 🌐 &nbsp;PICK YOUR AMBASSADOR</div>
+  <div class="eyebrow">Pick your ambassador</div>
   <h1>Dead PDF vs. living portfolio</h1>
   <table>
     <tr><th class="rowlabel"></th><th class="dead">🪦 Résumé (PDF)<span class="tag">static · skimmed 7.4s</span></th><th class="living">🌐 Agentic portfolio<span class="tag">live · queryable 24/7</span></th></tr>
@@ -31,7 +34,7 @@
     <tr><td class="rowlabel">Honest about limits</td><td class="v no">✗ "results-driven"</td><td class="v yes">✓ says "unverified"</td></tr>
     <tr><td class="rowlabel">Speaks to AI recruiting agents</td><td class="v no">✗ unread by bots</td><td class="v yes">✓ agent-to-agent card</td></tr>
     <tr><td class="rowlabel">Stays up to date</td><td class="v no">✗ exhumed yearly</td><td class="v yes">✓ auto-syncs repos + videos</td></tr>
-    <tr><td class="rowlabel">Captures interest while you sleep</td><td class="v no">✗</td><td class="v yes">✓ your leads, only yours</td></tr>
+    <tr><td class="rowlabel">Captures interest while you sleep</td><td class="v no">✗ no</td><td class="v yes">✓ your leads, only yours</td></tr>
     <tr><td class="rowlabel">Cost + skill needed</td><td class="v no">hours in Word</td><td class="v yes">10 min · $0 · no code</td></tr>
   </table>
   <div class="foot"><span class="cta">Make yours → agentic-portfolio-public.vercel.app</span><span class="brand">made free · agentic-portfolio</span></div>

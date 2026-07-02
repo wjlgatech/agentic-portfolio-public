@@ -13,7 +13,7 @@ claimed.
 | [`POST-RESUME-IS-DEAD.md`](POST-RESUME-IS-DEAD.md) | The long-form LinkedIn article ("The Résumé Is Dead. Long Live the Living Portfolio.") — story + real citations + the 10-minute CTA. |
 | [`ledger.md`](ledger.md) | **The metrics ledger** — one row per published artifact; rates computed from pasted platform numbers, never estimated. |
 | [`LEARNINGS.md`](LEARNINGS.md) | **Banked lessons** — rules (n≥3 posts of evidence) the next draft must obey + hypotheses to test next. The compounding half of the loop. |
-| [`media/`](media/) | The share assets: `article-thumbnail.png` (1200×628) + three infographics (1080×1350, LinkedIn portrait). Sources are HTML art-boards in `media/src/`; re-render with `node docs/marketing/media/src/render.mjs` (Playwright, 2×). Palette validated for contrast + CVD on the dark brand surface. |
+| [`media/`](media/) | The share assets: `article-thumbnail.png` (1200×628) + three infographics (1080×1350, LinkedIn portrait). Sources are HTML art-boards in `media/src/`; re-render with `node docs/marketing/media/src/render.mjs` (Playwright, 2×). **Anthropic style**: Cloud paper, serif display, ink text, one Book Cloth coral accent (single-accent by design — the muted Anthropic secondaries fail chroma/CVD as adjacent marks); status ✗/✓ always icon+words, never color alone. |
 
 ## The loop in one glance
 
