@@ -44,9 +44,9 @@ _Deployed this repo? Run `node scripts/set-live-links.mjs https://your-app.verce
 A **Next.js 15 + CopilotKit** site where the content *is* the source of truth and an on-page agent
 answers questions about you — grounded in `content/*`, backed by a **free-LLM survival chain** so it
 runs at **$0**. It's also a **node on a network**: every site exposes an [A2A](https://a2a.dev) agent
-card at `/.well-known/agent-card.json`, so agents (and people) can find and query it. One deploy = the
-portfolio; set the `INSTANCE` env var and the *same code* renders a whole other business (a dentist, an
-agency, a learning center…) from a data pack.
+card at `/.well-known/agent-card.json`, so agents (and people) can find and query it. The site is
+rendered from a config in `content/` (the default is the portfolio), so your content — not code — is
+what makes it yours.
 
 ## ✨ Make yours in one click (no code)
 
@@ -135,7 +135,7 @@ All copy is **data-driven** — never hardcoded in components. Edit these:
 | Name, tagline, mission, values | [`content/profile.ts`](content/profile.ts) |
 | Projects shown | [`content/projects.json`](content/projects.json) |
 | Section order / visibility / labels, theme, articles | [`content/portfolio.yaml`](content/portfolio.yaml) |
-| A whole other business ("agentize" any vertical) | add a pack in [`content/instances/`](content/instances/) + set `INSTANCE=<slug>` |
+| The whole site config (advanced) | [`content/instances/portfolio.ts`](content/instances/) |
 
 Theming is a **token seam**: components read `text-ink`/`bg-surface`/`accent` etc., mapped in
 `tailwind.config.ts`; `app/themes.css` has 9 `[data-theme]` brand bodies. A new brand = one CSS block,

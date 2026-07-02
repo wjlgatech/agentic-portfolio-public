@@ -1,7 +1,7 @@
 // ─────────────────────────────────────────────────────────────────────────────
 // /llms.txt — the LLM sitemap (the robots.txt-for-LLMs standard), built from the ACTIVE
-// instance so every Agentize deploy is discoverable by AI answer engines + agents. Text/plain,
-// grounded in the InstanceConfig only (no fabrication). This is the GEO surface `anyagent seo`
+// instance so every instance deploy is discoverable by AI answer engines + agents. Text/plain,
+// grounded in the InstanceConfig only (no fabrication). This is the GEO surface a GEO audit
 // flags as missing; serving it lifts the agent-search score.
 // ─────────────────────────────────────────────────────────────────────────────
 import { getActiveInstance } from "@/content/instances";

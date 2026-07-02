@@ -19,7 +19,7 @@ export const VALUE_CLUSTERS: ValueCluster[] = [
 export const VALUE_DETAILS: Record<string, ValueDetail> = {
   "Build in the open": {
     lived: "Default to public repos + write-ups — ship the engine, not just the demo.",
-    inWork: "This portfolio, anyagent, the OS fleet — all shipped where others can extend them.",
+    inWork: "This portfolio, the toolchain, the OS fleet — all shipped where others can extend them.",
     forAgent: "Agents publish skills/cards others can discover + call (A2A, registries).",
   },
   "Loops over launches": {

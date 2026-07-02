@@ -1,32 +1,25 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// content/instances/index.ts — the pack registry + the ACTIVE-instance selector.
+// content/instances/index.ts — the site-config registry + the ACTIVE-config selector.
 //
-// This is the seam that turns "one deploy = the portfolio" into "one deploy = whichever
-// business the INSTANCE env var names". A new business is: add a pack file, register it
-// here, set INSTANCE=<slug>, deploy. No code fork. The portfolio is INSTANCE=portfolio
-// (also the default), so an un-set INSTANCE renders exactly as before.
+// A deploy renders the config named by the INSTANCE env var (default: portfolio). The config is
+// just DATA (an InstanceConfig): entity/story/theme/agent/sections. Same code, different content.
 // ─────────────────────────────────────────────────────────────────────────────
 import fs from "node:fs";
 import path from "node:path";
 import { validateInstance, type InstanceConfig } from "@core/instance-types";
 import { portfolioInstance } from "@/content/instances/portfolio";
-import { learningCenter } from "@/content/instances/learning-center";
-import { unmaskleads } from "@/content/instances/unmaskleads";
 
-// Every known vertical pack, by slug. Adding a vertical = one import + one entry here.
+// The registered site configs, by slug.
 export const INSTANCES: Record<string, InstanceConfig> = {
   portfolio: portfolioInstance,
-  "learning-center": learningCenter,
-  unmaskleads,
 };
 
 export const DEFAULT_INSTANCE = "portfolio";
 
-// The active instance for THIS deploy, selected by the INSTANCE env var (default: portfolio).
-// Defensive: an unknown slug or a pack that fails the fit-check falls back to the portfolio,
+// The active config for THIS deploy, selected by the INSTANCE env var (default: portfolio).
+// Defensive: an unknown slug or a config that fails the fit-check falls back to the portfolio,
 // with a server warning — a misconfigured INSTANCE degrades to the known-good site, never a 500.
-// A JSON pack emitted by `anyagent agentize --emit-instance` and dropped in this dir renders with
-// NO code change — the loop closer. Read at runtime (server-only), validated like any pack.
+// A JSON config dropped in this dir (content/instances/<slug>.json) renders with no code change.
 function loadJsonPack(slug: string): InstanceConfig | null {
   if (!/^[a-z0-9-]{1,40}$/.test(slug)) return null; // no path traversal
   try {

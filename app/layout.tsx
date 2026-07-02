@@ -32,7 +32,7 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  // The active instance's theme is the DEFAULT brand (portfolio → anthropic, unmaskleads → vercel…);
+  // The active instance's theme is the DEFAULT brand (portfolio → anthropic);
   // the switcher/localStorage can override it live. Set on <html> so nothing downstream overrides it.
   const defaultTheme = getActiveInstance().theme;
   // No-flash theme restore: a user's chosen style (localStorage) wins over the instance default.

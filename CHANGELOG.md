@@ -19,7 +19,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **`/api/make` 500 (null config) when no LLM key is configured.** With `GROQ_API_KEY` unset, generation falls back to near-empty content, which left `story.mission` empty → `validateInstance` rejected it → `buildInstance` returned `null` → `Cannot read properties of null (reading 'entity')` on the KV path. Now `mission` is defaulted (never empty) so a valid portfolio is always assembled, and the route guards a null config with a friendly **422** instead of crashing. Regression-tested (`scripts/test-make-config.mjs`: empty mission rejected, defaulted mission accepted) — in `npm test`. _Both bugs were surfaced by verifying the live deploy, not the build._
 
 ### Added
-- **`docs/OUTREACH.md` — the founder outreach playbook (agentized, drafts-never-sends).** Turns "get the first 10 contributors" into a repeatable loop: an ICP + a 4×0–2 fit-score, a wedge post (LinkedIn + X), a value-first DM template + follow-up beats, a **sourced** target list (real discovered GitHub handles + a prioritized method — survey respondents first — never invented people), the SOURCE→QUALIFY→PERSONALIZE→SEND→ONBOARD→RETAIN→MEASURE loop with retention as the only metric, and an **Outreach Drafting Agent** system prompt that fit-scores + drafts personalized DMs + tracks the funnel while a **human always sends** (same drafts-never-sends ethic as scout/compass). Honest guardrails: personal not bulk, never invent a detail, ≤2 follow-ups, give before you ask. _Framing from the network's own retention-before-distribution playbook: the next 10x isn't code, it's 10 real people._
+- **`docs/OUTREACH.md` — the founder outreach playbook (instantiated, drafts-never-sends).** Turns "get the first 10 contributors" into a repeatable loop: an ICP + a 4×0–2 fit-score, a wedge post (LinkedIn + X), a value-first DM template + follow-up beats, a **sourced** target list (real discovered GitHub handles + a prioritized method — survey respondents first — never invented people), the SOURCE→QUALIFY→PERSONALIZE→SEND→ONBOARD→RETAIN→MEASURE loop with retention as the only metric, and an **Outreach Drafting Agent** system prompt that fit-scores + drafts personalized DMs + tracks the funnel while a **human always sends** (same drafts-never-sends ethic as scout/compass). Honest guardrails: personal not bulk, never invent a detail, ≤2 follow-ups, give before you ask. _Framing from the network's own retention-before-distribution playbook: the next 10x isn't code, it's 10 real people._
 - **TRUE Merit + the TRUE Hero Award — the reward system, made clear on `/society` (no new infra).** Three data-driven sections (`content/society.ts` → `app/society/page.tsx`): **How you earn** (a peer-attested contribution taxonomy — refer-who-ships, contribute-to-others, feedback-acted-on, collaborate, teach), **What it unlocks** (a benefits ladder Member → Steward → Fellow — recognition + network matchmaking now, sponsor-backed perks listed honestly as "coming as we grow"), and the **quarterly TRUE Hero Award** (one per TRUE perspective, computed from the standing ledger). **TRUE Merit is the existing standing/leverage, not a new currency** — non-transferable, earned, reputation-weighted, decaying; reuses `scoreStanding` with zero new backend. _Browser-verified: all sections render on `/society`._
 - **1-click (and scheduled) sync — keep a hosted portfolio fresh from its public sources.** A portfolio can now pull its own latest activity from the sources that are genuinely public: **GitHub** (recent repos via the public API) and **YouTube** (latest videos via the public channel RSS — no key, resolves `@handle` → channel id). `POST /api/sync {instance}` is **owner-gated per-portfolio** (the maker's token, or the deploy admin), fetches both, and merges the latest into the portfolio's writings (`mergeFeed` — dedupe-by-url, newest-first, capped → **idempotent** re-sync). One-click via the agent (`syncSources` owner action: *"sync my portfolio"*). **Scheduled** via a daily **Vercel Cron** (`vercel.json` → `GET /api/sync`, auth by `CRON_SECRET`) that syncs every hosted portfolio in the registry, or the `.github/workflows/portfolio-sync.yml` Action (`x-sync-secret`) as an alternative. `/make` now captures GitHub + YouTube links so sync has sources. **Honest by design:** feasibility is computed in code (`sourceFeasibility` in `packages/core/src/sync-types.ts`) — **X and LinkedIn are NOT server-syncable** (paid API / login-walled; probed: X profile is a JS wall, syndication → 429), so the UI + API say so and route those to in-browser harvest / manual, never faking a server pull. Pure parsers + merge tested by `scripts/test-sync.mjs` (16 checks) — wired into `npm test`. _Verified: the parsers ran against LIVE feeds (6 real GitHub repos newest-first, 6 real YouTube videos); cron GET without the secret → 403; POST without the store → honest 503._
 - **`scripts/set-live-links.mjs` — one command to point the README gallery at your live deploy.** After you deploy, `node scripts/set-live-links.mjs https://your-app.vercel.app` rewrites the gallery's `/make` + `/network` cells (between `<!-- LIVE-LINKS -->` markers) from "live once you deploy" to clickable links on your deploy; the flagship example (Paul's real portfolio) stays constant. Deterministic + idempotent (re-run to change the URL; run with no arg to reset to pre-deploy). Refuses to corrupt the README if the markers are missing. Tested by `scripts/test-set-live-links.mjs` (14 checks: pre/post-deploy cells, trailing-slash strip, flagship unchanged, marker replacement, idempotence, content preservation, missing-marker error) — wired into `npm test`. _Verified: live round-trip on the real README (swap → live links appear; reset → pre-deploy note restored, 0 stray links). Why: the gallery's "make your own" link can't be live until the repo is deployed — this makes the post-deploy swap a single, safe, reviewable commit instead of hand-editing._
@@ -36,13 +36,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 - **The TRUE standing engine — standing is measured, not claimed, and maps to your leverage.** `POST /api/standing {url}` scores a member's TRUE standing from **observed** signals (is the portfolio live? does it expose an A2A agent card with skills + a description?) plus reputation-weighted vouches/contributions in KV (`society:vouches:*`/`society:contrib:*`). The pure `scoreStanding()` (`packages/core/src/society-types.ts`) computes per-tenet **T/R/U/E**, a vouch boost (capped +20 — Sybil-resistant, weighted by the voucher's own standing), an automatic **passivity decay** (the vote-out gravity), an `overall`, a `tier` (applicant→member→steward→fellow), honest `gaps`, and a **`leverage` coefficient (1×–10×)** — the "make any dream true in 1/10 the time & effort, backed by AI + people who trust you via the TRUE contract" multiplier. Aggregate is **computed in code, never trusted from a model**. Surfaced as a "check your standing" widget on `/society`. Tested by `scripts/test-society.mjs` (12 checks: fellow leverage, passivity decay, vouch weighting + cap, empty applicant, gaps) — wired into `npm test`. _Why: the covenant needed a measured, agent-verifiable standing so membership is earned from artifacts, not vibes; the leverage framing makes the payoff concrete._
 - **10X the Portfolio Network — from a directory to a self-propelling network.** The `/network` page gained the flywheel it was missing: a **growth header** (nodes · unique skills · Metcalfe `n(n-1)/2` possible links — value rises with N), a **capability marketplace** (browse the network by skill — "who can do X?"), on-join **peer recommendations** (reciprocity — shared-skill nodes to reach) + an **embeddable membership badge** (`/api/badge` → a live SVG "🌐 agentic network · N nodes"; every embed is a backlink → more discover → more join). Pure helpers `networkStats`/`skillIndex`/`peersLike` in `@core/registry-types` (tested); the badge is a cached SVG route. _Verified live: badge serves; the marketplace/growth/reciprocity render._
 ### Added
-- **Emitted Agentize instances now deploy with zero code — a JSON-pack loader closes the loop.** `getActiveInstance()` (`content/instances/index.ts`) now falls back to reading `content/instances/<slug>.json` when a slug isn’t a registered `.ts` pack, validating it like any pack (path-traversal guarded, server-only). So `anyagent agentize --emit-instance` → drop the JSON → `INSTANCE=<slug>` renders a full agentic site (hero, agent, instance-aware A2A card) with **no hand-written `.ts`**. _Verified: a machine-emitted pack rendered as "Unmaskleads" with its agent card (describe_offering/assess_fit/next_step); `validateInstance` passes; build green._
+- **Emitted instances now deploy with zero code — a JSON-pack loader closes the loop.** `getActiveInstance()` (`content/instances/index.ts`) now falls back to reading `content/instances/<slug>.json` when a slug isn’t a registered `.ts` pack, validating it like any pack (path-traversal guarded, server-only). So `a JSON instance pack` → drop the JSON → `INSTANCE=<slug>` renders a full agentic site (hero, agent, instance-aware A2A card) with **no hand-written `.ts`**. _Verified: a machine-emitted pack rendered as "a demo" with its agent card (describe_offering/assess_fit/next_step); `validateInstance` passes; build green._
 ### Fixed
 - **Instance theme switcher now works (was locked to the instance's brand).** `InstanceSite` wrapped its
   content in `<div data-theme={config.theme}>`, which overrode the `<html data-theme>` the StyleSwitcher
-  sets — so on a non-portfolio deploy, picking "Anthropic/Apple style" did nothing (e.g. UnmaskLeads stayed
+  sets — so on a non-portfolio deploy, picking "Anthropic/Apple style" did nothing (e.g. a demo business stayed
   black). Removed the wrapper override; the layout now sets the **active instance's theme as the `<html>`
-  default** (portfolio→anthropic, unmaskleads→vercel…) and the switcher/localStorage override it live. No
+  default** (portfolio→anthropic, example→vercel…) and the switcher/localStorage override it live. No
   flash. _Verified: SSR `<html data-theme="vercel">`, no content-level override; switching re-themes._
 
 ### Added
@@ -52,37 +52,37 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   `viewLeads` (OWNER — read the pipeline the agent built). Backed by **`POST/GET /api/lead`**: POST is public
   + rate-limited + durable (KV, keyed `leads:<instance>`); GET is **owner-gated** (`x-portfolio-owner` → 403
   otherwise). This is the differentiation, concrete: a **visitor** gets frictionless help + capture; the
-  **owner** gets the pipeline the agent generated 24/7 (the buy-in). On-brand for UnmaskLeads (lead-gen),
+  **owner** gets the pipeline the agent generated 24/7 (the buy-in). On-brand for a demo business (lead-gen),
   generic for any instance. _Verified: visitor POST persists (`durable:true`), non-owner GET → 403, owner GET
   returns the captured lead._
-- **GEO for instances — `/llms.txt` + JSON-LD, instance-aware.** Every Agentize deploy now serves a
+- **GEO for instances — `/llms.txt` + JSON-LD, instance-aware.** Every instance deploy now serves a
   grounded **`/llms.txt`** (`app/llms.txt/route.ts`, built from the active `InstanceConfig`) and emits
   schema.org **JSON-LD** (`Organization`/`WebSite`/`ItemList`) in `InstanceSite`. _Proof (result-oriented):
-  `anyagent seo` on the UnmaskLeads instance went **66 → 87 [agent-SEO ready ✅]**, agent-search **64 → 93**._
+  a GEO audit on the a demo business instance went **66 → 87 [agent-SEO ready ✅]**, agent-search **64 → 93**._
 
 ### Added
-- **`unmaskleads` Agentize instance — a real agentic site for a prospect (UnmaskLeads / Mike Hawn).**
-  A new vertical pack (`content/instances/unmaskleads.ts`, registered in `content/instances/index.ts`) turns
-  the meta-template into a full agentic app for UnmaskLeads (a visitor-de-anonymization SaaS): a CopilotKit
+- **`example` instance — a real agentic site for a prospect (a demo business / ).**
+  A new content pack (`content/instances/example.ts`, registered in `content/instances/index.ts`) turns
+  the site-config system into a full agentic app for a demo business (a a demo SaaS): a CopilotKit
   agent a visitor can chat with, grounded in the product's own material, plus an instance-aware A2A agent
   card (`describe_product`/`assess_fit`/`explain_compliance`/`book_demo`). Built from the public
-  unmaskleads.io content as a demo; deployed separately at `INSTANCE=unmaskleads`
-  (**unmaskleads-agent.vercel.app**). **Honesty preserved:** the "98% match" headline is UnmaskLeads' OWN
+  a demo site content as a demo; deployed separately at `INSTANCE=example`
+  (**a demo deploy**). **Honesty preserved:** the "98% match" headline is a demo business' OWN
   claim, so its Proof/outcomes render `verdict: "unverified"` — the agent presents it as claimed, never as
   audited. Proves the "point at a business → get a grounded agentic site" promise on a real third party.
-  _Verified live: renders as UnmaskLeads (0 portfolio leak), copilot present, agent card instance-aware;
+  _Verified live: renders as a demo business (0 portfolio leak), copilot present, agent card instance-aware;
   `validateInstance` passes; build + all node test groups green._
 
 ### Changed
-- **Unified the meta-template naming: `agentic-anything`/`agentize-anything` → `Agentize`.** The two names
+- **Unified the site-config system naming: `the config system`/`instances` → `Instances`.** The two names
   denoted two different layers (platform vs. action) and the "-anything" suffix stuck to both, which read as
-  inconsistent. Now one verb-forward system: **`anyagent`** = the engine, **Agentize** (*"Agentize Anything"*)
-  = the action + the meta-template brand (`anyagent agentize`, `docs/AGENTIZE.md`, `@agentize/core`,
-  `create-agentize`), and **"agentic"** demoted to a plain adjective (an *agentic* portfolio/app), never a
-  brand. Renamed `docs/AGENTIC-ANYTHING.md` → `docs/AGENTIZE.md` and every brand reference across README /
-  AGENTS / docs / the `InstanceSite` footer / comments. Zero code-path risk: `@agentic-anything/core` was
+  inconsistent. Now one verb-forward system: **the CLI** = the engine, **Instances** (*"the instance system"*)
+  = the action + the site-config system brand (the config system
+  `create-instantiate`), and **"agentic"** demoted to a plain adjective (an *agentic* portfolio/app), never a
+  brand. Neutralized the brand references across README /
+  AGENTS / docs / the `InstanceSite` footer / comments. Zero code-path risk: `@core` was
   never imported (code uses the `@core/*` tsconfig alias, unchanged). A new **Naming** table in `AGENTS.md`
-  makes the convention enforceable. _Rationale: a verb ("agentize your résumé/business") states the value,
+  makes the convention enforceable. _Rationale: a verb ("instantiate your résumé/business") states the value,
   stays distinctive amid the generic "agentic X" wave, and carries the wow (the transformation); it's also
   already the command, so name ↔ action align. Verified: build + all 13 node test groups + vitest green._
 
@@ -158,7 +158,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
     an equally durable KV backend (`kv_store` table), so we swapped backends rather than keep fighting the scope
     mismatch. _Verified: live round-trip against the real Neon DB passes; build + all 11 node test groups + vitest
     green; prod `/api/health` flips `durableStorage:false → true` after deploy._
-- **Monorepo split, step 1 — the platform contract layer extracted to `packages/core`.** Agentize
+- **Monorepo split, step 1 — the platform contract layer extracted to `packages/core`.** Instances
   is a *platform*; the portfolio is a *node* on it (a website doesn't own DNS). Moved the 4 pure, import-free
   contract files — `instance-types` (the `InstanceConfig` Lego contract) + the registry / verification /
   compass models — from `lib/` to **`packages/core/src/`**, imported via a new **`@core/*`** tsconfig alias.
@@ -166,8 +166,8 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   (storage, LLM chain, registry logic, A2A, owner) + the workspace-ification + the `apps/portfolio` move
   (which needs the Vercel root reconfigured) are documented next increments. Rationale + the network-effect
   design (verifiable trust × transferable capability × matchmaking liquidity) in
-  **`docs/NETWORK-AND-SPLIT-STRATEGY.md`**; `packages/core/README.md` has the migration roadmap. _Verified:
-  build + all 11 node test groups + vitest green; portfolio + `INSTANCE=learning-center` render unchanged._
+  `packages/core/README.md` has the migration roadmap. _Verified:
+  build + all 11 node test groups + vitest green; portfolio + a demo config render unchanged._
 - **Resume Verification got its paste window back — now a PUBLIC self-proof demo.** A "Verify it yourself"
   panel with a résumé/CV textarea + Verify button now sits at the top of the section, visible to **everyone**
   ("don't trust me — paste my résumé and watch it verify live against real GitHub"). `app/api/verify-resume`
@@ -203,7 +203,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   practice has T·R·U·E + human + agent detail, and the agent angles name real surfaces. _Verified live: root +
   3 clusters + all 12 leaves render; TRUE panels are collapsed until a practice is clicked._
 - **Visual instance render — a non-portfolio INSTANCE is now a real, full website (not just a curl-able
-  A2A endpoint).** New `components/InstanceSite.tsx` (server component) paints any business's site straight
+  A2A endpoint).** New `components/InstanceSite.tsx` (server component) paints a different brand's site straight
   from its `InstanceConfig` + `content`: hero (entity + mission), principles (story), offerings (tracks/
   services/products), writing, and outcomes (with honest verdict chips), themed via a `data-theme` wrapper.
   `app/page.tsx` branches on `getActiveInstance()`: a non-portfolio slug renders `<InstanceSite>` with its
@@ -212,7 +212,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   surfaces instance-aware so nothing leaks: `CopilotProvider` takes optional `labels`/`groundingDescription`/
   `starters` (default to the portfolio's), `PromptStarters` takes optional `items`, and `page.tsx`
   `generateMetadata()` sets a per-instance `<title>`/OG (returns `{}` for the portfolio → unchanged).
-  _Verified live: `INSTANCE=learning-center` renders "12X Agentic Academy" with its tracks/lessons/outcomes,
+  _Verified live: a demo config renders "a demo academy" with its tracks/lessons/outcomes,
   title + starters + agent label are the academy's, and **0** "Paul Jialiang Wu" references leak; the default
   portfolio is unchanged (same title, same site)._ This was the last portfolio-bound surface — card, A2A
   identity, A2A corpus, AND the visual page are now all instance-aware.
@@ -260,25 +260,25 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   HONEST verdict) and `instanceStaticAnswer()` (the no-LLM grounded fallback). `app/api/a2a/route.ts`
   is now instance-aware: a non-portfolio instance with a `content` pack answers from its material; the
   portfolio keeps reading `content/profile.ts` + `projects.json` (byte-identical path). Scaffolded the
-  first content pack — the **12X Agentic Academy** (3 tracks, build-loop pedagogy, sample lessons; its
+  first content pack — the **a demo academy** (3 tracks, build-loop pedagogy, sample lessons; its
   outcomes are deliberately marked `unverified` so the agent demonstrates the honesty discipline rather
-  than fabricating audited student results). _Verified live: `INSTANCE=learning-center` POST `message/send`
+  than fabricating audited student results). _Verified live: a demo config POST `message/send`
   answered with the academy's tracks + grading method; the default portfolio answered with Paul's real
   repos — same endpoint, same code._ The only remaining instance-bound surface is the **visual** `page.tsx`
-  rendering (documented next step in `docs/AGENTIZE.md`).
+  rendering (documented next step in the design).
 - **Instance-aware Agent Card — any deploy is discoverable AS ITSELF (the federation stud, wired live).**
-  New `content/instances/index.ts` registers the vertical packs and exposes `getActiveInstance()` (reads the
+  New `content/instances/index.ts` registers the content packs and exposes `getActiveInstance()` (reads the
   `INSTANCE` env var, default `portfolio`; an unknown slug or a pack that fails `validateInstance` degrades to
   the known-good portfolio with a server warning — never a 500). `app/api/agent-card/route.ts` now builds the
   A2A card from `instanceToAgentCard(getActiveInstance(), origin)` instead of hand-built portfolio fields, so a
-  `INSTANCE=learning-center` deploy advertises learning-center skills and a portfolio deploy advertises recruiter
+  a non-portfolio config deploy advertises its own skills and a portfolio deploy advertises recruiter
   skills — **same code, zero vertical branches.** _Verified live (`npm start`): default → "Paul Jialiang Wu —
-  Agent" / personal / ask_candidate+verify_claim+role_fit; `INSTANCE=learning-center` → "12X Agentic Academy —
+  Agent" / personal / ask_candidate+verify_claim+role_fit; a demo config → "a demo academy —
   Agent" / education / ask_program+verify_outcome+fit_check; `x-llm-ready` preserved both ways._ Minor cosmetic
   change to the live portfolio card: the name suffix is now "— Agent" (was "— Portfolio Agent"); skills,
   examples, and grounding are unchanged. `/api/a2a`'s grounded-answer corpus + the visual `page.tsx` rendering
   stay portfolio-bound for now — making those instance-aware needs per-instance content packs (the documented
-  next step in `docs/AGENTIZE.md`).
+  next step in the design).
 - **KV durable path — verified end-to-end against a real REST server.** `scripts/test-storage-kv.mjs` stands up a
   local Upstash-protocol KV (SET/GET, Bearer-auth, in-memory) and drives `lib/storage.ts` through it: durable
   round-trip, a Network "join" written under `registry:entries` survives a fresh GET (the "shared across
@@ -287,16 +287,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   "provision a store" step is blocked on — so the moment a real KV is configured, persistence works. _(Provisioning
   the production Upstash store still requires a one-click browser acceptance of its marketplace terms — a legal
   acceptance on the owner's account that can't be done headlessly.)_
-- **Agentize — the Lego contract that turns this portfolio into a meta-template.** `lib/instance-types.ts`
+- **Instances — the Lego contract that turns this portfolio into a site-config system.** `lib/instance-types.ts`
   defines `InstanceConfig`: the studs (entity / story / theme / agent.skills / sections / proof / scout /
-  network / owner / storage) that snap a *vertical pack* onto the existing core bricks, so a church, gym,
+  network / owner / storage) that snap a *content pack* onto the existing core bricks, so a church, gym,
   learning center, agency, trading school, or R&D firm is **data, not a code fork**. `validateInstance()` is
   the fit-check (rejects unknown theme/vertical, missing skill/section, non-kebab slug with precise errors);
   `instanceToAgentCard()` proves any instance → a spec-shaped A2A card with zero vertical code. Ships two
   reference packs — `content/instances/portfolio.ts` (instance #0: the live site, expressed as a config, to
-  prove the contract generalizes) and `content/instances/learning-center.ts` (the first new vertical: an
+  prove the contract generalizes) and `content/instances/(a demo config)` (a demo config: an
   Agentic Learning Center; Receipts→audited outcomes, Compass→next cohorts). New test `scripts/test-instance.mjs`
-  (in `npm test`, 22 checks). Design: `docs/AGENTIZE.md`. _Additive: no existing surface changes — the
+  (in `npm test`, 22 checks). Design: the design. _Additive: no existing surface changes — the
   instance-aware wiring of `app/page.tsx`/`agent-card`/`a2a` is the documented next step (declined this pass to
   protect the live $0 deploy). Verified: build + full test suite green._
 - **Durable storage (KV) — owner edits + Network joins survive on serverless.** `lib/storage.ts`
@@ -326,7 +326,7 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   — with a per-node timeout so a slow/dead node can't hang the fan-out. Surfaced as an "Ask the
   network" box on `/network`. Rate-limited (it triggers N downstream LLM calls). `app/api/registry/ask`,
   `components/Network.tsx`. _Verified live: "who ships agent-verification tooling" fanned out and the
-  nodes answered grounded — "cli-judge / anyagent (private)" — even respecting the private-repo rule._
+  nodes answered grounded — "cli-judge / the CLI (private)" — even respecting the private-repo rule._
   _This is STRATEGY.md feature #4; the index-search (registry) is feature #1._
 - **Portfolio Registry (the network's DNS) — the first 10x-network feature.** A searchable
   directory of agent-portfolios at **`/network`**: search by skill ("agent verification", "Rust",

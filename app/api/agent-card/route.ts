@@ -4,9 +4,9 @@
 // so recruiter / other AI agents can DISCOVER this agent and talk to it.
 //
 // INSTANCE-AWARE: the card is built from the ACTIVE InstanceConfig (content/instances,
-// selected by the INSTANCE env var). So a learning-center deploy advertises learning-center
+// selected by the INSTANCE env var). So a a second config deploy advertises a second config
 // skills, a portfolio deploy advertises portfolio skills — same code, zero vertical branches.
-// This is the Agentize federation stud: any business is instantly agent-discoverable.
+// This is the Instances federation stud: any config is instantly agent-discoverable.
 //
 // Pragmatic-sync profile: capabilities.streaming = false; the JSON-RPC endpoint is
 // /api/a2a (message/send + legacy tasks/send), synchronous request→response.

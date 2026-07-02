@@ -142,11 +142,11 @@ SOURCE → QUALIFY → PERSONALIZE → SEND → ONBOARD → RETAIN → MEASURE �
 
 ---
 
-## 6. Agentize it — the Outreach Drafting Agent (drafts, never sends)
+## 6. Instances it — the Outreach Drafting Agent (drafts, never sends)
 
 The agent removes the *research + drafting + tracking* busywork so you spend your minutes on the human part. It **fit-scores** a candidate from their public profile, **drafts** a personalized DM grounded in their real work, and **tracks** the funnel — but a human always sends, and it never invents a person or a detail (the same [drafts-never-sends](../README.md) ethic as the scout/compass).
 
-**Drop this system prompt into Claude / `anyagent` / the portfolio's own agent:**
+**Drop this system prompt into Claude / `the toolchain` / the portfolio's own agent:**
 
 ```
 You are an outreach-drafting copilot for the agentic-portfolio network. You help a human do PERSONAL,
@@ -176,4 +176,4 @@ Remind the human: YOU send it, from your account, after editing for your voice.
 - ✅ Automate: sourcing candidates (GitHub/registry search), fit-scoring, first-draft DMs, funnel tracking, preview generation (make them a `/p/<slug>` to show).
 - 🚫 Never automate: the send, the call, the relationship. That's the point.
 
-**Optional next step (only after cohort 1 retains):** wire this as an `anyagent` command or a `/api/outreach-draft` route that takes a handle → fetches the public profile → returns the scored draft. Don't build it yet — the playbook says get the 10 first.
+**Optional next step (only after cohort 1 retains):** wire this as an `the toolchain` command or a `/api/outreach-draft` route that takes a handle → fetches the public profile → returns the scored draft. Don't build it yet — the playbook says get the 10 first.

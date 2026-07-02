@@ -6,7 +6,7 @@
 //     no form. Durable (KV), instance-scoped (never mixes businesses).
 //   • OWNER:   GET is owner-gated (x-portfolio-owner) — reads the captured leads (the pipeline the
 //     agent built). A visitor GET → 403.
-// On-brand for UnmaskLeads (a lead-gen product) and generic for any Agentize instance.
+// On-brand for a demo business (a lead-gen product) and generic for any instance.
 // ─────────────────────────────────────────────────────────────────────────────
 import { NextRequest, NextResponse } from "next/server";
 import { isOwnerRequest, ownerTokenConfigured } from "@/lib/owner";

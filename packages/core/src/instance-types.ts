@@ -1,16 +1,15 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// lib/instance-types.ts — THE LEGO CONTRACT for Agentize.
+// instance-types.ts — the site-config contract.
 //
-// One core (this codebase) serves MANY verticals (church, gym, restaurant, learning
-// center, agency, trading school, clinic, R&D firm…). The difference between two
-// instances is NOT code — it's a data pack that snaps onto the existing bricks:
+// A deploy is rendered from a config (an InstanceConfig). The difference between two sites is
+// DATA, not code — the config's fields drive every seam:
 //
 //   entity   → replaces content/profile.ts          (who/what this agent represents)
 //   theme    → the token seam (app/themes.css)       (rebrand = one [data-theme] block)
 //   agent    → the A2A card + copilot grounding       (app/api/agent-card + /api/a2a)
 //   sections → the page                               (content/portfolio.yaml control surface)
-//   proof    → Receipts, recast per vertical          (audited outcomes / P&L / case studies)
-//   scout    → Compass, recast per vertical           (next cohorts / leads / inventory)
+//   proof    → Receipts, recast per config          (audited outcomes / P&L / case studies)
+//   scout    → Compass, recast per config           (next cohorts / leads / inventory)
 //   network  → registry + A2A federation              (the network effect; lib/registry)
 //   owner    → the owner gate (lib/owner.ts)          (the one real security boundary)
 //   storage  → KV key prefix (lib/storage.ts)         (many instances, one durable store)
@@ -190,7 +189,7 @@ function cleanContent(raw: unknown): InstanceContent {
 }
 
 // The fit-check. Normalizes a raw pack and returns the exact mis-fits if it doesn't snap on.
-// This is the Lego stud test: a vertical pack is valid IFF every required stud is present and
+// This is the Lego stud test: a content pack is valid IFF every required stud is present and
 // every enum (theme, vertical) is one the core actually knows how to render.
 export function validateInstance(raw: unknown): { ok: boolean; config: InstanceConfig | null; errors: string[] } {
   const errors: string[] = [];
@@ -292,7 +291,7 @@ export function validateInstance(raw: unknown): { ok: boolean; config: InstanceC
 
 // Proof of the federation stud: ANY valid instance → a spec-shaped A2A Agent Card, with
 // zero vertical-specific code. This is what app/api/agent-card builds by hand today; the
-// instance-aware refactor will build it from here so every vertical is instantly queryable.
+// instance-aware refactor will build it from here so every config is instantly queryable.
 export function instanceToAgentCard(config: InstanceConfig, origin: string): Record<string, unknown> {
   return {
     name: `${config.entity.name} — Agent`,

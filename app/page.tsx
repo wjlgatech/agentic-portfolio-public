@@ -49,7 +49,7 @@ export default async function Home() {
   // the personal portfolio below. (Keeps this repo dual-purpose: a template AND the maker service.)
   if (process.env.MAKER_HOME) return <MakerLanding />;
 
-  // Agentize: a non-portfolio INSTANCE renders the generic visual site straight
+  // Instances: a non-portfolio INSTANCE renders the generic visual site straight
   // from its InstanceConfig (hero + content), with its OWN grounded agent. The portfolio
   // (default) keeps its full, agent-editable site below — this branch leaves it untouched.
   const inst = getActiveInstance();

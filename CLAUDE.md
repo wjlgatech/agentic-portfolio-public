@@ -13,8 +13,8 @@ Treat those rules as binding. This file is a short supplement; do not contradict
 
 A personal portfolio that is itself an agentic webapp — a Next.js 15 (App Router) site whose
 on-page CopilotKit agent answers questions about the owner's work (grounded in `content/*`) and
-acts as a chat-driven CMS. It has grown into an **Agentize platform**: the same codebase serves
-any business vertical as a data pack (`INSTANCE` env), hosts a 1-click portfolio maker
+acts as a chat-driven CMS. It has grown into an **instance platform**: the same codebase serves
+a different brand vertical as a data pack (`INSTANCE` env), hosts a 1-click portfolio maker
 (`/make` → `/p/<slug>`, multi-tenant), and joins a self-propelling A2A network. Runs at $0 on a
 free-LLM survival chain.
 
@@ -45,7 +45,7 @@ catches it (this shipped broken once).
 
 **Three layers, bottom-up:**
 
-1. **`packages/core/` (`@agentize/core`, imported via the `@core/*` tsconfig alias)** — the pure
+1. **`packages/core/` (`@core`, imported via the `@core/*` tsconfig alias)** — the pure
    contract layer. Fs-free, network-free `-types.ts` modules (instance, verification, jobfit,
    society, referrals, sync, registry, recovery…) hold every data shape plus the deterministic
    math (`aggregate()`, `aggregateFit`, `scoreStanding`, `growthStats`). Client components and
@@ -55,7 +55,7 @@ catches it (this shipped broken once).
    from `content/` (never hardcode copy in components): `profile.ts` (fixed schema; wording
    editable only via whitelisted overrides in `lib/overrides.ts`), `projects.json` (private repos:
    `url: null`, highlight only), `portfolio.yaml` (the agent-editable control surface: section
-   order/visibility/labels, theme, articles), `instances/*.ts` (vertical packs). `lib/storage.ts`
+   order/visibility/labels, theme, articles), `instances/*.ts` (content packs). `lib/storage.ts`
    is durable KV over Postgres (Neon HTTP driver) that degrades to the fs seed when unset —
    registry joins, hosted portfolios, leads, and society state all live there.
 

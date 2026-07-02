@@ -7,28 +7,15 @@ Agent-facing guide for this repo. (Human guide: `README.md`.)
 A personal portfolio that is itself an agentic webapp. A Next.js App Router site with a
 CopilotKit agent grounded in the repo's own content, backed by a free-LLM survival chain.
 
-## Naming (unified — use these, not synonyms)
-
-Three layers, three names, no overlap. Don't reintroduce "agentic-anything"/"agentize-anything".
-
-| Layer | Name | Usage |
-|---|---|---|
-| The **engine** | `anyagent` | the CLI that builds/grades/ships (separate repo) |
-| The **action / brand** | **Agentize** (*"Agentize Anything"*) | the verb + the umbrella: `anyagent agentize <x>`, the meta-template (`docs/AGENTIZE.md`, `@agentize/core`) |
-| What you **get** | *an agent* / *an agentic app* | "agentic" is a plain adjective here — never a brand |
-
-So: `Agentize` is the meta-template ("one core, any business"); `agentic` only ever describes
-(an *agentic* portfolio, an *agentic* webapp). The `@core/*` tsconfig alias is unchanged.
-
 ## Map
 
 | Path | Role |
 |---|---|
 | `app/page.tsx` | Server component (`force-dynamic`). **Branches on `getActiveInstance()`**: a non-portfolio instance early-returns `<CopilotProvider …><InstanceSite/></CopilotProvider>` (its own grounding/labels/starters); the portfolio path is unchanged — reads `portfolio.yaml` via `readPortfolioAsync()`, builds the grounding `context` (incl. **`practices12X`**: the TRUE rubric + every practice's T/R/U/E + human/agent angle, so the agent can "explain practice N through TRUE"), renders `<CopilotProvider><Portfolio/></CopilotProvider>`. `generateMetadata()` sets a per-instance `<title>`/OG (`{}` for portfolio = unchanged). |
-| `components/InstanceSite.tsx` | **The generic visual site for any non-portfolio instance** (server component). Paints hero (entity + mission), principles (story), offerings, writing, outcomes (verdict chips) + **schema.org JSON-LD** (GEO) straight from the `InstanceConfig`. **Theme is set on `<html>` by the layout (instance default) + the StyleSwitcher — this wrapper carries NO `data-theme`, so switching styles works** (fixing the old override). So `INSTANCE=learning-center` is a real site, not just a curl-able A2A endpoint. |
+| `components/InstanceSite.tsx` | **The generic visual site for any non-portfolio instance** (server component). Paints hero (entity + mission), principles (story), offerings, writing, outcomes (verdict chips) + **schema.org JSON-LD** (GEO) straight from the `InstanceConfig`. **Theme is set on `<html>` by the layout (instance default) + the StyleSwitcher — this wrapper carries NO `data-theme`, so switching styles works** (fixing the old override). So a non-portfolio config is a real site, not just a curl-able A2A endpoint. |
 | `components/InstanceAgentActions.tsx` | Makes a non-portfolio agent DO work, not just chat (rendered inside `<CopilotKit>` via `CopilotProvider`'s `agentActions` slot): `captureLead`/`bookDemo` (VISITOR → durable lead) + `viewLeads` (OWNER → the captured pipeline). The owner↔visitor payoff, concrete. |
 | `app/api/lead/route.ts` | The agent's real work + the **per-portfolio** owner gate. `POST` (public, rate-limited) captures a lead keyed `leads:<slug>` (the `?instance`/body `instance` the visitor is on; defaults to the active instance's `kvPrefix`); `GET` is owner-gated via `ownsInstance(req, slug)` (global admin OR the per-portfolio `owner:<slug>` hash) → 403 otherwise. |
-| `app/llms.txt/route.ts` | **GEO surface.** Serves `/llms.txt` (the LLM sitemap) built from the active `InstanceConfig` — grounded, text/plain. With JSON-LD + the instance-aware agent card, this is why `anyagent seo` scores an Agentize deploy high (UnmaskLeads instance 66→87 after). |
+| `app/llms.txt/route.ts` | **GEO surface.** Serves `/llms.txt` (the LLM sitemap) built from the active `InstanceConfig` — grounded, text/plain. With JSON-LD + the instance-aware agent card, this is why a config deploy is discoverable by AI answer engines. |
 | `components/Portfolio.tsx` | `"use client"` site body. Holds the layout config in state (seeded from YAML, overlaid by `localStorage`), registers the CopilotKit **actions** (add/remove article, reorder/show-hide/rename sections, set theme, reset), renders sections in the config's order, and gates every edit on owner vs visitor. Two grounding readables keep replies **actionable**: a role readable (`howToBecomeOwner` → unlock steps the agent must give when it declines an edit) and a "HOW TO IMPORT LinkedIn posts" readable (steps + the `/linkedin-harvest.js` link). `harvestTip()` returns the same with an absolute clickable URL. |
 | `content/portfolio.yaml` | **Control surface.** Section order/visibility/labels, theme, and the articles list. Edited by the agent (owner) or by hand. |
 | `lib/portfolio.ts` | Server read/normalize/write for `portfolio.yaml` (`yaml` pkg). `normalize()` is the validation gate (known section ids only, all present, clean articles). |
@@ -43,7 +30,7 @@ So: `Agentize` is the meta-template ("one core, any business"); `agentic` only e
 | `app/themes.css` | The webapp-style theme seam: CSS-variable tokens + 9 `[data-theme]` brand bodies. Tailwind colors (`tailwind.config.ts`) map to the `--c-*` triplets. |
 | `components/StyleSwitcher.tsx` | `"use client"` top-right switcher; sets `html[data-theme]` + persists to `localStorage` (key `webapp-style`, shared with `Portfolio`'s `setTheme`). No-flash restore script is inline in `app/layout.tsx`. |
 | `app/api/copilotkit/route.ts` | CopilotKit runtime endpoint. **Leads with Gemini for the chat** (the chat turn is large ~6.6k tokens and a 429 surfaces MID-stream, after `handleRequest` returns, so init-failover can't catch it — Gemini's big free DAILY quota avoids the cap that breaks Groq). Then a stream-init failover loop across `resolveLlmChain()` for any provider that throws/5xx before streaming. **The LLM key lives here only — never client-side.** |
-| `app/api/agent-card/route.ts` | **A2A inbound — INSTANCE-AWARE.** The Agent Card, served (via `next.config.mjs` rewrites) at `/.well-known/agent-card.json` + legacy `/.well-known/agent.json`. Built from the **active instance** via `instanceToAgentCard(getActiveInstance(), origin)` (+ the `x-llm-ready` hint), so a `INSTANCE=learning-center` deploy advertises learning-center skills and the default portfolio deploy advertises `ask_candidate`/`verify_claim`/`role_fit`. `streaming:false`, no auth (public discovery). |
+| `app/api/agent-card/route.ts` | **A2A inbound — INSTANCE-AWARE.** The Agent Card, served (via `next.config.mjs` rewrites) at `/.well-known/agent-card.json` + legacy `/.well-known/agent.json`. Built from the **active instance** via `instanceToAgentCard(getActiveInstance(), origin)` (+ the `x-llm-ready` hint), so a non-portfolio config deploy advertises its own skills and the default portfolio deploy advertises `ask_candidate`/`verify_claim`/`role_fit`. `streaming:false`, no auth (public discovery). |
 | `app/api/a2a/route.ts` | **A2A inbound endpoint — INSTANCE-AWARE.** JSON-RPC 2.0, `message/send` + legacy `tasks/send`, synchronous. Answers AS the active instance: a non-portfolio instance with a `content` pack answers from `instanceEvidence(pack)` (its offerings/outcomes/writings); the portfolio keeps the original `buildEvidence()` path (profile + projects + Receipts) byte-identical. Grounded + honest (private → highlight only; unprovable → "unverified"). Uses `chatWithFailover`. CORS-open. `public/a2a/SKILL.md` documents it. |
 | `lib/rate-limit.ts` | Per-IP in-memory limiter for the OPEN routes (`copilotkit`/`a2a`/`repo-digest`/`repo-activity`/`registry`) so they can't be used to drain the LLM quota. |
 | `lib/storage.ts` | Durable KV over **Postgres** (Vercel Postgres / Neon, `@neondatabase/serverless` HTTP driver). Set `POSTGRES_URL` (or `DATABASE_URL`) → a lazily-created `kv_store(key, value jsonb)` table makes registry joins + portfolio edits persist & be shared (`readPortfolioAsync`/`writePortfolioDurable`, `readRegistryAsync`/`upsertEntry`). Same `kvConfigured`/`kvGetJSON`/`kvSetJSON` surface; degrades to the fs seed when unset. `GET /api/health` → `durableStorage` reflects it. |
@@ -100,16 +87,15 @@ So: `Agentize` is the meta-template ("one core, any business"); `agentic` only e
 | `components/ValuesMindmap.tsx` + `content/values-map.ts` | Adapter: **Values & Love** as a **1→2→6 mindmap** (How I work · Who it's for → 5 values + Love); leaf detail = **Lived / In the work / For an agent**. Bodies come from `profile.ts` (override-editable), the cluster+detail from `values-map.ts`. Replaces `ValuesAndLove` in `renderBody`. Test: `scripts/test-values.mjs` (also guards leaf titles == `profile.ts` value titles). |
 | `lib/overrides.ts` | Agent-editable WORDING on top of the fixed schema: `cleanOverrides`/`applyOverrides`/`editableFields` + the whitelisted path regex. Backs `editWording`/`editText`. Overrides live in `portfolio.yaml` (`overrides:` map). |
 | `content/projects.json` | Active repos (last 12 mo), categorized. Private repos: highlight only, `url: null`. |
-| `packages/core/` | **The platform contract layer** (`@agentize/core`) — the framework-agnostic, fs-free contract every vertical is built on (the portfolio is a *node*, not the owner). Imported via the **`@core/*`** tsconfig alias. Holds the 4 pure `-types` below; storage/llm/registry-logic/A2A move here in later increments. See `packages/core/README.md` + `docs/NETWORK-AND-SPLIT-STRATEGY.md`. |
-| `packages/core/src/instance-types.ts` | **The Agentize Lego contract** (fs-free). `InstanceConfig` = the studs that snap a *vertical pack* onto the core bricks (entity/story/theme/agent.skills/sections/proof/scout/network/owner/storage). `validateInstance()` = the fit-check (rejects unknown theme/vertical, missing skill/section); `instanceToAgentCard()` = any instance → a spec A2A card with zero vertical code. PURE so client + plain-Node test both import it. |
-| `content/instances/*.ts` | Vertical packs (data, `import type` only). `portfolio.ts` = instance #0 (the live site as a config); `learning-center.ts` = the first new vertical (12X Agentic Academy); `unmaskleads.ts` = a real prospect demo (an Agentize instance for UnmaskLeads, a visitor-de-anonymization SaaS — deployed at `INSTANCE=unmaskleads`). Each has a `content` pack (offerings/outcomes/writings) so its A2A agent answers from its own corpus. A new business = a new pack, never a code fork — and a JSON pack emitted by `anyagent agentize --emit-instance`, dropped as `content/instances/<slug>.json`, is loaded + validated at runtime with NO code (the loop closer). **Honesty: unproven outcomes stay `verdict: "unverified"` — e.g. UnmaskLeads' "98% match" is its OWN claim, shown as claimed, never fabricated as audited.** |
-| `content/instances/index.ts` | The pack registry (`INSTANCES` map) + `getActiveInstance()` — reads the `INSTANCE` env var (default `portfolio`), validates the pack, falls back to portfolio on an unknown/invalid pack (warns, never 500s). This is the seam that makes one deploy serve whichever business `INSTANCE` names. Uses `@/` value imports → app-only (not plain-Node loadable; verify it live). |
-| `scripts/test-instance.mjs` | Validates both packs snap on, the card stud emits a spec card per active instance, bad packs are rejected, a 3rd vertical (food truck) also fits. In `npm test`. (The `getActiveInstance` env-selector is verified live against the running route.) |
+| `packages/core/` | **The framework-agnostic contract layer** (imported via the **`@core/*`** tsconfig alias) — the pure, fs-free data models (`InstanceConfig`, the registry model, the verification/jobfit/etc. `-types`). See `packages/core/README.md`. |
+| `packages/core/src/instance-types.ts` | **The site-config contract** (fs-free). `InstanceConfig` = the fields that render a site (entity/story/theme/agent.skills/sections/proof/scout/network/owner/storage). `validateInstance()` = the fit-check (rejects unknown theme, missing skill/section); `instanceToAgentCard()` = a config → a spec A2A card. PURE so client + plain-Node test both import it. |
+| `content/instances/*.ts` | Site configs (data, `import type` only). `portfolio.ts` is the default config (the personal site). A deploy renders the config named by `INSTANCE` (default `portfolio`); drop a `content/instances/<slug>.json` to add one with no code. A config's optional `content` pack grounds its A2A agent; **unproven outcomes stay `verdict: "unverified"`, never fabricated.** |
+| `content/instances/index.ts` | The config registry (`INSTANCES` map) + `getActiveInstance()` — reads the `INSTANCE` env var (default `portfolio`), validates the config, falls back to portfolio on an unknown/invalid one (warns, never 500s). Uses `@/` value imports → app-only (not plain-Node loadable; verify it live). |
+| `scripts/test-instance.mjs` | Validates the portfolio + a synthetic config snap onto the contract, the card stud emits a spec card, bad configs are rejected, and content packs stay honest/private-safe. In `npm test`. |
 | `scripts/test-storage-kv.mjs` | End-to-end test of the durable storage path (`lib/storage.ts`) against a **real Postgres** store (self-loads `POSTGRES_URL`/`DATABASE_URL` from `.env.local`): round-trip, join-survives-fresh-read, key isolation, upsert-overwrites. **Skips cleanly** (exit 0) when no store is configured, so `npm test` stays green in CI; writes only `selftest:*` keys, never real data. In `npm test`. |
 | `app/api/sync/route.ts` · `lib/sync.ts` (+ `packages/core/src/sync-types.ts`) | **Keep a hosted portfolio fresh from its PUBLIC sources.** `POST {instance}` is owner-gated (`ownsInstance` — per-portfolio token or admin): pulls **GitHub** (public API) + **YouTube** (public RSS, resolves `@handle`→channelId), `mergeFeed`s the latest into `content.writings` (dedupe-by-url, newest-first, capped → idempotent), persists. `GET` is the **cron** path (secret `SYNC_SECRET` via `x-sync-secret`, or Vercel-cron `Bearer CRON_SECRET`) → syncs every hosted `/p/<slug>` in the registry (capped `MAX_CRON`, not silent). **Honest feasibility is computed** (`sourceFeasibility`): **X + LinkedIn are NOT server-syncable** (paid/login-walled) — reported, never faked. Pure parsers/merge tested (`scripts/test-sync.mjs`). 1-click via the `syncSources` agent action; scheduled via `vercel.json` cron + `.github/workflows/portfolio-sync.yml`. |
 | `scripts/set-live-links.mjs` (+ `scripts/test-set-live-links.mjs`) | Post-deploy helper: `node scripts/set-live-links.mjs <deploy-url>` rewrites the README "See it live" gallery's `/make`+`/network` cells (between `<!-- LIVE-LINKS -->` markers) to point at the live deploy; the flagship example stays constant. Deterministic, idempotent, refuses to run without the markers. Tested; in `npm test`. |
-| `docs/OUTREACH.md` | **The founder outreach playbook** — how to onboard the first 10 contributors by hand (retention before distribution): the ICP + fit-score, the wedge post, the DM template, a sourced target list (real discovered handles, never invented), the SOURCE→…→MEASURE loop, and an **Outreach Drafting Agent** system prompt (fit-scores + drafts + tracks; a human always sends; never invents a person). The "agentize it" of growth — assistive, human-in-the-loop, never mass-send. |
-| `docs/AGENTIZE.md` | The meta-template design: the Lego contract, the 5 seed verticals, where each self-* / network / safety property lives, and the sequence (the instance-aware refactor is the documented next step). |
+| `docs/OUTREACH.md` | **The founder outreach playbook** — how to onboard the first 10 contributors by hand (retention before distribution): the ICP + fit-score, the wedge post, the DM template, a sourced target list (real discovered handles, never invented), the SOURCE→…→MEASURE loop, and an **Outreach Drafting Agent** system prompt (fit-scores + drafts + tracks; a human always sends; never invents a person). The "instantiate it" of growth — assistive, human-in-the-loop, never mass-send. |
 
 ## Rules
 
@@ -230,7 +216,7 @@ So: `Agentize` is the meta-template ("one core, any business"); `agentic` only e
 npm install
 npm run dev      # local, http://localhost:3000
 npm test         # fast tests (harvest, linkedin, overrides, verification, rate-limit, registry, instance, storage-kv, compass)
-INSTANCE=learning-center npm start   # serve a different vertical from the same code (agent card flips)
+INSTANCE=<slug> npm start   # render a different config from content/instances/
 npm run test:unit # Vitest component tests (jsdom + React Testing Library)
 npm run build    # production build (must stay green)
 ```
@@ -239,20 +225,16 @@ npm run build    # production build (must stay green)
   `repo-activity`, `registry`, `registry/ask`, **`verify-resume`**, and **`job-fit`** have no owner gate, so
   they call `rateLimit()` (lib/rate-limit.ts) per IP — don't remove it or you reopen the quota-drain hole.
 
-- **One core, many verticals — packs are data, not code.** `Agentize` is the rule that the
-  difference between two instances (a portfolio vs a learning center vs a gym) is an `InstanceConfig`
-  pack in `content/instances/`, never a code fork. New verticals add a `vertical` string in
-  `packages/core/src/instance-types.ts` (`VERTICALS`) + a pack; they must pass `validateInstance()` (keep
-  `scripts/test-instance.mjs` green). `VALID_THEMES` must stay in sync with `THEMES` (lib/portfolio.ts)
-  + `themes.css`. The contract is fs-free and client-importable — don't add app/fs imports to it. The
-  the instance-aware wiring is **complete across all four surfaces**: `app/api/agent-card` (card from
-  `getActiveInstance()`), `/api/a2a` (answers from the instance's `content` pack), AND the **visual page**
-  (`app/page.tsx` → `<InstanceSite>` for a non-portfolio slug). Select the active business with the
-  **`INSTANCE`** env var (unset = `portfolio` = the live site, byte-identical — the page branch is an early
-  return, `generateMetadata` returns `{}`, `CopilotProvider`/`PromptStarters` fall back to the portfolio
-  defaults). A new vertical that wants a visual site + an agent that answers as itself MUST add a `content`
-  pack; outcomes must stay honest (`unverified` unless really audited). Keep instance-specific strings out of
-  shared components — pass them via props (labels/grounding/starters/metadata), defaulting to the portfolio.
+- **The site renders from a config — data, not code.** An `InstanceConfig` in `content/instances/`
+  drives the site; changing the config changes the site, never a code fork. A config must pass
+  `validateInstance()` (keep `scripts/test-instance.mjs` green); `VALID_THEMES` stays in sync with `THEMES`
+  (lib/portfolio.ts) + `themes.css`. The contract is fs-free and client-importable — don't add app/fs
+  imports to it. The config-aware wiring spans `app/api/agent-card` (card from `getActiveInstance()`),
+  `/api/a2a` (answers from the config's `content` pack), and the **visual page** (`app/page.tsx` →
+  `<InstanceSite>` for a non-portfolio config). The active config is the **`INSTANCE`** env var (unset =
+  `portfolio` = the live site, byte-identical). Keep config-specific strings out of shared components —
+  pass them via props (labels/grounding/starters/metadata), defaulting to the portfolio. Outcomes stay
+  honest (`unverified` unless really audited).
 
 ## Ship gate (no-mistakes discipline)
 

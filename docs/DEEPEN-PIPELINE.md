@@ -46,7 +46,7 @@ has no business being. A node *receives, grounds, presents, and educates* — no
 - ✅ Be the **notify + educate surface** — the copilot answers "explain what I learned from Engram" from the
   ingested digest/graph/skills (a grounded readable), never invented.
 - ✅ Optionally **register** a *proven* skill as a new copilot action / A2A skill — this is where your agent
-  *gains the borrowed capability* (the capability-loop in [`NETWORK-AND-SPLIT-STRATEGY.md`](NETWORK-AND-SPLIT-STRATEGY.md)).
+  *gains the borrowed capability*.
 
 ### What orchestrates (connects the pieces)
 **super-u's flywheel (`POST /creator/transform`) is the conductor** — it already runs a source through

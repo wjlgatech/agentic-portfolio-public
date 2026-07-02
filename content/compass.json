@@ -14,7 +14,7 @@
       "title": "Improve Agent Frameworks and Tooling",
       "kind": "deepen",
       "rationale": "Expand and enhance the agent frameworks and tooling to support a wider range of applications and use cases",
-      "basis": "openclaw-pro-public, cli-judge, anyagent",
+      "basis": "openclaw-pro-public, cli-judge, the toolchain",
       "firstStep": "Develop a new module for openclaw-pro-public that incorporates the verification harness from cli-judge"
     }
   ],

@@ -1,9 +1,9 @@
 // ─────────────────────────────────────────────────────────────────────────────
-// InstanceSite.tsx — the VISUAL render for a non-portfolio instance (Agentize).
-// A server component that paints any business's site straight from its InstanceConfig:
+// InstanceSite.tsx — the VISUAL render for a non-portfolio instance (Instances).
+// A server component that paints a different brand's site straight from its InstanceConfig:
 // hero (entity + mission), principles (story), offerings (content), writing, and outcomes.
 // The portfolio keeps its own rich, agent-editable <Portfolio>; this is the generic page
-// every OTHER vertical gets for free — so `INSTANCE=learning-center` is a real site, not
+// every OTHER vertical gets for free — so a second config is a real site, not
 // just a curl-able A2A endpoint. Theme applies via a data-theme wrapper (token seam).
 // ─────────────────────────────────────────────────────────────────────────────
 import type { InstanceConfig, SectionSpec, Verdict } from "@core/instance-types";
@@ -141,7 +141,7 @@ export function InstanceSite({ config }: { config: InstanceConfig }) {
 
       <footer className="mx-auto max-w-6xl px-5 py-12 text-sm text-muted">
         <p className="mb-2"><a className="text-accent hover:underline" href="/network">🌐 Explore the Portfolio Network →</a></p>
-        <p>{config.entity.name} · an <strong className="text-ink">Agentize</strong> site ({config.vertical}) · Next.js + CopilotKit, free-LLM survival chain. Ask the agent anything.</p>
+        <p>{config.entity.name} · an <strong className="text-ink">Instances</strong> site ({config.vertical}) · Next.js + CopilotKit, free-LLM survival chain. Ask the agent anything.</p>
       </footer>
     </div>
   );
