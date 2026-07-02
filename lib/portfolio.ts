@@ -59,7 +59,7 @@ export const THEMES = [
 // controls order/visibility/labels; unknown ids are dropped, and any known id
 // missing from the YAML is appended (visible) so a new code section never vanishes.
 export const SECTION_DEFAULTS: Record<string, { title: string; eyebrow: string }> = {
-  practices: { title: "12X Future Practices", eyebrow: "How I compound" },
+  practices: { title: "12X Future Practices", eyebrow: "Compounding everything" },
   projects: { title: "Projects", eyebrow: "Built in the open (last 12 months)" },
   writing: { title: "Writing", eyebrow: "Long-form on LinkedIn" },
   receipts: { title: "Resume Verification", eyebrow: "Proof, not claims — a résumé audited against real artifacts, then closed into a verified one" },

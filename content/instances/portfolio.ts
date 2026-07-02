@@ -47,7 +47,7 @@ export const portfolioInstance: InstanceConfig = {
     ],
   },
   sections: [
-    { id: "practices", title: "12X Future Practices", eyebrow: "How I compound" },
+    { id: "practices", title: "12X Future Practices", eyebrow: "Compounding everything" },
     { id: "projects", title: "Projects", eyebrow: "Built in the open" },
     { id: "writing", title: "Writing", eyebrow: "Long-form on LinkedIn" },
     { id: "receipts", title: "Resume Verification", eyebrow: "Proof, not claims" },

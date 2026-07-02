@@ -5,6 +5,24 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Changed
+- **Practices & Values render as click-to-expand card sliders (were 1→3→12 / 1→2→6 mindmaps).** Same UX as
+  the Writing section: filter chips (the parts) + ‹ › + snap-scroll cards, each click-to-expand for its
+  detail — deliberately self-evident, no intro prose. `components/PracticesSlider.tsx` +
+  `components/ValuesSlider.tsx` replace the mindmaps; the generic `Mindmap` + both adapters are removed.
+  Practices eyebrow "How I compound" → "Compounding everything". _Verified: build + suite green (288)._
+
+### Added
+- **Receipts verifies against LinkedIn recommendations too — an "attestation" evidence tier.** The
+  self-proof auditor gained a second source: an optional "Add LinkedIn recommendations / experience" paste.
+  LinkedIn is **login-walled**, so it's **user-supplied** (paste your own, or a LinkedIn data-export) —
+  zero-trust, never scraped. New evidence type `attestation` (`@core/verification-types`) at a distinct
+  tier from artifacts: a *named* recommendation describing the exact claim IS a proof point for the
+  interpersonal/leadership/impact dimension GitHub can't reach — but the auditor stays honest (testimony
+  never upgrades an unproven *technical* claim → stays "partial"; self-reported titles/dates stay
+  "unverified"). `verify-resume` accepts an optional `linkedin` body param → a labeled `linkedinAttestations`
+  corpus section + tier-aware prompt; rendered as "attested by: <recommender>". +2 tests.
+
 ### Fixed
 - **🔗 A hosted portfolio's whole discovery surface 404'd — it was a network node no one could find or query.** A `/p/<slug>` portfolio joins the registry with base `…/p/<slug>`, but `/.well-known/agent-card.json`, the legacy `/.well-known/agent.json`, `/api/a2a`, and `/llms.txt` were served **only at the deploy root** (the active instance) — every per-slug path 404'd, so the A2A federation couldn't discover or query any `/make` portfolio. Fixed systematically: a shared `resolveInstance(req)` (`lib/instance-resolve.ts`) loads the hosted config from KV on a `?slug=` (else the active instance), and `next.config.mjs` rewrites `/p/:slug/{.well-known/agent-card.json, .well-known/agent.json, api/a2a, llms.txt}` → the matching route with `?slug=`. The agent-card, `/api/a2a`, and `/llms.txt` routes now build from the resolved config with a per-slug **base** (so the card's `url` points at `/p/<slug>/api/a2a`). _Verified live: all four per-slug endpoints 200 and answer AS that portfolio._
 

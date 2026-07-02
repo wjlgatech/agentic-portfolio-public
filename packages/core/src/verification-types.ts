@@ -23,10 +23,13 @@ export const CLAIM_CATEGORIES = ["summary", "experience", "project", "skill", "e
 export type ClaimCategory = (typeof CLAIM_CATEGORIES)[number];
 
 export type EvidenceRef = {
-  type: "repo" | "article" | "profile" | "external-needed";
-  ref: string; // repo name / article title / "profile" / "—"
+  // Evidence TIERS: artifact (repo/article — independent, verifiable) vs attestation (a named
+  // person's LinkedIn recommendation — social testimony, reaches the leadership dimension artifacts
+  // can't) vs external-needed (nothing on file yet).
+  type: "repo" | "article" | "profile" | "attestation" | "external-needed";
+  ref: string; // repo name / article title / recommender name / "profile" / "—"
   url?: string;
-  detail: string; // the concrete signal — a mechanism + metric/status, not a vibe
+  detail: string; // the concrete signal — a mechanism + metric/status, or who attested what
 };
 
 export type ClaimVerdict = {
@@ -78,7 +81,7 @@ const str = (v: unknown) => (typeof v === "string" ? v.trim() : "");
 function cleanEvidence(e: unknown): EvidenceRef | null {
   if (!e || typeof e !== "object") return null;
   const o = e as Record<string, unknown>;
-  const types = ["repo", "article", "profile", "external-needed"];
+  const types = ["repo", "article", "profile", "attestation", "external-needed"];
   const type = (types.includes(String(o.type)) ? String(o.type) : "profile") as EvidenceRef["type"];
   const detail = str(o.detail);
   if (!detail) return null;
