@@ -1,28 +1,37 @@
 <!doctype html>
-<!-- Article thumbnail, 1200×628 — Anthropic style: warm paper (Cloud #F0EEE6), serif display,
-     ink text, ONE accent (Book Cloth coral #d97757). Single-accent by design: the muted
-     Anthropic secondaries (olive/blue) fail chroma+CVD as adjacent marks, so they aren't used. -->
+<!-- Article thumbnail, 1200×628. TOKEN-DRIVEN (same seam as app/themes.css): every color/font/
+     radius reads a CSS variable; render.mjs injects a brand's token block (themes.mjs) after this
+     head, overriding the baked-in Anthropic defaults below. New brand = new token set, zero board
+     edits. Single-accent by design (brand secondaries fail chroma/CVD as adjacent marks). -->
 <html><head><meta charset="utf-8"><style>
+  :root { /* Anthropic defaults — overridden by the injected theme block */
+    --canvas:#F0EEE6; --surface:#FAF9F5; --edge:#E2DED3; --ink:#191919; --muted:#6B6657;
+    --accent:#d97757; --accent-text:#b05730; --onaccent:#FAF9F5;
+    --status-no:#8E3B1F; --status-yes:#4E6A3D;
+    --radius:14px; --edge-w:1px; --shadow:0 1px 2px rgba(0,0,0,.05), 0 10px 30px rgba(40,30,20,.06);
+    --font-sans:ui-sans-serif,system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
+    --font-display:"Iowan Old Style",Palatino,Georgia,"Times New Roman",serif;
+    --display-weight:600; --tracking:-0.015em; --display-transform:none;
+    --hero-bg:radial-gradient(1100px 520px at 78% -8%, rgba(204,120,92,.18), transparent), #F0EEE6;
+    --eyebrow-spacing:2.5px;
+  }
   * { margin:0; box-sizing:border-box; }
-  body { width:1200px; height:628px;
-         font-family:ui-sans-serif,system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
-         background:#F0EEE6; color:#191919;
-         display:flex; flex-direction:column; justify-content:space-between; padding:64px 80px;
-         position:relative; overflow:hidden; }
-  body::before { content:""; position:absolute; inset:0;
-         background:radial-gradient(1100px 520px at 78% -8%, rgba(204,120,92,.18), transparent); }
-  .eyebrow { font-size:26px; color:#b05730; letter-spacing:2.5px; text-transform:uppercase; font-weight:600; position:relative; }
-  .title { font-family:"Iowan Old Style",Palatino,Georgia,"Times New Roman",serif;
-           font-size:92px; font-weight:600; line-height:1.06; letter-spacing:-1px; position:relative; }
+  body { width:1200px; height:628px; font-family:var(--font-sans);
+         background:var(--hero-bg); color:var(--ink);
+         display:flex; flex-direction:column; justify-content:space-between; padding:64px 80px; }
+  .eyebrow { font-size:26px; color:var(--accent-text); letter-spacing:var(--eyebrow-spacing,2.5px);
+             text-transform:uppercase; font-weight:600; }
+  .title { font-family:var(--font-display); font-size:92px; font-weight:var(--display-weight);
+           line-height:1.06; letter-spacing:var(--tracking); text-transform:var(--display-transform); }
   .title .strike { position:relative; white-space:nowrap; }
   .title .strike::after { content:""; position:absolute; left:-2%; right:-2%; top:55%; height:7px;
-                          background:#d97757; border-radius:4px; transform:rotate(-2deg); }
-  .sub { font-size:36px; color:#6B6657; line-height:1.35; max-width:960px; margin-top:26px; position:relative; }
-  .sub b { color:#191919; font-weight:600; }
+                          background:var(--accent); border-radius:4px; transform:rotate(-2deg); }
+  .sub { font-size:36px; color:var(--muted); line-height:1.35; max-width:960px; margin-top:26px; }
+  .sub b { color:var(--ink); font-weight:600; }
   .foot { display:flex; justify-content:space-between; align-items:center; font-size:27px;
-          border-top:1px solid #E2DED3; padding-top:26px; position:relative; }
-  .foot .cta { color:#b05730; font-weight:600; }
-  .foot .brand { color:#6B6657; }
+          border-top:var(--edge-w) solid var(--edge); padding-top:26px; }
+  .foot .cta { color:var(--accent-text); font-weight:600; }
+  .foot .brand { color:var(--muted); }
 </style></head><body>
   <div class="eyebrow">From dead document to living proof</div>
   <div>

@@ -12,3 +12,6 @@ npm-debug.log*
 next-env.d.ts
 *.tsbuildinfo
 .gstack/
+
+# On-demand brand renders (node docs/marketing/media/src/render.mjs --theme <name>) — only the default (anthropic) set is committed
+docs/marketing/media/themes/
