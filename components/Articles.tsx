@@ -17,18 +17,65 @@ function whenLabel(a: Article): string {
   return a.date || "";
 }
 
-export function Articles({ articles }: { articles: Article[] }) {
+export function Articles({
+  articles,
+  isOwner = false,
+  onSync,
+  linkedInTip,
+}: {
+  articles: Article[];
+  isOwner?: boolean;
+  onSync?: () => Promise<string>;
+  linkedInTip?: string;
+}) {
   const categories = ["All", ...Array.from(new Set(articles.map((a) => a.category)))];
   const [active, setActive] = useState("All");
+  const [syncing, setSyncing] = useState(false);
+  const [syncMsg, setSyncMsg] = useState("");
   const rowRef = useRef<HTMLDivElement>(null);
+
+  async function handleSync() {
+    if (!onSync || syncing) return;
+    setSyncing(true);
+    setSyncMsg("Syncing your feeds…");
+    try {
+      setSyncMsg(await onSync());
+    } catch {
+      setSyncMsg("Sync failed — try again.");
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  // Owner sync controls — server feeds (Substack/Medium/RSS) + the in-browser LinkedIn harvest.
+  const controls = isOwner && (onSync || linkedInTip) ? (
+    <div className="mb-4">
+      <div className="flex flex-wrap items-center gap-2">
+        {onSync && (
+          <button onClick={handleSync} disabled={syncing} className="chip text-accent hover:border-accent disabled:opacity-50" title="Pull new posts from your Substack/Medium/RSS feeds">
+            {syncing ? "⟳ Syncing…" : "⟳ Sync feeds"}
+          </button>
+        )}
+        {linkedInTip && (
+          <button onClick={() => setSyncMsg(linkedInTip)} className="chip text-muted hover:border-accent hover:text-ink" title="LinkedIn is login-walled — harvest it in your own browser">
+            in Sync from LinkedIn
+          </button>
+        )}
+      </div>
+      {syncMsg && <p className="mt-2 text-sm text-muted">{syncMsg}</p>}
+    </div>
+  ) : null;
 
   if (articles.length === 0) {
     return (
-      <p className="text-muted">
-        Articles coming soon — just tell the agent{" "}
-        <span className="text-accent">“add my LinkedIn article …”</span>, or edit{" "}
-        <code className="text-accent">content/portfolio.yaml</code>.
-      </p>
+      <div>
+        {controls}
+        <p className="text-muted">
+          Articles coming soon — {isOwner ? "hit ⟳ Sync feeds above, or " : "just "}tell the agent{" "}
+          <span className="text-accent">“add my LinkedIn article …”</span>, or edit{" "}
+          <code className="text-accent">content/portfolio.yaml</code>.
+        </p>
+      </div>
     );
   }
 
@@ -44,6 +91,7 @@ export function Articles({ articles }: { articles: Article[] }) {
 
   return (
     <div>
+      {controls}
       <div className="mb-4 flex flex-wrap items-center gap-2">
         {categories.map((c) => (
           <button

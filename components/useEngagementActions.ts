@@ -20,11 +20,15 @@ type EngagementCtx = {
   harvestTip: () => string;
   onVerify: (resume: string) => Promise<string>;
   onScout: () => Promise<string>;
+  onSyncProjects: () => Promise<string>;
+  onSyncWriting: () => Promise<string>;
   onDraftResume: () => Promise<{ draft?: string; error?: string }>;
   onScoreJob: (input: string) => Promise<string>;
 };
 
-export function useEngagementActions({ cfgRef, isOwnerRef, tokenRef, gate, persist, runImport, harvestTip, onVerify, onScout, onDraftResume, onScoreJob }: EngagementCtx) {
+const WRITING_KINDS = ["substack", "medium", "rss", "linkedin", "x"];
+
+export function useEngagementActions({ cfgRef, isOwnerRef, tokenRef, gate, persist, runImport, harvestTip, onVerify, onScout, onSyncProjects, onSyncWriting, onDraftResume, onScoreJob }: EngagementCtx) {
   useCopilotAction({
     name: "addArticle",
     description:
@@ -172,6 +176,55 @@ export function useEngagementActions({ cfgRef, isOwnerRef, tokenRef, gate, persi
     handler: async () => {
       if (!isOwnerRef.current) return "🔒 Only the owner can run the scout. Unlock owner mode first.";
       return onScout();
+    },
+  });
+
+  useCopilotAction({
+    name: "syncProjectsFromGithub",
+    description:
+      "Sync the Projects section from GitHub: pull the owner's repos (public AND private via their " +
+      "server-side token) and MERGE — updating live fields (language, stars, last-pushed, private, url) and " +
+      "adding new repos, while PRESERVING curation (category, highlight, featured) and never deleting. " +
+      "Private repos keep a derived 'view →' link. Owner only.",
+    parameters: [],
+    handler: async () => {
+      if (!isOwnerRef.current) return "🔒 Only the owner can sync projects. Unlock owner mode first.";
+      return onSyncProjects();
+    },
+  });
+
+  useCopilotAction({
+    name: "syncWriting",
+    description:
+      "Sync the Writing section from its configured sources: pulls new posts from server-syncable feeds " +
+      "(Substack, Medium, any RSS) and merges them (deduped). Login-walled sources (LinkedIn, X) can't be " +
+      "server-synced — they're harvested in the browser. Owner only.",
+    parameters: [],
+    handler: async () => {
+      if (!isOwnerRef.current) return "🔒 Only the owner can sync Writing. Unlock owner mode first.";
+      return onSyncWriting();
+    },
+  });
+
+  useCopilotAction({
+    name: "addWritingSource",
+    description:
+      "Add a source to sync Writing from (MCP-ready registry). kind = substack|medium|rss (server-synced) " +
+      "or linkedin|x (browser-harvest). ref = a handle (e.g. @me, myblog) or a full feed/profile URL. " +
+      "Owner only. After adding, say “sync writing” to pull posts.",
+    parameters: [
+      { name: "kind", type: "string", description: "substack | medium | rss | linkedin | x", required: true },
+      { name: "ref", type: "string", description: "handle (e.g. @me, myblog) or a full feed/profile URL", required: true },
+      { name: "label", type: "string", description: "display label / category (optional)", required: false },
+    ],
+    handler: ({ kind, ref, label }: { kind: string; ref: string; label?: string }) => {
+      const cur = cfgRef.current;
+      const k = String(kind ?? "").toLowerCase().trim();
+      if (!WRITING_KINDS.includes(k)) return `Unknown source kind “${kind}”. Use substack|medium|rss|linkedin|x.`;
+      const src = { kind: k, ref: String(ref ?? "").trim(), label: String(label ?? "").trim() };
+      if (!src.ref) return "Give the source's handle or feed/profile URL.";
+      const writingSources = [...(cur.writingSources ?? []), src] as typeof cur.writingSources;
+      return gate({ ...cur, writingSources }, `add the ${k} writing source “${src.ref}”`, `Added ${k} source “${src.ref}”. Say “sync writing” to pull posts.`);
     },
   });
 
