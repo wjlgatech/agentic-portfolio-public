@@ -1,29 +1,40 @@
 <!doctype html>
-<!-- Infographic 2: dead PDF vs living portfolio. Anthropic style. Status pair = dark rust /
-     dark green (WCAG-dark for small text) and ALWAYS icon+words, never color alone. 1080×1350. -->
+<!-- Infographic 2: dead PDF vs living portfolio. TOKEN-DRIVEN (see thumbnail.html). The ✗/✓
+     status pair uses --status-no/--status-yes and ALWAYS rides with icon + words. 1080×1350. -->
 <html><head><meta charset="utf-8"><style>
+  :root { /* Anthropic defaults — overridden by the injected theme block */
+    --canvas:#F0EEE6; --surface:#FAF9F5; --edge:#E2DED3; --ink:#191919; --muted:#6B6657;
+    --accent:#d97757; --accent-text:#b05730; --onaccent:#FAF9F5;
+    --status-no:#8E3B1F; --status-yes:#4E6A3D;
+    --radius:14px; --edge-w:1px; --shadow:0 1px 2px rgba(0,0,0,.05), 0 10px 30px rgba(40,30,20,.06);
+    --font-sans:ui-sans-serif,system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
+    --font-display:"Iowan Old Style",Palatino,Georgia,"Times New Roman",serif;
+    --display-weight:600; --tracking:-0.015em; --display-transform:none;
+    --hero-bg:#F0EEE6; --eyebrow-spacing:2.5px;
+  }
   * { margin:0; box-sizing:border-box; }
-  body { width:1080px; height:1350px;
-         font-family:ui-sans-serif,system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
-         background:#F0EEE6; color:#191919; display:flex; flex-direction:column; padding:72px 72px 56px; }
-  .eyebrow { font-size:23px; color:#b05730; letter-spacing:2.5px; text-transform:uppercase; font-weight:600; margin-bottom:16px; }
-  h1 { font-family:"Iowan Old Style",Palatino,Georgia,serif; font-size:58px; font-weight:600;
-       letter-spacing:-.5px; line-height:1.1; margin-bottom:38px; }
+  body { width:1080px; height:1350px; font-family:var(--font-sans);
+         background:var(--canvas); color:var(--ink); display:flex; flex-direction:column; padding:72px 72px 56px; }
+  .eyebrow { font-size:23px; color:var(--accent-text); letter-spacing:var(--eyebrow-spacing,2.5px);
+             text-transform:uppercase; font-weight:600; margin-bottom:16px; }
+  h1 { font-family:var(--font-display); font-size:58px; font-weight:var(--display-weight);
+       letter-spacing:var(--tracking); text-transform:var(--display-transform); line-height:1.1; margin-bottom:38px; }
   table { width:100%; border-collapse:separate; border-spacing:0 10px; flex:1; }
-  th { font-size:29px; font-weight:700; padding:18px 22px; border-radius:14px; text-align:left; }
+  th { font-size:29px; font-weight:700; padding:18px 22px; border-radius:var(--radius); text-align:left; }
   th.rowlabel { width:42%; }
-  th.dead   { background:#FAF9F5; border:1.5px solid #B0AEA5; color:#191919; }
-  th.living { background:rgba(217,119,87,.12); border:1.5px solid #d97757; color:#191919; }
-  .tag { font-size:21px; font-weight:400; color:#6B6657; display:block; margin-top:4px; }
-  td { padding:19px 22px; font-size:28px; background:#FAF9F5; border-top:1px solid #E2DED3; border-bottom:1px solid #E2DED3; }
-  td.rowlabel { color:#191919; border-radius:14px 0 0 14px; border-left:1px solid #E2DED3; line-height:1.25; }
+  th.dead   { background:var(--surface); border:1.5px solid var(--muted); color:var(--ink); }
+  th.living { background:color-mix(in srgb, var(--accent) 12%, var(--surface)); border:1.5px solid var(--accent); color:var(--ink); }
+  .tag { font-size:21px; font-weight:400; color:var(--muted); display:block; margin-top:4px; }
+  td { padding:19px 22px; font-size:28px; background:var(--surface);
+       border-top:var(--edge-w) solid var(--edge); border-bottom:var(--edge-w) solid var(--edge); }
+  td.rowlabel { color:var(--ink); border-radius:var(--radius) 0 0 var(--radius); border-left:var(--edge-w) solid var(--edge); line-height:1.25; }
   td.v { text-align:center; font-weight:600; }
-  td.no  { color:#8E3B1F; }
-  td.yes { color:#4E6A3D; }
-  td:last-child { border-radius:0 14px 14px 0; border-right:1px solid #E2DED3; }
+  td.no  { color:var(--status-no); }
+  td.yes { color:var(--status-yes); }
+  td:last-child { border-radius:0 var(--radius) var(--radius) 0; border-right:var(--edge-w) solid var(--edge); }
   .foot { display:flex; justify-content:space-between; font-size:23px; margin-top:26px;
-          border-top:1px solid #E2DED3; padding-top:22px; }
-  .foot .cta { color:#b05730; font-weight:600; } .foot .brand { color:#6B6657; }
+          border-top:var(--edge-w) solid var(--edge); padding-top:22px; }
+  .foot .cta { color:var(--accent-text); font-weight:600; } .foot .brand { color:var(--muted); }
 </style></head><body>
   <div class="eyebrow">Pick your ambassador</div>
   <h1>Dead PDF vs. living portfolio</h1>
