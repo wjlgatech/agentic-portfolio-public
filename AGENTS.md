@@ -254,6 +254,22 @@ npm run build    # production build (must stay green)
   pack; outcomes must stay honest (`unverified` unless really audited). Keep instance-specific strings out of
   shared components — pass them via props (labels/grounding/starters/metadata), defaulting to the portfolio.
 
+## Ship gate (no-mistakes discipline)
+
+Nothing merges un-green. Before any push, every change must pass **review → test → docs → lint →
+live-verify at the user's altitude**, and you keep the **evidence** (paste the result):
+
+1. **Build** — `npm run build` is THE gate (TypeScript + Next compile). 2. **Test** — `npm test` (pure
+logic). 3. **UI changes** — `npm run test:e2e` (real-browser typing; curl/SSR cannot catch focus/
+interaction bugs). 4. **Live-verify** — for a deployed change, hit the **live** surface (a real request
+for an API, a real browser for UI), not just the build. 5. **Docs** — CHANGELOG + README + this file.
+6. **Fix the class** — if a bug is a pattern, grep ALL paths and fix them together.
+
+`.no-mistakes.yaml` pins these commands for [`git push no-mistakes`](https://github.com/kunchenguid/no-mistakes)
+(a push-gate that runs the pipeline in a disposable worktree and forwards to `origin` only when green;
+install once, then `git push no-mistakes` instead of `git push`). Safe findings auto-fix; intent-touching
+ones escalate to the human.
+
 ## Doc-sync
 
 Per the workspace policy: any change to feature code, the API surface, the data model,

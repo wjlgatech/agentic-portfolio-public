@@ -1,0 +1,11 @@
+# no-mistakes gate config (github.com/kunchenguid/no-mistakes).
+# `git push no-mistakes` runs review → test → docs → lint in a disposable worktree and only
+# forwards to origin when every check is green. This pins the EXACT commands the maintainers run,
+# instead of leaving detection to the agent — the same "verify, don't vibe" discipline this repo
+# already lives by (build is the real gate; UI changes must pass real-browser typing).
+commands:
+  # `npm run build` (TypeScript + Next compile) is THE gate; then the pure-logic unit suite.
+  test: "npm run build && npm test"
+  lint: "npm run lint"
+# For any change to a FORM or interactive UI, also run: TEST_URL=<url> npm run test:e2e
+# (Playwright types char-by-char — curl/SSR cannot catch focus-loss / interaction bugs).
