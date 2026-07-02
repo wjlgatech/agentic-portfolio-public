@@ -23,5 +23,13 @@ const rep = normalizeReport({ claims: [{ claim: "ok", verdict: "corroborated", c
 check("normalizeReport keeps only valid claims", rep.claims.length === 1);
 check("normalizeReport recomputes the score (1/1 = 100)", rep.summary.overallScore === 100);
 
+// attestation is a valid evidence tier (LinkedIn recommendations) — survives normalize, not coerced
+const att = normalizeReport({
+  claims: [{ claim: "led a team of 8", category: "experience", verdict: "partial", evidence: [{ type: "attestation", ref: "Jane Doe, VP Eng", detail: "recommends: drove the platform team's adoption" }] }],
+  summary: { headline: "" },
+});
+check("attestation evidence type is preserved (not coerced to profile)", att.claims[0].evidence[0].type === "attestation");
+check("attestation carries the recommender + what they attest", att.claims[0].evidence[0].ref.includes("Jane Doe") && att.claims[0].evidence[0].detail.includes("adoption"));
+
 console.log(ok ? "✅ verification: all pass" : "❌ verification FAIL");
 process.exit(ok ? 0 : 1);

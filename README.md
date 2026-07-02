@@ -28,7 +28,7 @@ Ask its on-page agent *"what has Paul built?"* or *"is he a fit for a staff ML r
 <!-- LIVE-LINKS:START (regenerate: node scripts/set-live-links.mjs <deploy-url>) -->
 | See it | Open | What to try |
 |---|---|---|
-| 🧑‍💻 **A live portfolio** | [agentic-portfolio-lovat.vercel.app ↗](https://agentic-portfolio-lovat.vercel.app/) | Chat with the agent; open **Receipts** (claims audited against public GitHub). |
+| 🧑‍💻 **A live portfolio** | [agentic-portfolio-lovat.vercel.app ↗](https://agentic-portfolio-lovat.vercel.app/) | Chat with the agent; open **Receipts** (claims audited against public GitHub — plus, optionally, your own pasted LinkedIn recommendations as an *attestation* tier). Practices & Values are click-to-expand card sliders. |
 | 🌐 **The network** | [/network ↗](https://agentic-portfolio-public.vercel.app/network) | Browse agent-portfolios; ask one question and every node's agent answers. |
 | ✨ **Make your own** | [**`/make`** — try it live ↗](https://agentic-portfolio-public.vercel.app/make) | Give **name + email + your résumé _or_ just your LinkedIn URL** → your own live portfolio in the same style, customized to you. |
 <!-- LIVE-LINKS:END -->

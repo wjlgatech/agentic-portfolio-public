@@ -27,8 +27,8 @@ import { Deepen } from "@/components/Deepen";
 import { Compass } from "@/components/Compass";
 import { OwnerBadge } from "@/components/OwnerBadge";
 import { CustomSectionBody } from "@/components/sections";
-import { PracticesMindmap } from "@/components/PracticesMindmap";
-import { ValuesMindmap } from "@/components/ValuesMindmap";
+import { PracticesSlider } from "@/components/PracticesSlider";
+import { ValuesSlider } from "@/components/ValuesSlider";
 import { useLayoutActions } from "@/components/useLayoutActions";
 import { useContentActions } from "@/components/useContentActions";
 import { useEngagementActions } from "@/components/useEngagementActions";
@@ -394,7 +394,7 @@ export function Portfolio({
   // it; serverless can't persist the JSON, so the owner commits content/verification.json.
   // PUBLIC self-proof: anyone can paste a résumé and watch it audited (the route is
   // rate-limited). Only the OWNER's run publishes; a visitor's run is shown in-session only.
-  async function onVerify(resume: string): Promise<string> {
+  async function onVerify(resume: string, linkedin?: string): Promise<string> {
     try {
       const res = await fetch("/api/verify-resume", {
         method: "POST",
@@ -402,7 +402,7 @@ export function Portfolio({
           "Content-Type": "application/json",
           ...(tokenRef.current ? { "x-portfolio-owner": tokenRef.current } : {}),
         },
-        body: JSON.stringify({ resume: String(resume || "") }),
+        body: JSON.stringify({ resume: String(resume || ""), linkedin: String(linkedin || "") }),
       });
       const data = await res.json();
       if (!res.ok) return `Couldn't verify that résumé: ${data.error || res.status}`;
@@ -643,14 +643,14 @@ export function Portfolio({
   function renderBody(s: SectionMeta) {
     if (s.custom) return <CustomSectionBody items={s.items ?? []} />;
     switch (s.id) {
-      case "practices": return <PracticesMindmap practices={futurePractices} />;
+      case "practices": return <PracticesSlider practices={futurePractices} />;
       case "projects": return <Projects projects={projects} />;
       case "writing": return <Articles articles={cfg.articles} />;
       case "receipts": return <Receipts report={report} isOwner={isOwner} onVerify={onVerify} />;
       case "job-fit": return <JobFit fit={fit} evalReport={initialFitEval} onScore={onScoreJob} />;
       case "deep-dives": return <Deepen feed={initialDeepen} />;
       case "compass": return <Compass report={compass} isOwner={isOwner} />;
-      case "values": return <ValuesMindmap values={values} love={love} />;
+      case "values": return <ValuesSlider values={values} love={love} />;
       default: return null;
     }
   }

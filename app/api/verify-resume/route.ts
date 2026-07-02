@@ -36,8 +36,12 @@ Rules (from the career-os proof-point standard):
 - Private repos: their existence + recency + highlight count as evidence, but you cannot cite their internals.
 - context: one sharp sentence on where/how the person actually practiced this. gapCloser: the single external artifact that would settle a partial/unverified claim.
 
+EVIDENCE TIERS — weigh them differently:
+- ARTIFACT (repos, articles): independent + verifiable. REQUIRED to "corroborate" a technical/output claim ("built X", "shipped Y").
+- ATTESTATION (LinkedIn recommendations/experience the person supplied, under linkedinAttestations): a NAMED person vouching. This is REAL, revealing evidence for the INTERPERSONAL / LEADERSHIP / IMPACT dimension artifacts can't reach ("led a team of 8", "mentored", "drove adoption"). A specific recommendation from a named person that describes the EXACT claim IS a proof point for such a claim — cite it as {"type":"attestation","ref":"<recommender name/title>","detail":"<what they attest>"}. BUT attestation is SOLICITED + social, so keep it honest: (a) a technical/output claim backed ONLY by testimony (no artifact) is at most "partial" — testimony never upgrades an unproven build claim to corroborated; (b) a generic/undated/unnamed rec is weak → "partial"; (c) self-reported titles/dates/employers stay "unverified" unless a named recommender independently states them.
+
 Extract the résumé into atomic claims across categories: summary, experience, project, skill, education, other. Output STRICT JSON only, no prose:
-{"claims":[{"claim","category","verdict","confidence":0..1,"inferred":bool,"evidence":[{"type":"repo|article|profile|external-needed","ref","url","detail"}],"context","gapCloser"}],"headline":"one honest sentence"}`;
+{"claims":[{"claim","category","verdict","confidence":0..1,"inferred":bool,"evidence":[{"type":"repo|article|profile|attestation|external-needed","ref","url","detail"}],"context","gapCloser"}],"headline":"one honest sentence"}`;
 
 async function judge(openai: OpenAI, model: string, corpus: string, resume: string): Promise<string> {
   const messages = [
@@ -60,7 +64,7 @@ async function judge(openai: OpenAI, model: string, corpus: string, resume: stri
 // room for the prompt + résumé + the model's output under the limit.
 const CORPUS_CHAR_BUDGET = 22000;
 
-function buildCorpus(github: Awaited<ReturnType<typeof buildGithubEvidence>>): string {
+function buildCorpus(github: Awaited<ReturnType<typeof buildGithubEvidence>>, linkedin: string): string {
   const projects = projectsData as Project[];
   const articles = readPortfolio().articles.slice(0, 20);
   const base = {
@@ -71,6 +75,9 @@ function buildCorpus(github: Awaited<ReturnType<typeof buildGithubEvidence>>): s
     portfolioProjects: projects.map((p) => ({ name: p.name, category: p.category, highlight: p.highlight, private: p.private, language: p.language, lastPush: p.pushed, url: p.url })),
     articles: articles.map((a) => ({ title: a.title, summary: a.summary.slice(0, 200), url: a.url, category: a.category })),
     liveGithub: github.slice(0, 16).map((r) => ({ name: r.name, language: r.language, lastPush: r.pushedAt, stars: r.stars, url: r.url, description: r.description, readmeExcerpt: r.readme })),
+    // ATTESTATION tier — the person's own LinkedIn recommendations/experience (user-supplied; LinkedIn
+    // is login-walled so it can't be server-fetched). Testimony, not an artifact — weighed per the tiers.
+    linkedinAttestations: linkedin ? linkedin.slice(0, 6000) : undefined,
   };
   let json = JSON.stringify(base);
   if (json.length > CORPUS_CHAR_BUDGET) {
@@ -94,11 +101,15 @@ export async function POST(req: NextRequest) {
   }
 
   let resume = "";
+  let linkedin = "";
   try {
     const body = await req.json();
     resume = String(body?.resume ?? "").trim();
+    // Optional ATTESTATION source: the person's own LinkedIn recommendations/experience, pasted or
+    // exported (LinkedIn is login-walled → user-supplied, zero-trust; never a server scrape).
+    linkedin = String(body?.linkedin ?? "").trim().slice(0, 8000);
   } catch {
-    return NextResponse.json({ error: "Send { resume: <text> }." }, { status: 400 });
+    return NextResponse.json({ error: "Send { resume: <text>, linkedin?: <text> }." }, { status: 400 });
   }
   if (resume.length < 40) {
     return NextResponse.json({ error: "That résumé looks too short to verify — paste the full text." }, { status: 400 });
@@ -107,7 +118,7 @@ export async function POST(req: NextRequest) {
   // Prioritize the public repos the portfolio already features for README deep-reads.
   const featuredPublic = (projectsData as Project[]).filter((p) => !p.private && p.url).map((p) => p.name);
   const github = await buildGithubEvidence(profile.handle, featuredPublic);
-  const corpus = buildCorpus(github);
+  const corpus = buildCorpus(github, linkedin);
 
   let parsed: unknown = {};
   try {

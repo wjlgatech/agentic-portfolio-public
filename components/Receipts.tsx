@@ -24,9 +24,11 @@ const VERDICT_CLASS: Record<Verdict, string> = {
   contradicted: "border-red-500/50 text-red-500",
 };
 
-export function Receipts({ report, isOwner, onVerify }: { report: VerificationReport; isOwner: boolean; onVerify: (resume: string) => Promise<string> }) {
+export function Receipts({ report, isOwner, onVerify }: { report: VerificationReport; isOwner: boolean; onVerify: (resume: string, linkedin?: string) => Promise<string> }) {
   const [open, setOpen] = useState(false);
   const [resume, setResume] = useState("");
+  const [linkedin, setLinkedin] = useState("");
+  const [showLi, setShowLi] = useState(false);
   const [busy, setBusy] = useState(false);
   const [verifyNote, setVerifyNote] = useState("");
 
@@ -38,8 +40,8 @@ export function Receipts({ report, isOwner, onVerify }: { report: VerificationRe
   async function runVerify() {
     if (resume.trim().length < 40) { setVerifyNote("Paste the full résumé text (a few lines at least)."); return; }
     setBusy(true);
-    setVerifyNote("Auditing each claim against live public GitHub…");
-    setVerifyNote(await onVerify(resume.trim()));
+    setVerifyNote(linkedin.trim() ? "Auditing each claim against live GitHub + your LinkedIn attestations…" : "Auditing each claim against live public GitHub…");
+    setVerifyNote(await onVerify(resume.trim(), linkedin.trim() || undefined));
     setBusy(false);
   }
 
@@ -48,7 +50,8 @@ export function Receipts({ report, isOwner, onVerify }: { report: VerificationRe
     <div className="card border-accent/30">
       <p className="text-sm font-medium uppercase tracking-widest text-accent">Verify it yourself</p>
       <p className="mt-1 text-sm text-muted">
-        Skeptical? Paste a résumé — mine, or any — and watch each claim audited live against real public GitHub.
+        Skeptical? Paste a résumé — mine, or any — and watch each claim audited live against real public GitHub
+        {linkedin.trim() ? " + your LinkedIn recommendations" : ""}.
         Honest by design: unprovable claims come back <span className="text-ink">unverified</span>, never rubber-stamped.
       </p>
       <textarea
@@ -58,6 +61,25 @@ export function Receipts({ report, isOwner, onVerify }: { report: VerificationRe
         placeholder="Paste résumé / CV text here…"
         className="mt-3 w-full rounded-theme border border-edge bg-surface p-3 text-sm text-ink"
       />
+
+      {/* Optional ATTESTATION source: LinkedIn recommendations/experience. LinkedIn is login-walled, so
+          it can't be server-fetched — paste your own (or a LinkedIn data-export). Zero-trust, never scraped. */}
+      <button onClick={() => setShowLi((v) => !v)} className="mt-2 text-xs font-medium text-accent">
+        {showLi ? "▾ Hide LinkedIn recommendations" : "＋ Add LinkedIn recommendations / experience (stronger — attests the human side)"}
+      </button>
+      {showLi && (
+        <>
+          <textarea
+            value={linkedin}
+            onChange={(e) => setLinkedin(e.target.value)}
+            rows={4}
+            placeholder="Paste your LinkedIn recommendations + experience here — login-walled, so paste your own (Settings → Get a copy of your data → Recommendations_Received). Named recommendations attest leadership/impact that GitHub can't."
+            className="mt-2 w-full rounded-theme border border-edge bg-surface p-3 text-sm text-ink"
+          />
+          <p className="mt-1 text-xs text-muted">Testimony, not an artifact — the auditor uses it for the interpersonal/leadership dimension but won&apos;t let a named rec corroborate an unproven <em>technical</em> claim.</p>
+        </>
+      )}
+
       <div className="mt-2 flex flex-wrap items-center gap-3">
         <button onClick={runVerify} disabled={busy} className="chip border-accent/50 text-accent disabled:opacity-50">
           {busy ? "Verifying…" : "Verify résumé"}
@@ -170,7 +192,7 @@ export function Receipts({ report, isOwner, onVerify }: { report: VerificationRe
                   <ul className="mt-3 grid gap-1.5 text-sm">
                     {c.evidence.map((e, j) => (
                       <li key={j} className="text-muted">
-                        <span className="text-accent">{e.type === "external-needed" ? "needs" : "evidence"}:</span>{" "}
+                        <span className="text-accent">{e.type === "external-needed" ? "needs" : e.type === "attestation" ? "attested by" : "evidence"}:</span>{" "}
                         {e.url ? (
                           <a href={e.url} target="_blank" rel="noreferrer" className="text-ink underline decoration-edge hover:decoration-accent">{e.ref}</a>
                         ) : (
