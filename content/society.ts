@@ -51,6 +51,43 @@ export const TRUE_TENETS: Tenet[] = [
   },
 ];
 
+// ── TRUE Merit — the honorable, NON-transferable reputation credit (not a coin you can buy or
+// trade). It IS your standing/leverage from the standing engine: earned from real, PEER-ATTESTED
+// contribution, reputation-weighted, capped, and decaying with inactivity — so it can't be gamed,
+// bought, or speculated. The more you contribute, the more the network's gravity works for you.
+export const EARN: { act: string; credit: string }[] = [
+  { act: "Ship your live agentic portfolio", credit: "Your baseline — you're a real, queryable node." },
+  { act: "Refer someone who ships their own", credit: "Credit when they go live — never for just inviting." },
+  { act: "Contribute to another member's portfolio", credit: "Credit + a vouch — when they accept it." },
+  { act: "Give feedback that gets acted on", credit: "Attested by the person you actually helped." },
+  { act: "Collaborate on someone's project", credit: "Credit + a vouch when they name you." },
+  { act: "Teach what you build (a reusable teach-back)", credit: "Raises your Understandable (U) score." },
+];
+
+// What your standing unlocks. Starts free (recognition + matchmaking — what people actually want),
+// and scales to sponsor-backed material rewards as the network grows.
+export const BENEFITS: { tier: string; standing: string; perks: string[] }[] = [
+  { tier: "Member", standing: "standing ≥ 40", perks: ["Verified-contributor badge", "Listed in the network directory", "Your agent is discoverable + queryable by others"] },
+  { tier: "Steward", standing: "standing ≥ 65", perks: ["Featured on the network leaderboard", "Priority in “ask the network”", "Matchmaking — the network routes relevant intros & opportunities to you"] },
+  { tier: "Fellow / TRUE Hero", standing: "standing ≥ 85", perks: ["Quarterly spotlight, amplified across the network", "A curated intro to a real opportunity", "Invite-only events + a governance seat"] },
+];
+
+// Scale-gated: unlocked as the network grows and sponsors join. Listed honestly as "coming",
+// never promised before we can deliver — you earn the STANDING now; the material perks follow.
+export const SPONSOR_PERKS: string[] = [
+  "Free compute credits", "AI-conference tickets", "Job & startup-founder referrals", "Mentorship from senior builders",
+];
+
+// The TRUE Hero Award — quarterly, one per TRUE perspective. Winners are computed from the standing
+// ledger (honest, not a popularity contest), get a permanent portfolio badge + a network spotlight.
+export const AWARDS: { emoji: string; title: string; forWhat: string }[] = [
+  { emoji: "🏆", title: "Most Transferable", forWhat: "the capability the most other members adopted." },
+  { emoji: "🔁", title: "Best Reuse", forWhat: "the most reused + refined artifact." },
+  { emoji: "🎓", title: "Best Teacher (U-loop)", forWhat: "the clearest teach-back on a real problem." },
+  { emoji: "🤝", title: "Top Collaborator", forWhat: "showed up on the most other members' projects." },
+  { emoji: "🌱", title: "Community Multiplier", forWhat: "lifted the most other members 10X." },
+];
+
 // The culture — the difference between an elite society and a club you can be passive in.
 export const CREED: { title: string; body: string }[] = [
   { title: "Contribute or step aside", body: "This is a society of builders. Passivity quietly decays your standing; generativity raises it. Standing is earned — and re-earned." },

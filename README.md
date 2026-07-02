@@ -172,6 +172,14 @@ Using this repo invites you to apply to a **selective builders' society** govern
 Experimentable* — for humans **and** their agents (skill / plugin / workflow / hook). Standing is *earned*
 from real artifacts, not granted; passivity forfeits it; every complaint becomes a 10X you own. See **`/society`**.
 
+**Contribution compounds — the TRUE Merit + TRUE Hero Award.** `/society` spells out the payoff: you earn
+**TRUE Merit** (an honorable, *non-transferable* reputation credit — it's your standing itself, never a coin you
+buy or trade) by peer-attested contribution — referring someone who ships, contributing to another's portfolio,
+feedback that's acted on, collaborating, teaching. Higher standing unlocks a **benefits ladder** (verified badge →
+leaderboard + network matchmaking → spotlight + invite-only events; sponsor-backed compute/tickets/referrals as the
+network grows), and the **quarterly TRUE Hero Award** honors the top contributor on each TRUE perspective, computed
+from the standing ledger. Earned, never bought.
+
 **Your standing = your leverage.** On `/society`, paste your portfolio URL and *check your standing*: it's
 **measured, not claimed** — computed in code (`packages/core/src/society-types.ts`) from observed signals (is
 your portfolio live? does it expose an A2A agent card with skills? does it teach?) plus reputation-weighted

@@ -5,7 +5,7 @@
 // earned, not granted. High privilege, high standard — a scenius of builders.
 
 import { useState } from "react";
-import { TRUE_TENETS, CREED } from "@/content/society";
+import { TRUE_TENETS, CREED, EARN, BENEFITS, SPONSOR_PERKS, AWARDS } from "@/content/society";
 import { CREATOR, CREATOR_URL, REPO_URL } from "@/components/MadeWith";
 
 export default function Society() {
@@ -100,6 +100,64 @@ export default function Society() {
             </div>
           </div>
         )}
+      </section>
+
+      {/* ── Why join: TRUE Merit + the benefits ladder ── */}
+      <section className="mt-12">
+        <h2 className="section-title">Why join — your contribution compounds into leverage</h2>
+        <p className="mt-1 text-sm text-muted">
+          <strong className="text-ink">Make any dream true in 1/10 the time</strong> — with AI <em>and</em> people who
+          trust you. Your <strong className="text-ink">TRUE Merit</strong> is an honorable credit you <em>earn</em>, never
+          buy: it&apos;s your standing itself — reputation-weighted, peer-attested, and it decays if you go passive. Not a
+          coin to trade; trust you can&apos;t fake.
+        </p>
+
+        <h3 className="mt-6 text-sm font-semibold uppercase tracking-wide text-accent">How you earn it</h3>
+        <div className="mt-2 grid gap-2">
+          {EARN.map((e) => (
+            <div key={e.act} className="flex flex-wrap items-baseline gap-x-2 rounded-theme border border-edge bg-surface px-3 py-2 text-sm">
+              <span className="font-medium text-ink">{e.act}</span>
+              <span className="text-muted">— {e.credit}</span>
+            </div>
+          ))}
+        </div>
+        <p className="mt-2 text-xs text-muted">Every point needs someone <em>else&apos;s</em> attestation — no self-grants. So Merit can&apos;t be gamed, bought, or farmed by fake accounts.</p>
+
+        <h3 className="mt-8 text-sm font-semibold uppercase tracking-wide text-accent">What it unlocks</h3>
+        <div className="mt-3 grid gap-4 sm:grid-cols-3">
+          {BENEFITS.map((b) => (
+            <div key={b.tier} className="card">
+              <div className="flex items-baseline justify-between gap-2">
+                <h4 className="font-semibold text-ink">{b.tier}</h4>
+                <span className="text-xs text-muted">{b.standing}</span>
+              </div>
+              <ul className="mt-2 grid gap-1.5 text-sm text-muted">
+                {b.perks.map((p) => <li key={p}>· {p}</li>)}
+              </ul>
+            </div>
+          ))}
+        </div>
+        <p className="mt-4 text-sm text-muted">
+          <span className="text-ink">Coming as we grow</span> (sponsor-backed, once the network earns it):{" "}
+          {SPONSOR_PERKS.join(" · ")}. You earn the <em>standing</em> now; the material perks follow — we never promise what we can&apos;t yet deliver.
+        </p>
+      </section>
+
+      {/* ── The TRUE Hero Award ── */}
+      <section className="mt-12">
+        <h2 className="section-title">🦸 The TRUE Hero Award — quarterly</h2>
+        <p className="mt-1 text-sm text-muted">Every quarter we honor the top contributor on each TRUE perspective — <strong className="text-ink">computed from the standing ledger</strong> (earned, not a popularity vote). Winners get a permanent badge on their portfolio + a spotlight across the whole network.</p>
+        <div className="mt-5 grid gap-3 sm:grid-cols-2">
+          {AWARDS.map((a) => (
+            <div key={a.title} className="card flex items-start gap-3">
+              <span className="text-2xl">{a.emoji}</span>
+              <div>
+                <h3 className="font-semibold text-ink">{a.title}</h3>
+                <p className="text-sm text-muted">For {a.forWhat}</p>
+              </div>
+            </div>
+          ))}
+        </div>
       </section>
 
       {/* ── The creed / culture ── */}
