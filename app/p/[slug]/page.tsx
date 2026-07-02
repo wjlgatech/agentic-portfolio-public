@@ -2,8 +2,9 @@
 // /p/[slug] — a hosted portfolio made with the Maker. Reads the person's InstanceConfig from
 // the shared KV and renders it as a real agentic site (on-page agent grounded in their material),
 // with the creator credit + network invite on every page. No fork, no deploy — 1-click hosting on
-// the shared network. Its own theme via a data-theme wrapper (this page isn't the switchable
-// primary instance, so a fixed brand is correct here).
+// the shared network. Theme: the wrapper carries NO data-theme (that would override the global
+// StyleSwitcher, freezing the page on its brand — the bug); instead a no-flash inline script sets
+// the portfolio's theme as the <html> DEFAULT, and the switcher/localStorage override it live.
 // ─────────────────────────────────────────────────────────────────────────────
 import { notFound } from "next/navigation";
 import { CopilotProvider } from "@/components/Copilot";
@@ -55,7 +56,13 @@ export default async function HostedPortfolio({ params }: { params: Promise<{ sl
       ]}
       agentActions={<InstanceAgentActions instanceName={c.entity.name} siteUrl={c.entity.links?.site} slug={slug} />}
     >
-      <div data-theme={c.theme} className="min-h-screen bg-surface text-ink">
+      {/* No-flash: default to THIS portfolio's theme, but let the StyleSwitcher (localStorage) win. */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html: `(function(){try{var ok=["anthropic","openai","google","apple","vercel","stripe","swiss","brutalist","notion"];var o=localStorage.getItem("webapp-style");document.documentElement.dataset.theme=(o&&ok.indexOf(o)>-1)?o:${JSON.stringify(c.theme)};}catch(e){}})();`,
+        }}
+      />
+      <div className="min-h-screen bg-surface text-ink">
         <InstanceSite config={c} />
         <HostedOwnerBadge slug={slug} name={c.entity.name} />
       </div>
