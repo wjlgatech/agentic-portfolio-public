@@ -1,0 +1,78 @@
+# Feedback digest — the weekly "analyze the batch, stage the builds" cadence of the
+# feedback→feature loop. Calls the deployed POST /api/feedback/digest (which clusters the
+# week's user feedback into themes + drafted proposals, counts recomputed in code), then opens
+# ONE GitHub issue listing each theme with its ready-to-run `anyagent` build command.
+#
+# The issue IS the human gate: a maintainer picks the themes worth building, runs the anyagent
+# command (or hands it to a coding agent), merges the PR, then closes the loop with
+# POST /api/feedback/notify {themes:[...]} so contributors get their ship notice. Nothing
+# auto-merges — `anyagent publish` is human-approved by design.
+#
+# Setup (one-time):
+#   • Repo secret   FEEDBACK_SECRET — must equal the FEEDBACK_SECRET env var on the deploy.
+#   • Repo variable PORTFOLIO_URL   — your deployed origin.
+name: Feedback digest
+
+on:
+  schedule:
+    - cron: "0 9 * * 1" # weekly, Monday 09:00 UTC
+  workflow_dispatch:
+    inputs:
+      windowDays:
+        description: "How many days of feedback to analyze"
+        default: "7"
+
+permissions:
+  issues: write
+
+jobs:
+  digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run digest
+        env:
+          PORTFOLIO_URL: ${{ vars.PORTFOLIO_URL }}
+          FEEDBACK_SECRET: ${{ secrets.FEEDBACK_SECRET }}
+          WINDOW_DAYS: ${{ inputs.windowDays || '7' }}
+        run: |
+          set -e
+          if [ -z "$FEEDBACK_SECRET" ] || [ -z "$PORTFOLIO_URL" ]; then
+            echo "FEEDBACK_SECRET secret and PORTFOLIO_URL variable are required — skipping."; exit 0;
+          fi
+          curl -sS -X POST "$PORTFOLIO_URL/api/feedback/digest" \
+            -H "x-feedback-secret: $FEEDBACK_SECRET" \
+            -H "Content-Type: application/json" \
+            -d "{\"windowDays\": $WINDOW_DAYS}" \
+            --max-time 180 -o /tmp/digest.json
+          node -e "const d=require('/tmp/digest.json'); if(d.error){console.error(d.error);process.exit(1)}; console.log('Digest:',d.digest.total,'items →',d.digest.clusters.length,'themes');"
+
+      - name: Open build-review issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          node -e '
+            const d = require("/tmp/digest.json").digest;
+            if (!d || d.clusters.length === 0) { console.log("No themes this week — no issue."); process.exit(0); }
+            const rows = d.clusters.map((c, i) =>
+              `### ${i + 1}. ${c.theme}  (${c.count} item${c.count === 1 ? "" : "s"}: ${c.suggestions} suggestion / ${c.complaints} complaint)\n\n` +
+              `**Proposal:** ${c.proposal}\n\n` +
+              `**In their words:**\n${c.examples.map((e) => `> ${e}`).join("\n")}\n\n` +
+              "**Build it:** `" + c.buildCmd + "`\n"
+            ).join("\n---\n\n");
+            const body =
+              `Weekly feedback digest — **${d.total} item(s) → ${d.clusters.length} theme(s)** (window: ${d.windowDays}d${d.model ? ", clustered by " + d.model : ""}).\n\n` +
+              rows +
+              `\n---\n\n**The human gate:** pick the themes worth building, run the anyagent command (or hand it to a coding agent), merge the PR, then close the loop:\n` +
+              "```\ncurl -X POST $PORTFOLIO_URL/api/feedback/notify -H \"x-feedback-secret: $FEEDBACK_SECRET\" -H \"Content-Type: application/json\" -d \x27{\"themes\":[\"<shipped theme>\"]}\x27\n```\n" +
+              `Contributors who left an email get one ship notice; hosted portfolios already run the update (shared code, per-slug data — nothing to migrate).` +
+              (d.note ? `\n\n_Note: ${d.note}_` : "");
+            require("fs").writeFileSync("/tmp/issue-body.md", body);
+            console.log("themes:", d.clusters.length);
+          '
+          if [ -f /tmp/issue-body.md ]; then
+            TITLE="Feedback build review — $(date -u +%Y-%m-%d)"
+            gh issue create --repo "$REPO" --title "$TITLE" --label "feedback-digest" --body-file /tmp/issue-body.md \
+              || gh issue create --repo "$REPO" --title "$TITLE" --body-file /tmp/issue-body.md
+          fi

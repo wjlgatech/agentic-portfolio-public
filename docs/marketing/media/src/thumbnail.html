@@ -1,0 +1,26 @@
+<!doctype html>
+<!-- Article thumbnail, 1200×628 — same visual language as lib/og.tsx (dark gradient, eyebrow, big title, CTA row). -->
+<html><head><meta charset="utf-8"><style>
+  * { margin:0; box-sizing:border-box; }
+  body { width:1200px; height:628px; font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
+         background:linear-gradient(135deg,#0b0b12 0%,#171733 55%,#0d0d1a 100%); color:#f5f5fa;
+         display:flex; flex-direction:column; justify-content:space-between; padding:64px 80px; }
+  .eyebrow { font-size:30px; color:#7dd3fc; letter-spacing:.5px; }
+  .title { font-size:88px; font-weight:800; line-height:1.04; letter-spacing:-2px; }
+  .title .dead { color:#c9c9e8; }
+  .title .dead .strike { position:relative; white-space:nowrap; }
+  .title .dead .strike::after { content:""; position:absolute; left:-2%; right:-2%; top:54%; height:7px;
+                                background:#f43f5e; border-radius:4px; transform:rotate(-2deg); }
+  .sub { font-size:38px; color:#c9c9e8; line-height:1.3; max-width:980px; margin-top:22px; }
+  .sub b { color:#f5f5fa; }
+  .foot { display:flex; justify-content:space-between; align-items:center; font-size:28px; }
+  .foot .cta { color:#7dd3fc; }
+  .foot .brand { color:#7a7aa8; }
+</style></head><body>
+  <div class="eyebrow">🪦 → 🌐 &nbsp;from dead document to living proof</div>
+  <div>
+    <div class="title"><span class="dead">The <span class="strike">Résumé</span> is dead.</span><br>Long live the living portfolio.</div>
+    <div class="sub">Make a portfolio with its own AI agent — answers for you 24/7, shows receipts, honest about limits. <b>10 minutes. Free. No code.</b></div>
+  </div>
+  <div class="foot"><span class="cta">Make yours → agentic-portfolio-public.vercel.app</span><span class="brand">made free · agentic-portfolio</span></div>
+</body></html>
