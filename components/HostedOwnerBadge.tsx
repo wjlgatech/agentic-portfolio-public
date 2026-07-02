@@ -42,8 +42,9 @@ export function HostedOwnerBadge({ slug, name }: { slug: string; name: string })
   }, [slug, verify]);
 
   async function signIn() {
-    const input = window.prompt(`Owner sign-in for ${name}'s portfolio\n\nPaste your owner link or token (the private ?owner=… link you got when you made this):`);
-    if (!input) return;
+    const input = window.prompt(`Owner sign-in for ${name}'s portfolio\n\nPaste your owner link or token (the private ?owner=… link you got when you made this).\n\nLost it? Leave this blank and press OK to recover by email.`);
+    if (input === null) return; // cancelled
+    if (!input.trim()) return recover(); // blank → email recovery
     const token = extractToken(input);
     setMsg("Checking…");
     if (await verify(token)) {
@@ -53,6 +54,16 @@ export function HostedOwnerBadge({ slug, name }: { slug: string; name: string })
       setMsg("That token isn't valid for this portfolio.");
       window.setTimeout(() => setMsg(""), 3500);
     }
+  }
+
+  async function recover() {
+    setMsg("Sending recovery email…");
+    try {
+      const r = await fetch("/api/recover", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ slug }) });
+      const d = await r.json();
+      window.alert(d.sent ? `📧 Recovery link sent to ${d.maskedTo}. Check your email (expires in 30 min).` : (d.note || "Couldn't send a recovery email."));
+    } catch { window.alert("Couldn't reach recovery right now — try again."); }
+    setMsg("");
   }
 
   function signOut() {

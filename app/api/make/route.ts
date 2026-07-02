@@ -159,6 +159,7 @@ export async function POST(req: NextRequest) {
   // Re-making (same slug) rotates the token, so only the latest maker holds it.
   const ownerToken = mintOwnerToken();
   await kvSetJSON(ownerKey(slug), hashOwnerToken(ownerToken));
+  await kvSetJSON(`owner-email:${slug}`, email); // server-only, for email-based owner recovery (never exposed)
   const ownerUrl = `${hostedUrl}?owner=${ownerToken}`;
 
   // Auto-join the network so the new portfolio is instantly discoverable.

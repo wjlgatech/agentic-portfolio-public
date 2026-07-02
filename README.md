@@ -154,6 +154,7 @@ zero component edits. Live theme switcher included.
 | `NEXT_PUBLIC_SITE_URL` | share **thumbnails** unfurling on X/LinkedIn/Slack | your production URL, e.g. `https://your-app.vercel.app`. Falls back to Vercel's auto URL. |
 | `PORTFOLIO_OWNER_TOKEN` | locking edits/owner routes to you | optional but recommended. The real security boundary. |
 | `CRON_SECRET` | the daily **auto-sync** (`vercel.json` cron → `/api/sync`) | optional. Vercel sends it as a Bearer token to the cron path; without it the scheduled sync is disabled. (`SYNC_SECRET` does the same for the GitHub Action alternative.) |
+| `RESEND_API_KEY` + `RESEND_FROM` | **email-based owner recovery** (a lost owner link → reset by email) | optional. A free [Resend](https://resend.com) key + a verified `from` address. Without it, recovery degrades to "re-make with the same name + email." |
 
 CLI alternative (after `vercel link`): `printf '%s' "<value>" | vercel env add GROQ_API_KEY production` (repeat per var), then `vercel --prod`.
 
