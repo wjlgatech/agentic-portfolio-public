@@ -126,6 +126,27 @@ no OAuth into your connections, no bulk-spam. Instead:
 
 That's why a portfolio in this network is *trusted*: we never harvested anyone. **Privacy is the product.**
 
+## 🗣 Tell the agent what to build — the feedback→feature loop
+
+The roadmap listens. **Anyone** — a visitor, or a non-technical maker on their own `/p/<slug>` page —
+can just *tell the on-page agent* a suggestion ("I wish it exported a PDF") or a complaint ("the theme
+switcher confuses me"). The agent captures it verbatim (`sendFeedback` → `POST /api/feedback`, durable,
+rate-limited) and asks once if you'd like a ship notice — leave an email **only** if you want one.
+
+Then the loop runs:
+
+1. **Weekly digest.** A cron (`.github/workflows/feedback-digest.yml` → `POST /api/feedback/digest`)
+   clusters the batch into themes + a drafted feature proposal each. Honest by construction: every
+   count is recomputed in code, the examples are contributors' real words, ungrounded clusters are dropped.
+2. **The human gate.** The digest lands as a GitHub issue where each theme carries a ready-to-run
+   **`anyagent`** build command. A maintainer picks what's worth building, builds it (or hands the
+   command to a coding agent), and merges. **Nothing auto-merges.**
+3. **The ship notice + 1-click update.** `POST /api/feedback/notify {themes}` emails exactly the people
+   who asked for exactly what shipped — one transactional notice, never a list. And because hosted
+   portfolios share the deploy's code while **your data lives in your portfolio's own store** (config,
+   articles, leads, owner token — keyed by your slug), your portfolio *already runs* the new feature
+   when you open the link. Nothing to migrate, nothing lost.
+
 ## 🎨 Make it yours
 
 All copy is **data-driven** — never hardcoded in components. Edit these:
@@ -154,7 +175,8 @@ zero component edits. Live theme switcher included.
 | `NEXT_PUBLIC_SITE_URL` | share **thumbnails** unfurling on X/LinkedIn/Slack | your production URL, e.g. `https://your-app.vercel.app`. Falls back to Vercel's auto URL. |
 | `PORTFOLIO_OWNER_TOKEN` | locking edits/owner routes to you | optional but recommended. The real security boundary. |
 | `CRON_SECRET` | the daily **auto-sync** (`vercel.json` cron → `/api/sync`) | optional. Vercel sends it as a Bearer token to the cron path; without it the scheduled sync is disabled. (`SYNC_SECRET` does the same for the GitHub Action alternative.) |
-| `RESEND_API_KEY` + `RESEND_FROM` | **email-based owner recovery** (a lost owner link → reset by email) | optional. A free [Resend](https://resend.com) key + a verified `from` address. Without it, recovery degrades to "re-make with the same name + email." |
+| `RESEND_API_KEY` + `RESEND_FROM` | **email-based owner recovery** (a lost owner link → reset by email) **and** feedback **ship notices** | optional. A free [Resend](https://resend.com) key + a verified `from` address. Without it, recovery degrades to "re-make with the same name + email" and ship notices are skipped honestly. |
+| `FEEDBACK_SECRET` | the weekly **feedback digest** cron (`.github/workflows/feedback-digest.yml` → `/api/feedback/digest` + `/notify`) | optional. Also set it as a repo secret (with the `PORTFOLIO_URL` repo variable) so the Action can run the digest without the owner token. |
 
 CLI alternative (after `vercel link`): `printf '%s' "<value>" | vercel env add GROQ_API_KEY production` (repeat per var), then `vercel --prod`.
 
