@@ -1,42 +1,46 @@
 <!doctype html>
-<!-- Infographic 3: loop engineering applied to marketing — the closed viral loop. Every node direct-labeled;
-     the human gate is amber (#d97706) — the one stage that is never automated. 1080×1350. -->
+<!-- Infographic 3: the closed viral loop. Anthropic style: neutral cream nodes with warm-gray
+     borders (the anyagent brand node spec), ONE coral-filled node = the human gate — the brand
+     accent literally marks the human. Direct labels on every node. 1080×1350. -->
 <html><head><meta charset="utf-8"><style>
   * { margin:0; box-sizing:border-box; }
-  body { width:1080px; height:1350px; font-family:-apple-system,"Segoe UI",Helvetica,Arial,sans-serif;
-         background:linear-gradient(135deg,#0b0b12 0%,#171733 55%,#0d0d1a 100%); color:#f5f5fa;
-         display:flex; flex-direction:column; padding:72px 72px 56px; }
-  .eyebrow { font-size:26px; color:#7dd3fc; margin-bottom:14px; }
-  h1 { font-size:54px; font-weight:800; letter-spacing:-1px; line-height:1.12; margin-bottom:10px; }
-  .sub { font-size:28px; color:#c9c9e8; margin-bottom:36px; }
-  .loop { flex:1; display:flex; flex-direction:column; gap:0; }
-  .stage { display:flex; align-items:center; gap:22px; }
-  .node { flex:1; background:rgba(2,132,199,.18); border:2px solid #0284c7; border-radius:16px; padding:20px 26px; }
-  .node.gate { background:rgba(217,119,6,.18); border-color:#d97706; }
-  .node .name { font-size:31px; font-weight:800; }
-  .node .name .auto { font-size:21px; font-weight:700; color:#7dd3fc; margin-left:12px; letter-spacing:1px; }
-  .node.gate .name .auto { color:#fbbf24; }
-  .node .how { font-size:24px; color:#c9c9e8; margin-top:5px; line-height:1.28; }
-  .arrow { text-align:center; font-size:30px; color:#7a7aa8; line-height:1; padding:7px 0; margin-left:-330px; }
-  .back { font-size:25px; color:#7dd3fc; text-align:center; padding:16px 0 0; }
-  .foot { display:flex; justify-content:space-between; font-size:24px; margin-top:28px; }
-  .foot .cta { color:#7dd3fc; } .foot .brand { color:#7a7aa8; }
+  body { width:1080px; height:1350px;
+         font-family:ui-sans-serif,system-ui,"Segoe UI",Helvetica,Arial,sans-serif;
+         background:#F0EEE6; color:#191919; display:flex; flex-direction:column; padding:72px 72px 56px; }
+  .eyebrow { font-size:23px; color:#b05730; letter-spacing:2.5px; text-transform:uppercase; font-weight:600; margin-bottom:16px; }
+  h1 { font-family:"Iowan Old Style",Palatino,Georgia,serif; font-size:56px; font-weight:600;
+       letter-spacing:-.5px; line-height:1.1; margin-bottom:10px; }
+  .sub { font-size:28px; color:#6B6657; margin-bottom:34px; line-height:1.35; }
+  .loop { flex:1; display:flex; flex-direction:column; }
+  .node { background:#FAF9F5; border:1.5px solid #B0AEA5; border-radius:14px; padding:19px 26px;
+          box-shadow:0 1px 2px rgba(0,0,0,.04); }
+  .node.gate { background:#d97757; border-color:#b05730; color:#FAF9F5; }
+  .name { font-size:30px; font-weight:700; }
+  .name .mode { font-size:20px; font-weight:600; color:#6B6657; margin-left:12px; letter-spacing:1.5px; }
+  .gate .name .mode { color:#FAF9F5; }
+  .how { font-size:23px; color:#6B6657; margin-top:5px; line-height:1.3; }
+  .gate .how { color:rgba(250,249,245,.92); }
+  .arrow { text-align:center; font-size:26px; color:#B0AEA5; line-height:1; padding:6px 0; }
+  .back { font-size:24px; color:#b05730; text-align:center; padding:14px 0 0; font-weight:600; }
+  .foot { display:flex; justify-content:space-between; font-size:23px; margin-top:26px;
+          border-top:1px solid #E2DED3; padding-top:22px; }
+  .foot .cta { color:#b05730; font-weight:600; } .foot .brand { color:#6B6657; }
 </style></head><body>
-  <div class="eyebrow">🔁 LOOP ENGINEERING, APPLIED TO MARKETING</div>
+  <div class="eyebrow">Loop engineering, applied to marketing</div>
   <h1>The closed viral loop</h1>
   <div class="sub">Machines do the drafting, reviewing, measuring, learning. A human owns the Send button.</div>
   <div class="loop">
-    <div class="stage"><div class="node"><div class="name">1 · MAKE<span class="auto">AUTO</span></div><div class="how">Draft the artifact + per-platform copy, grounded in real work — no invented facts.</div></div></div>
+    <div class="node"><div class="name">1 · Make<span class="mode">AUTO</span></div><div class="how">Draft the artifact + per-platform copy, grounded in real work — no invented facts.</div></div>
     <div class="arrow">↓</div>
-    <div class="stage"><div class="node"><div class="name">2 · REVIEW<span class="auto">AUTO</span></div><div class="how">Score vs a rubric: hook, specificity, honesty, CTA, limits. Iterate until it clears the bar.</div></div></div>
+    <div class="node"><div class="name">2 · Review<span class="mode">AUTO</span></div><div class="how">Score vs a rubric: hook, specificity, honesty, CTA, limits. Iterate until it clears the bar.</div></div>
     <div class="arrow">↓</div>
-    <div class="stage"><div class="node gate"><div class="name">3 · HUMAN GATE<span class="auto">🔑 ALWAYS HUMAN</span></div><div class="how">You read it, you click Publish. Nothing ever auto-posts, auto-DMs, or auto-replies.</div></div></div>
+    <div class="node gate"><div class="name">3 · Human gate<span class="mode">🔑 ALWAYS HUMAN</span></div><div class="how">You read it, you click Publish. Nothing ever auto-posts, auto-DMs, or auto-replies.</div></div>
     <div class="arrow">↓</div>
-    <div class="stage"><div class="node"><div class="name">4 · PUBLISH + ENGAGE<span class="auto">ASSISTED</span></div><div class="how">1-click share intents; replies to every comment are drafted for you — you send.</div></div></div>
+    <div class="node"><div class="name">4 · Publish + engage<span class="mode">ASSISTED</span></div><div class="how">1-click share intents; replies to every comment are drafted for you — you send.</div></div>
     <div class="arrow">↓</div>
-    <div class="stage"><div class="node"><div class="name">5 · MEASURE<span class="auto">AUTO</span></div><div class="how">One ledger: impressions, replies, makes, K. Computed from real numbers, never vibes.</div></div></div>
+    <div class="node"><div class="name">5 · Measure<span class="mode">AUTO</span></div><div class="how">One ledger: impressions, replies, makes, K. Computed from real numbers, never vibes.</div></div>
     <div class="arrow">↓</div>
-    <div class="stage"><div class="node"><div class="name">6 · LEARN<span class="auto">AUTO</span></div><div class="how">What hooked, what flopped → banked as rules the next draft must obey. The loop compounds.</div></div></div>
+    <div class="node"><div class="name">6 · Learn<span class="mode">AUTO</span></div><div class="how">What hooked, what flopped → banked as rules the next draft must obey. The loop compounds.</div></div>
   </div>
   <div class="back">⟲ back to 1 — every post starts smarter than the last</div>
   <div class="foot"><span class="cta">agentic-portfolio-public.vercel.app</span><span class="brand">made free · agentic-portfolio</span></div>
