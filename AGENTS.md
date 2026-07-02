@@ -114,6 +114,13 @@ So: `Agentize` is the meta-template ("one core, any business"); `agentic` only e
 
 - **No IP leakage.** Private projects (`"private": true`) must keep `url: null` and a
   high-level highlight only — never add internal architecture, file paths, or links.
+- **Never put `data-theme` on a content wrapper.** The global `StyleSwitcher` owns `html[data-theme]`; a
+  `<div data-theme={…}>` around page content wins the CSS cascade for its descendants and **freezes the
+  page on that brand** — the switcher silently does nothing. To give a page its own DEFAULT theme, set it
+  on `<html>` via a no-flash inline script that respects the `webapp-style` localStorage override (see
+  `app/p/[slug]/page.tsx`), never a wrapper. This bug recurred because the earlier fix only covered the
+  instance render path; **when you fix a bug class, grep ALL render paths for the same pattern** — a
+  later-added page re-introduced it. `InstanceSite` deliberately carries no `data-theme` for this reason.
 - **Never define a React component inside another component.** A `const Field = (...) => …` (or
   `function`) declared inside a `"use client"` component gets a NEW identity every render, so React
   remounts its subtree — **a form input loses focus after every keystroke** (you can only type one
