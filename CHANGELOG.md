@@ -5,6 +5,25 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **1-click source syncs — keep Projects (GitHub) + Writing (feeds) fresh, with both a button and a weekly cron.**
+  - **Projects ⟳ Sync from GitHub** (owner) — pulls your repos (public + private with a `repo`-scoped
+    `GITHUB_TOKEN`) and merges: updates live fields (stars/pushed/language/url), adds new *recent, described*
+    repos, **preserves your curation** (category/highlight/featured), never deletes. Every card links `view →`
+    (private too — GitHub gates the content) with a `🔥 N PR·30d` badge + a Public/🔒 Private filter.
+    `packages/core/src/projects-types.ts` (pure model + `mergeGithubRepos`, tested) · `lib/projects.ts`
+    (durable KV `projects:config`) · `lib/github-repos.ts` · `app/api/sync-projects`.
+  - **Writing ⟳ Sync feeds** (owner) — an extensible, MCP-ready source registry: `server-rss`
+    (Substack/Medium/any RSS — server pulls the feed) + `browser-harvest` (LinkedIn/X — the login-walled
+    in-browser harvest, surfaced as “Sync from LinkedIn”). `packages/core/src/writing-sources.ts`
+    (`SOURCE_CATALOG`, generic RSS/Atom parser, tested) · `lib/writing-sync.ts` · `app/api/sync-writing`
+    · a `writingSources` registry in the portfolio config · `syncWriting`/`addWritingSource` agent actions.
+  - **Both triggers, one sync:** `POST` = the owner button; `GET` = a weekly cron (`lib/cron-auth.ts`
+    `isCronRequest`: Vercel-Cron `Bearer CRON_SECRET` or `x-sync-secret: SYNC_SECRET`).
+    `.github/workflows/weekly-sync.yml` runs both weekly (set `SYNC_SECRET` to enable; skips gracefully).
+  _(Ported from the private repo; generic + moat-free. Verified: build + suite green (328); routes gated;
+  Projects `view →` + Public/Private filter render.)_
+
 ### Changed
 - **Practices & Values render as click-to-expand card sliders (were 1→3→12 / 1→2→6 mindmaps).** Same UX as
   the Writing section: filter chips (the parts) + ‹ › + snap-scroll cards, each click-to-expand for its

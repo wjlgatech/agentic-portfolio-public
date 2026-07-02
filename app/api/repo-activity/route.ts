@@ -49,7 +49,9 @@ export async function GET(req: NextRequest) {
   }
 
   return NextResponse.json(
-    { since, windowDays: WINDOW_DAYS, total, counts },
+    // `authed` lets the UI self-diagnose: without a token the PR search is public-only, so
+    // PRIVATE repos' PR counts come back 0 (GitHub won't return them unauthenticated).
+    { since, windowDays: WINDOW_DAYS, total, counts, authed: Boolean(process.env.GITHUB_TOKEN) },
     { headers: { "Cache-Control": "public, max-age=900" } }, // 15-min cache
   );
 }

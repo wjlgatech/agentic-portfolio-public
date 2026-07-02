@@ -1,0 +1,35 @@
+# Weekly sync — the auto cadence for the owner's Projects (GitHub) + Writing (Substack/Medium/RSS
+# feeds). Calls the deployed sync endpoints (GET = cron, authed via x-sync-secret); each persists to
+# the durable KV store (no git commit needed). The on-page ⟳ buttons do the same on demand — so every
+# sync section has BOTH a manual button and a weekly auto job.
+#
+# Setup (one-time):
+#   • Repo secret   SYNC_SECRET   — must equal the SYNC_SECRET env var on the deploy.
+#   • Repo variable PORTFOLIO_URL — your deployed origin (defaults to the reference site).
+# (On Vercel Pro you can instead add these paths to vercel.json "crons"; Vercel Cron authorizes via
+#  CRON_SECRET, which the endpoints also accept — no repo secret needed. Hobby caps cron count, so
+#  this Action is the portable default.)
+# LinkedIn/X are login-walled → not synced here; harvest them in the browser (Sync from LinkedIn).
+name: Weekly sync
+
+on:
+  schedule:
+    - cron: "0 8 * * 1" # weekly — Mondays 08:00 UTC
+  workflow_dispatch: {}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sync Projects + Writing
+        env:
+          PORTFOLIO_URL: ${{ vars.PORTFOLIO_URL || 'https://agentic-portfolio-lovat.vercel.app' }}
+          SYNC_SECRET: ${{ secrets.SYNC_SECRET }}
+        run: |
+          set -e
+          if [ -z "$SYNC_SECRET" ]; then echo "SYNC_SECRET not set — skipping (set it as a repo secret + a deploy env var)."; exit 0; fi
+          for path in api/sync-projects api/sync-writing; do
+            echo "→ $path"
+            code=$(curl -sS -o /tmp/out.json -w "%{http_code}" "$PORTFOLIO_URL/$path" -H "x-sync-secret: $SYNC_SECRET" --max-time 200 || echo "000")
+            node -e "try{const d=require('/tmp/out.json');console.log('   HTTP $code',JSON.stringify({ok:d.ok,added:d.added,updated:d.updated,total:d.total,ranBy:d.ranBy}));}catch(e){console.log('   HTTP $code (non-JSON response)');}"
+          done

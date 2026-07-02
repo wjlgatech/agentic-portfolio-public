@@ -154,7 +154,8 @@ All copy is **data-driven** — never hardcoded in components. Edit these:
 | To change… | Edit |
 |---|---|
 | Name, tagline, mission, values | [`content/profile.ts`](content/profile.ts) |
-| Projects shown | [`content/projects.json`](content/projects.json) |
+| Projects shown | [`content/projects.json`](content/projects.json) — every card links `view →` (private repos too) with a **🔥 Active 30d** badge + a **Public / 🔒 Private** filter. Owners get **⟳ Sync from GitHub** (a button + a weekly cron): pulls your repos (public + private with a `repo`-scoped `GITHUB_TOKEN`), updates live fields + adds new repos, **keeps your curation**. |
+| Writing sources | [`content/portfolio.yaml`](content/portfolio.yaml) `writingSources` — **⟳ Sync feeds** (button + weekly cron) pulls **Substack / Medium / any RSS** server-side; **LinkedIn / X** are login-walled so the in-browser harvest surfaces as *Sync from LinkedIn*. Add a source by telling the agent (`addWritingSource`). |
 | Section order / visibility / labels, theme, articles | [`content/portfolio.yaml`](content/portfolio.yaml) |
 | The whole site config (advanced) | [`content/instances/portfolio.ts`](content/instances/) |
 

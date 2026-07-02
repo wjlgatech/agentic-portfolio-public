@@ -12,6 +12,7 @@ import path from "node:path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import { cleanOverrides } from "@/lib/overrides";
 import { kvConfigured, kvGetJSON, kvSetJSON } from "@/lib/storage";
+import { SOURCE_CATALOG, type WritingSource, type WritingSourceKind } from "@core/writing-sources";
 
 const KV_KEY = "portfolio:config";
 
@@ -44,6 +45,7 @@ export type PortfolioConfig = {
   theme: string;
   sections: SectionMeta[];
   articles: Article[];
+  writingSources: WritingSource[]; // the Writing sync registry (LinkedIn/Substack/Medium/RSS/X)
   overrides: Record<string, string>; // agent-edited wording (see lib/overrides.ts)
 };
 
@@ -71,6 +73,10 @@ export const SECTION_DEFAULTS: Record<string, { title: string; eyebrow: string }
 
 export const SECTION_IDS = Object.keys(SECTION_DEFAULTS);
 
+// Seed the Writing sync registry with LinkedIn (login-walled → browser-harvest). Substack/Medium/RSS
+// are added by the owner or the agent (a forker sets their own via `addWritingSource`).
+const DEFAULT_WRITING_SOURCES: WritingSource[] = [{ kind: "linkedin", ref: "in/me", label: "LinkedIn" }];
+
 const DEFAULT_CONFIG: PortfolioConfig = {
   theme: "anthropic",
   sections: SECTION_IDS.map((id) => ({
@@ -80,10 +86,20 @@ const DEFAULT_CONFIG: PortfolioConfig = {
     visible: true,
   })),
   articles: [],
+  writingSources: DEFAULT_WRITING_SOURCES,
   overrides: {},
 };
 
 const cleanStr = (v: unknown) => (typeof v === "string" ? v.trim() : "");
+
+function cleanSource(s: unknown): WritingSource | null {
+  if (!s || typeof s !== "object") return null;
+  const o = s as Record<string, unknown>;
+  const kind = cleanStr(o.kind) as WritingSourceKind;
+  const ref = cleanStr(o.ref).slice(0, 200);
+  if (!SOURCE_CATALOG[kind] || !ref) return null;
+  return { kind, ref, label: cleanStr(o.label).slice(0, 60) || SOURCE_CATALOG[kind].label };
+}
 
 function cleanArticle(a: unknown): Article | null {
   if (!a || typeof a !== "object") return null;
@@ -173,7 +189,16 @@ export function normalize(raw: unknown): PortfolioConfig {
     .map(cleanArticle)
     .filter((a): a is Article => a !== null);
 
-  return { theme, sections, articles, overrides: cleanOverrides(o.overrides) };
+  // Writing sync registry: dedupe by kind+ref; default to LinkedIn when unset (never empty).
+  const seenSrc = new Set<string>();
+  const rawSources = (Array.isArray(o.writingSources) ? o.writingSources : [])
+    .map(cleanSource)
+    .filter((s): s is WritingSource => s !== null)
+    .filter((s) => { const k = `${s.kind}:${s.ref.toLowerCase()}`; if (seenSrc.has(k)) return false; seenSrc.add(k); return true; })
+    .slice(0, 24);
+  const writingSources = rawSources.length ? rawSources : DEFAULT_WRITING_SOURCES;
+
+  return { theme, sections, articles, writingSources, overrides: cleanOverrides(o.overrides) };
 }
 
 export function readPortfolio(): PortfolioConfig {

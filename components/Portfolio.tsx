@@ -259,6 +259,7 @@ export function Portfolio({
           theme: THEME_IDS.includes(saved.theme) ? saved.theme : initial.theme,
           sections: mergeSections(saved.sections ?? initial.sections),
           articles: Array.isArray(saved.articles) ? saved.articles : initial.articles,
+          writingSources: Array.isArray(saved.writingSources) ? saved.writingSources : initial.writingSources,
           overrides: saved.overrides && typeof saved.overrides === "object" ? saved.overrides : (initial.overrides ?? {}),
         });
       }
@@ -465,6 +466,48 @@ export function Portfolio({
     }
   }
 
+  // ── Sync Projects from GitHub (OWNER) — pull repos (public + private) and merge, keeping curation.
+  async function onSyncProjects(): Promise<string> {
+    if (!isOwnerRef.current) return "🔒 Only the owner can sync projects. Unlock owner mode first.";
+    try {
+      const res = await fetch("/api/sync-projects", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(tokenRef.current ? { "x-portfolio-owner": tokenRef.current } : {}) },
+        body: "{}",
+      });
+      const data = await res.json();
+      if (!res.ok) return `Couldn't sync: ${data.error || res.status}`;
+      const added = (data.added ?? []).length;
+      const updated = (data.updated ?? []).length;
+      if (data.durable) setTimeout(() => location.reload(), 900);
+      return `Synced ${data.total} repos from GitHub — ${added} added, ${updated} updated.${data.durable ? " Reloading…" : " (Not persisted — no durable store configured.)"}`;
+    } catch (e) {
+      return `Couldn't reach GitHub sync: ${(e as Error).message}`;
+    }
+  }
+
+  // ── Sync Writing (OWNER) — pull server-syncable feeds (Substack/Medium/RSS); LinkedIn/X stay in-browser.
+  async function onSyncWriting(): Promise<string> {
+    if (!isOwnerRef.current) return "🔒 Only the owner can sync Writing. Unlock owner mode first.";
+    try {
+      const res = await fetch("/api/sync-writing", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(tokenRef.current ? { "x-portfolio-owner": tokenRef.current } : {}) },
+        body: JSON.stringify({ sources: cfgRef.current.writingSources }),
+      });
+      const data = await res.json();
+      if (!res.ok) return `Couldn't sync Writing: ${data.error || res.status}`;
+      const added = data.added ?? 0;
+      let msg = added > 0 ? `Synced ${added} new post(s) from your feeds.` : "No new posts from your server-synced feeds.";
+      const browser = (data.browserSources ?? []).map((b: { label: string }) => b.label);
+      if (browser.length) msg += ` ${browser.join(" + ")} is login-walled — use “Sync from LinkedIn” to harvest it in your browser.`;
+      if (data.durable && added > 0) setTimeout(() => location.reload(), 900);
+      return msg;
+    } catch (e) {
+      return `Couldn't reach Writing sync: ${(e as Error).message}`;
+    }
+  }
+
   // ── Role fit: score a job posting against the corpus (PUBLIC, like verify) ──
   // A URL is fetched server-side via the public ATS APIs (lib/jobfit.ts); free text is
   // scored directly. Anyone can run it (the route is rate-limited); the result is cached
@@ -632,7 +675,7 @@ export function Portfolio({
 
   // ── Copilot actions: all extracted into domain hooks (Portfolio keeps state + helpers). ──
   // Articles + verify + scout (coupled to runImport/onVerify/onScout):
-  useEngagementActions({ cfgRef, isOwnerRef, tokenRef, gate, persist, runImport, harvestTip, onVerify, onScout, onDraftResume, onScoreJob });
+  useEngagementActions({ cfgRef, isOwnerRef, tokenRef, gate, persist, runImport, harvestTip, onVerify, onScout, onSyncProjects, onSyncWriting, onDraftResume, onScoreJob });
   // Layout/theme actions (reorder/show-hide/rename/setTheme/resetLayout):
   useLayoutActions({ cfgRef, isOwnerRef, setCfg, gate, lsKey: LS_KEY, themeIds: THEME_IDS, knownSectionIds: KNOWN_SECTION_IDS });
 
@@ -644,8 +687,8 @@ export function Portfolio({
     if (s.custom) return <CustomSectionBody items={s.items ?? []} />;
     switch (s.id) {
       case "practices": return <PracticesSlider practices={futurePractices} />;
-      case "projects": return <Projects projects={projects} />;
-      case "writing": return <Articles articles={cfg.articles} />;
+      case "projects": return <Projects projects={projects} isOwner={isOwner} onSync={onSyncProjects} />;
+      case "writing": return <Articles articles={cfg.articles} isOwner={isOwner} onSync={onSyncWriting} linkedInTip={harvestTip()} />;
       case "receipts": return <Receipts report={report} isOwner={isOwner} onVerify={onVerify} />;
       case "job-fit": return <JobFit fit={fit} evalReport={initialFitEval} onScore={onScoreJob} />;
       case "deep-dives": return <Deepen feed={initialDeepen} />;

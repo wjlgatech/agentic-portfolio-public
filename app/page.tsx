@@ -6,7 +6,6 @@ import { InstanceAgentActions } from "@/components/InstanceAgentActions";
 import { getActiveInstance } from "@/content/instances";
 import { instanceEvidence } from "@core/instance-types";
 import { CLUSTERS, PRACTICE_DETAILS } from "@/content/practices-map";
-import { type Project } from "@/components/Projects";
 import {
   profile,
   mission,
@@ -14,7 +13,7 @@ import {
   love,
   futurePractices,
 } from "@/content/profile";
-import projectsData from "@/content/projects.json";
+import { readProjectsAsync } from "@/lib/projects";
 import { readPortfolioAsync } from "@/lib/portfolio";
 import { readVerification } from "@/lib/verification";
 import { readJobFitEval } from "@/lib/jobfit-eval";
@@ -25,8 +24,6 @@ import { applyOverrides } from "@/lib/overrides";
 // Re-read portfolio.yaml per request so local-dev edits (by hand or by the agent)
 // show on refresh. Static content (profile/projects) is still build-time.
 export const dynamic = "force-dynamic";
-
-const projects = projectsData as Project[];
 
 // Per-instance <title>/OG so a non-portfolio deploy isn't titled "Paul Jialiang Wu".
 // Returning {} for the portfolio inherits the layout default (portfolio unchanged).
@@ -76,6 +73,7 @@ export default async function Home() {
   }
 
   const initial = await readPortfolioAsync();
+  const projects = await readProjectsAsync(); // durable GitHub-sync override over content/projects.json
   const initialReport = readVerification();
   const initialFitEval = readJobFitEval();
   const initialDeepen = await readDeepenAsync();
