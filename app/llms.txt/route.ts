@@ -4,13 +4,14 @@
 // grounded in the InstanceConfig only (no fabrication). This is the GEO surface a GEO audit
 // flags as missing; serving it lifts the agent-search score.
 // ─────────────────────────────────────────────────────────────────────────────
-import { getActiveInstance } from "@/content/instances";
+import { NextRequest } from "next/server";
+import { resolveInstance } from "@/lib/instance-resolve";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export function GET() {
-  const c = getActiveInstance();
+export async function GET(req: NextRequest) {
+  const { config: c, base } = await resolveInstance(req);
   const site = c.entity.links?.site ?? "";
   const content = c.content ?? { offerings: [], outcomes: [], writings: [] };
 
@@ -28,7 +29,7 @@ export function GET() {
     for (const o of content.outcomes) lines.push(`- [${o.verdict}] ${o.claim}`);
     lines.push("");
   }
-  lines.push(`## Talk to our agent`, `- A2A agent card: /.well-known/agent-card.json`, `- Ask it: ${c.agent.skills.map((s) => s.name).join(", ")}`, "");
+  lines.push(`## Talk to our agent`, `- A2A agent card: ${base}/.well-known/agent-card.json`, `- Ask it: ${c.agent.skills.map((s) => s.name).join(", ")}`, "");
   if (site) lines.push(`## More`, `- Website: ${site}`, "");
 
   return new Response(lines.join("\n"), {

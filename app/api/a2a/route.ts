@@ -15,7 +15,7 @@ import { readVerification } from "@/lib/verification";
 import { profile, mission, values } from "@/content/profile";
 import projectsData from "@/content/projects.json";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
-import { getActiveInstance } from "@/content/instances";
+import { resolveInstance } from "@/lib/instance-resolve";
 import { instanceEvidence, instanceStaticAnswer } from "@core/instance-types";
 
 export const runtime = "nodejs";
@@ -136,10 +136,10 @@ export async function POST(req: NextRequest) {
   if (!text) return rpcError(id, -32602, "Invalid params: no message text found.");
   const skill = skillHint(p);
 
-  // Answer as whichever business this deploy is. The portfolio keeps reading content/profile.ts
-  // + projects.json (pack=null → original path); a non-portfolio instance with a content pack
-  // answers from ITS material, so the academy never cites Paul's repos.
-  const inst = getActiveInstance();
+  // Answer as the resolved config: the deploy's active instance, OR a hosted portfolio (`?slug=`
+  // via the /p/<slug>/api/a2a rewrite) answering from ITS OWN material. The portfolio keeps
+  // reading content/profile.ts + projects.json (pack=null → original path).
+  const { config: inst } = await resolveInstance(req);
   const pack = inst.slug !== "portfolio" && inst.content ? inst : null;
   const ctx = pack
     ? { name: pack.entity.name, evidence: instanceEvidence(pack), staticFallback: instanceStaticAnswer(pack) }

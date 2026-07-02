@@ -3,10 +3,9 @@
 // rewrites) at /.well-known/agent-card.json AND the legacy /.well-known/agent.json,
 // so recruiter / other AI agents can DISCOVER this agent and talk to it.
 //
-// INSTANCE-AWARE: the card is built from the ACTIVE InstanceConfig (content/instances,
-// selected by the INSTANCE env var). So a a second config deploy advertises a second config
-// skills, a portfolio deploy advertises portfolio skills — same code, zero vertical branches.
-// This is the Instances federation stud: any config is instantly agent-discoverable.
+// CONFIG-AWARE: the card is built from the resolved config — the deploy's active instance by
+// default, OR a hosted portfolio (`?slug=`, via the /p/<slug>/.well-known rewrite) so every
+// /p/<slug> node is instantly agent-discoverable at its OWN well-known path.
 //
 // Pragmatic-sync profile: capabilities.streaming = false; the JSON-RPC endpoint is
 // /api/a2a (message/send + legacy tasks/send), synchronous request→response.
@@ -15,19 +14,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { resolveLlm } from "@/lib/llm";
 import { instanceToAgentCard } from "@core/instance-types";
-import { getActiveInstance } from "@/content/instances";
+import { resolveInstance } from "@/lib/instance-resolve";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET(req: NextRequest) {
-  const origin = req.nextUrl.origin;
+  const { config, base } = await resolveInstance(req);
   const llmReady = Boolean(resolveLlm());
 
-  // The card for whichever business this deploy is. instanceToAgentCard() emits the spec
-  // shape (name/url/skills/capabilities:streaming-false/auth:none); we add the non-standard
-  // x-llm-ready hint so a caller knows whether grounded answers are live on /api/a2a.
-  const card = { ...instanceToAgentCard(getActiveInstance(), origin), "x-llm-ready": llmReady };
+  // `base` is the URL root — origin, or /p/<slug> for a hosted portfolio — so a hosted card
+  // points at /p/<slug>/api/a2a. The non-standard x-llm-ready hint = are grounded answers live.
+  const card = { ...instanceToAgentCard(config, base), "x-llm-ready": llmReady };
 
   return NextResponse.json(card, {
     headers: { "Access-Control-Allow-Origin": "*", "Cache-Control": "public, max-age=300" },
