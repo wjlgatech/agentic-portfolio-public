@@ -8,7 +8,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "node scripts/test-harvest.mjs && node scripts/test-linkedin-url.mjs && node scripts/test-overrides.mjs && node scripts/test-verification.mjs && node scripts/test-rate-limit.mjs && node scripts/test-registry.mjs && node scripts/test-instance.mjs && node scripts/test-storage-kv.mjs && node scripts/test-compass.mjs && node scripts/test-practices.mjs && node scripts/test-values.mjs && node scripts/test-jobfit.mjs && node scripts/test-deepen.mjs && node scripts/test-society.mjs && node scripts/test-referrals.mjs && node scripts/test-share-copy.mjs && node scripts/test-linkedin-parse.mjs && node scripts/test-portfolio-owner.mjs && node scripts/test-set-live-links.mjs && node scripts/test-sync.mjs && node scripts/test-make-config.mjs && node scripts/test-recovery.mjs",
+    "test": "node scripts/test-harvest.mjs && node scripts/test-linkedin-url.mjs && node scripts/test-overrides.mjs && node scripts/test-verification.mjs && node scripts/test-rate-limit.mjs && node scripts/test-registry.mjs && node scripts/test-instance.mjs && node scripts/test-storage-kv.mjs && node scripts/test-compass.mjs && node scripts/test-practices.mjs && node scripts/test-values.mjs && node scripts/test-jobfit.mjs && node scripts/test-deepen.mjs && node scripts/test-society.mjs && node scripts/test-referrals.mjs && node scripts/test-share-copy.mjs && node scripts/test-linkedin-parse.mjs && node scripts/test-portfolio-owner.mjs && node scripts/test-set-live-links.mjs && node scripts/test-sync.mjs && node scripts/test-make-config.mjs && node scripts/test-recovery.mjs && node scripts/test-feedback.mjs",
     "test:unit": "vitest run",
     "test:e2e": "node scripts/test-make-ui.mjs"
   },

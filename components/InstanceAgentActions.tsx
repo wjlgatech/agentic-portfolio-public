@@ -121,5 +121,34 @@ export function InstanceAgentActions({ instanceName, siteUrl, slug }: { instance
     },
   });
 
+  useCopilotAction({
+    name: "sendFeedback",
+    description:
+      "Send a feature SUGGESTION or a COMPLAINT about this app to its builders. ANYONE can use this " +
+      "(public, rate-limited) — call it whenever the user proposes a feature, reports friction, or " +
+      "complains about how something works. Pass their words VERBATIM as `text`. Ask ONCE if they'd " +
+      "like an email notice when it ships; include it as `contact` only if they volunteer one — never " +
+      "require or invent it. Feedback goes into a weekly build review.",
+    parameters: [
+      { name: "kind", type: "string", description: "'suggestion' or 'complaint'", required: true },
+      { name: "text", type: "string", description: "The user's suggestion/complaint, verbatim", required: true },
+      { name: "contact", type: "string", description: "Optional email the user volunteered for a ship notice", required: false },
+    ],
+    handler: async ({ kind, text, contact }) => {
+      try {
+        const res = await fetch("/api/feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ kind, text, contact, slug, page: window.location.pathname }),
+        });
+        const data = await res.json();
+        if (!res.ok) return `Couldn't send that: ${data.error || res.status}`;
+        return `📬 ${data.message}`;
+      } catch (e) {
+        return `Couldn't reach the feedback inbox: ${(e as Error).message}`;
+      }
+    },
+  });
+
   return null;
 }
