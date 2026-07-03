@@ -1,11 +1,11 @@
 "use client";
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Deepen.tsx — the "Deep Dives" section. Presents the distilled knowledge + tools that
-// super-u's flywheel (kgfy + skillfy) handed this node via POST /api/ingest-knowledge.
-// The node RECEIVES + GROUNDS + PRESENTS + EDUCATES — it does not build graphs or forge
-// skills (docs/DEEPEN-PIPELINE.md). So this is PURELY presentational: no on-page tools, no
-// "deepen this" button (orchestration lives in super-u's flywheel, not the node).
+// Deepen.tsx — the "Deep Dives" section. Presents distilled knowledge + skills, AND (owner-only)
+// lets you GENERATE a new one: paste a source URL → POST /api/deep-dive fetches it, distills a
+// digest + knowledge graph + skills (grounded), and saves it to the knowledge base. Two producers
+// write one store now: this on-page generator AND super-u's inbound flywheel (POST
+// /api/ingest-knowledge); `producedBy` distinguishes them (docs/DEEPEN-PIPELINE.md).
 //
 // MINIMALIST: each card shows the ESSENCE (source + plain-language digest = "educate me")
 // and tucks the knowledge-graph preview + the extracted skills behind ONE disclosure. A
@@ -107,13 +107,70 @@ function Card({ a }: { a: DeepenArtifact }) {
   );
 }
 
-export function Deepen({ feed }: { feed: DeepenFeed }) {
-  if (feed.artifacts.length === 0) {
-    return <div className="card text-muted"><p>No deep dives yet — super-u&apos;s flywheel posts distilled knowledge + skills here.</p></div>;
+export function Deepen({
+  feed,
+  isOwner = false,
+  onDeepDive,
+}: {
+  feed: DeepenFeed;
+  isOwner?: boolean;
+  onDeepDive?: (source: string) => Promise<{ artifact?: DeepenArtifact; error?: string }>;
+}) {
+  const [items, setItems] = useState(feed.artifacts);
+  const [source, setSource] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+
+  async function run() {
+    if (!onDeepDive || busy || !source.trim()) return;
+    setBusy(true);
+    setMsg("Reading the source + distilling…");
+    try {
+      const r = await onDeepDive(source.trim());
+      if (r.error) setMsg(r.error);
+      else if (r.artifact) {
+        const art = r.artifact;
+        setItems((prev) => [art, ...prev.filter((a) => a.id !== art.id)]);
+        setMsg(`Saved “${art.source.title}” to your knowledge base.`);
+        setSource("");
+      }
+    } catch {
+      setMsg("Deep dive failed — try again.");
+    } finally {
+      setBusy(false);
+    }
   }
+
   return (
     <div className="grid gap-5">
-      {feed.artifacts.map((a) => <Card key={a.id} a={a} />)}
+      {/* Owner-only generator: enter a source → distill a digest + knowledge graph + skills → saved below. */}
+      {isOwner && onDeepDive && (
+        <div className="card grid gap-3">
+          <p className="text-sm font-medium uppercase tracking-widest text-accent">Deep-dive a source</p>
+          <div className="flex flex-wrap gap-2">
+            <input
+              value={source}
+              onChange={(e) => setSource(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") run(); }}
+              placeholder="Paste a source URL — a repo, a paper, an article"
+              className="min-w-0 flex-1 rounded-theme border border-edge bg-surface px-3 py-2 text-sm text-ink outline-none focus:border-accent"
+            />
+            <button onClick={run} disabled={busy || !source.trim()} className="chip text-accent hover:border-accent disabled:opacity-50">
+              {busy ? "🔎 Distilling…" : "🔎 Deep Dive"}
+            </button>
+          </div>
+          <p className="text-xs text-muted">Distills a plain-language digest + a knowledge graph + skills, grounded in the source, and saves it to your knowledge base.</p>
+          {msg && <p className="text-sm text-muted">{msg}</p>}
+        </div>
+      )}
+
+      {items.length === 0 ? (
+        <div className="card text-muted">
+          <p>No deep dives yet{isOwner ? " — paste a source above to generate one." : " — distilled knowledge + skills show here."}</p>
+        </div>
+      ) : (
+        items.map((a) => <Card key={a.id} a={a} />)
+      )}
     </div>
   );
 }

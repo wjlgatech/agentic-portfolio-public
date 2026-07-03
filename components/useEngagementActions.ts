@@ -9,6 +9,7 @@
 import { useCopilotAction } from "@copilotkit/react-core";
 import { isLinkedInFeedUrl } from "@/lib/linkedin";
 import type { PortfolioConfig, Article } from "@/lib/portfolio";
+import type { DeepenArtifact } from "@core/deepen-types";
 
 type EngagementCtx = {
   cfgRef: { current: PortfolioConfig };
@@ -22,13 +23,14 @@ type EngagementCtx = {
   onScout: () => Promise<string>;
   onSyncProjects: () => Promise<string>;
   onSyncWriting: () => Promise<string>;
+  onDeepDive: (source: string) => Promise<{ artifact?: DeepenArtifact; error?: string }>;
   onDraftResume: () => Promise<{ draft?: string; error?: string }>;
   onScoreJob: (input: string) => Promise<string>;
 };
 
 const WRITING_KINDS = ["substack", "medium", "rss", "linkedin", "x"];
 
-export function useEngagementActions({ cfgRef, isOwnerRef, tokenRef, gate, persist, runImport, harvestTip, onVerify, onScout, onSyncProjects, onSyncWriting, onDraftResume, onScoreJob }: EngagementCtx) {
+export function useEngagementActions({ cfgRef, isOwnerRef, tokenRef, gate, persist, runImport, harvestTip, onVerify, onScout, onSyncProjects, onSyncWriting, onDeepDive, onDraftResume, onScoreJob }: EngagementCtx) {
   useCopilotAction({
     name: "addArticle",
     description:
@@ -190,6 +192,25 @@ export function useEngagementActions({ cfgRef, isOwnerRef, tokenRef, gate, persi
     handler: async () => {
       if (!isOwnerRef.current) return "🔒 Only the owner can sync projects. Unlock owner mode first.";
       return onSyncProjects();
+    },
+  });
+
+  useCopilotAction({
+    name: "deepDiveSource",
+    description:
+      "Deep-dive a source URL (a repo, paper, or article): fetch it, distill a plain-language digest + a " +
+      "knowledge graph (concepts + links) + reusable skills — grounded ONLY in the source — and SAVE it to " +
+      "the knowledge base (the Deep Dives section). Owner only. Each skill is shown UNPROVEN until an outcome " +
+      "confirms it; ungrounded nodes/skills are dropped.",
+    parameters: [{ name: "source", type: "string", description: "The source URL to deep-dive", required: true }],
+    handler: async ({ source }: { source: string }) => {
+      if (!isOwnerRef.current) return "🔒 Only the owner can run a deep dive. Unlock owner mode first.";
+      const r = await onDeepDive(String(source ?? "").trim());
+      if (r.error) return r.error;
+      const a = r.artifact;
+      return a
+        ? `Deep-dived “${a.source.title}” → saved ${a.graph.nodes.length} concept(s) + ${a.skills.length} skill(s) to the knowledge base.`
+        : "Deep dive returned nothing usable.";
     },
   });
 
