@@ -35,7 +35,7 @@ import { useEngagementActions } from "@/components/useEngagementActions";
 import type { PortfolioConfig, SectionMeta, Article } from "@/lib/portfolio";
 import { normalizeReport, type VerificationReport } from "@core/verification-types";
 import { normalizeFit, EMPTY_FIT, type JobFit as JobFitReport, type FitEval } from "@core/jobfit-types";
-import { type DeepenFeed } from "@core/deepen-types";
+import { type DeepenFeed, type DeepenArtifact } from "@core/deepen-types";
 import { normalizeCompass, ideaCount, type CompassReport } from "@core/compass-types";
 import { isLinkedInFeedUrl } from "@/lib/linkedin";
 
@@ -508,6 +508,25 @@ export function Portfolio({
     }
   }
 
+  // ── Deep-dive a source (OWNER) — distill a source into a digest + knowledge graph + skills
+  // and save it to the knowledge base. Reveals the Deep Dives section.
+  async function onDeepDive(source: string): Promise<{ artifact?: DeepenArtifact; error?: string }> {
+    if (!isOwnerRef.current) return { error: "🔒 Only the owner can run a deep dive. Unlock owner mode first." };
+    try {
+      const res = await fetch("/api/deep-dive", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", ...(tokenRef.current ? { "x-portfolio-owner": tokenRef.current } : {}) },
+        body: JSON.stringify({ source }),
+      });
+      const data = await res.json();
+      if (!res.ok) return { error: data.error || `HTTP ${res.status}` };
+      setCfg((c) => ({ ...c, sections: c.sections.map((s) => (s.id === "deep-dives" ? { ...s, visible: true } : s)) }));
+      return { artifact: data.artifact as DeepenArtifact };
+    } catch (e) {
+      return { error: `Couldn't reach the deep-dive: ${(e as Error).message}` };
+    }
+  }
+
   // ── Role fit: score a job posting against the corpus (PUBLIC, like verify) ──
   // A URL is fetched server-side via the public ATS APIs (lib/jobfit.ts); free text is
   // scored directly. Anyone can run it (the route is rate-limited); the result is cached
@@ -675,7 +694,7 @@ export function Portfolio({
 
   // ── Copilot actions: all extracted into domain hooks (Portfolio keeps state + helpers). ──
   // Articles + verify + scout (coupled to runImport/onVerify/onScout):
-  useEngagementActions({ cfgRef, isOwnerRef, tokenRef, gate, persist, runImport, harvestTip, onVerify, onScout, onSyncProjects, onSyncWriting, onDraftResume, onScoreJob });
+  useEngagementActions({ cfgRef, isOwnerRef, tokenRef, gate, persist, runImport, harvestTip, onVerify, onScout, onSyncProjects, onSyncWriting, onDeepDive, onDraftResume, onScoreJob });
   // Layout/theme actions (reorder/show-hide/rename/setTheme/resetLayout):
   useLayoutActions({ cfgRef, isOwnerRef, setCfg, gate, lsKey: LS_KEY, themeIds: THEME_IDS, knownSectionIds: KNOWN_SECTION_IDS });
 
@@ -691,7 +710,7 @@ export function Portfolio({
       case "writing": return <Articles articles={cfg.articles} isOwner={isOwner} onSync={onSyncWriting} linkedInTip={harvestTip()} />;
       case "receipts": return <Receipts report={report} isOwner={isOwner} onVerify={onVerify} />;
       case "job-fit": return <JobFit fit={fit} evalReport={initialFitEval} onScore={onScoreJob} />;
-      case "deep-dives": return <Deepen feed={initialDeepen} />;
+      case "deep-dives": return <Deepen feed={initialDeepen} isOwner={isOwner} onDeepDive={onDeepDive} />;
       case "compass": return <Compass report={compass} isOwner={isOwner} />;
       case "values": return <ValuesSlider values={values} love={love} />;
       default: return null;
@@ -717,29 +736,23 @@ export function Portfolio({
         </div>
       )}
 
-      {/* ── Hero / Mission (fixed identity — always first) ─────────────────── */}
-      <header className="mx-auto max-w-6xl px-5 pb-6 pt-20 sm:pt-28">
-        <p className="mb-3 font-mono text-sm text-accent2">
+      {/* ── Hero (fixed identity — always first). Apple-minimalist: one caption, the name,
+          the role, the mission said once, and quiet links. No boxes, no pills. ──────────── */}
+      <header className="mx-auto max-w-3xl px-5 pb-10 pt-28 sm:pt-36">
+        <p className="mb-6 font-mono text-xs uppercase tracking-[0.2em] text-muted">
           {profile.handle} · {profile.location}
         </p>
-        <h1 className="max-w-4xl text-4xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl">
+        <h1 className="text-4xl font-semibold leading-[1.04] tracking-tight text-ink sm:text-6xl">
           {profile.name}
         </h1>
-        <p className="mt-3 text-lg text-muted sm:text-xl">{profile.tagline}</p>
-        <p className="mt-6 max-w-3xl text-base leading-relaxed text-muted sm:text-lg">{profile.blurb}</p>
+        <p className="mt-5 text-lg text-muted sm:text-xl">{profile.tagline}</p>
+        <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink sm:text-xl">{mission}</p>
 
-        <div className="mt-8 rounded-theme border border-edge bg-surface/70 p-6">
-          <p className="mb-1 text-sm font-medium uppercase tracking-widest text-accent">Mission</p>
-          <p className="text-lg leading-relaxed text-ink">{mission}</p>
-        </div>
-
-        <div className="mt-8 flex flex-wrap gap-3 text-sm">
-          <a href={profile.links.github} className="chip text-ink hover:border-accent" target="_blank" rel="noreferrer">GitHub</a>
-          <a href={profile.links.linkedin} className="chip text-ink hover:border-accent" target="_blank" rel="noreferrer">LinkedIn</a>
-          <a href={`mailto:${profile.links.email}`} className="chip text-ink hover:border-accent">Email</a>
-          <span className="chip border-accent2/40 text-accent2">
-            ⌘ Ask the agent (bottom-right) — “what can you do?”
-          </span>
+        <div className="mt-10 flex flex-wrap items-center gap-x-6 gap-y-2 text-sm">
+          <a href={profile.links.github} target="_blank" rel="noreferrer" className="text-ink underline-offset-4 transition-colors hover:text-accent hover:underline">GitHub</a>
+          <a href={profile.links.linkedin} target="_blank" rel="noreferrer" className="text-ink underline-offset-4 transition-colors hover:text-accent hover:underline">LinkedIn</a>
+          <a href={`mailto:${profile.links.email}`} className="text-ink underline-offset-4 transition-colors hover:text-accent hover:underline">Email</a>
+          <span className="text-muted">· Ask my agent ↘</span>
         </div>
       </header>
 

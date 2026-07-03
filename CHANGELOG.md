@@ -5,6 +5,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **Deep Dives is now a GENERATOR, not just a receiver (owner-only).** Paste a source URL → `🔎 Deep Dive`
+  → the node fetches it (bounded + SSRF-guarded, HTML→text via `lib/source-fetch`), distills a plain-language
+  **digest** + a **knowledge graph** + reusable **skills** grounded in the source, and **saves it to the
+  knowledge base**. New `app/api/deep-dive/route.ts` (owner-gated → **403**; **503** with no LLM) + a pure
+  `parseLooseJson` in `@core/deepen-types`. Reuses the **same grounding gate** as the inbound pipeline
+  (`normalizeArtifact` drops dangling edges + limitless skills) and the same store — the node builds its own
+  dives *and* still receives super-u's; `producedBy` distinguishes. Reachable via the owner button **and** the
+  `deepDiveSource` copilot action. Test: `scripts/test-deep-dive.mjs`.
+
+### Changed
+- **Apple-minimalist hero.** Reduced to essentials: caption → name (semibold) → role → the mission said
+  once → quiet text links. Removed the bordered Mission box, the redundant blurb, the pill-chips, and the
+  verbose "⌘ Ask the agent…" chip (now a quiet "· Ask my agent ↘"). Narrower column, one accent, more air.
+
 ### Fixed
 - **Genericized the feedback build-directive — the open-source repo no longer names a private build tool.**
   The feedback→feature loop's per-theme handoff (`buildCommandFor`) emitted a command naming a proprietary

@@ -120,6 +120,24 @@ function cleanGraph(raw: unknown): KnowledgeGraph {
   return { title: str(o.title), nodes, edges, graphUrl: isHttp(graphUrl) ? graphUrl : "" };
 }
 
+// Tolerant JSON extractor for an LLM response (the Deep Dive generator): strips ```json fences
+// and grabs the outermost {…} so a chatty model still parses. PURE. Returns null on garbage.
+export function parseLooseJson(raw: string): Record<string, unknown> | null {
+  if (typeof raw !== "string") return null;
+  let s = raw.trim();
+  const fence = s.match(/```(?:json)?\s*([\s\S]*?)```/i);
+  if (fence) s = fence[1].trim();
+  const first = s.indexOf("{");
+  const last = s.lastIndexOf("}");
+  if (first === -1 || last === -1 || last < first) return null;
+  try {
+    const o = JSON.parse(s.slice(first, last + 1));
+    return o && typeof o === "object" && !Array.isArray(o) ? (o as Record<string, unknown>) : null;
+  } catch {
+    return null;
+  }
+}
+
 // Coerce one inbound artifact into a safe, groundable card. Returns null if it isn't
 // groundable (no source url, no title) — the node refuses to surface ungrounded knowledge.
 export function normalizeArtifact(raw: unknown): DeepenArtifact | null {
