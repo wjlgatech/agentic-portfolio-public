@@ -40,7 +40,7 @@ check("itemsInWindow drops out-of-window + unparsable", itemsInWindow([item, old
 
 // ── build command ────────────────────────────────────────────────────────────
 const cmd = buildCommandFor("Add a\n  PDF   export " + "x".repeat(400));
-check("buildCommandFor one-lines, caps, and quotes", cmd.startsWith('anyagent goal "Add a PDF export') && cmd.endsWith(" --repo .") && cmd.length < 340);
+check("buildCommandFor one-lines + caps (tool-agnostic directive)", cmd.startsWith("Build: Add a PDF export") && cmd.length < 320);
 
 // ── digest grounding ─────────────────────────────────────────────────────────
 const a = normalizeFeedbackItem({ kind: "suggestion", text: "PDF export would be great", contact: "a@x.io" }, NOW_ISO);
@@ -64,7 +64,7 @@ check("counts recomputed in code (model's 999 ignored)", pdf.count === 2 && pdf.
 check("sorted by count desc", digest.clusters[0].count >= digest.clusters[1].count);
 check("examples are the contributors' real words", pdf.examples.includes("PDF export would be great"));
 check("proposal falls back to theme when missing", digest.clusters[1].proposal === "Fonts");
-check("every cluster carries a build command", digest.clusters.every((cl) => cl.buildCmd.startsWith("anyagent goal ")));
+check("every cluster carries a build directive", digest.clusters.every((cl) => cl.buildCmd.startsWith("Build: ")));
 check("total + provenance computed", digest.total === 3 && digest.model === "groq:llama" && digest.note === "ok");
 
 const many = normalizeDigest(

@@ -1,12 +1,12 @@
 # Feedback digest — the weekly "analyze the batch, stage the builds" cadence of the
 # feedback→feature loop. Calls the deployed POST /api/feedback/digest (which clusters the
 # week's user feedback into themes + drafted proposals, counts recomputed in code), then opens
-# ONE GitHub issue listing each theme with its ready-to-run `anyagent` build command.
+# ONE GitHub issue listing each theme with its ready-to-act build directive.
 #
-# The issue IS the human gate: a maintainer picks the themes worth building, runs the anyagent
-# command (or hands it to a coding agent), merges the PR, then closes the loop with
+# The issue IS the human gate: a maintainer picks the themes worth building, acts on the build
+# directive (or hands it to a coding agent), merges the PR, then closes the loop with
 # POST /api/feedback/notify {themes:[...]} so contributors get their ship notice. Nothing
-# auto-merges — `anyagent publish` is human-approved by design.
+# auto-merges — the build is human-approved by design.
 #
 # Setup (one-time):
 #   • Repo secret   FEEDBACK_SECRET — must equal the FEEDBACK_SECRET env var on the deploy.
@@ -64,7 +64,7 @@ jobs:
             const body =
               `Weekly feedback digest — **${d.total} item(s) → ${d.clusters.length} theme(s)** (window: ${d.windowDays}d${d.model ? ", clustered by " + d.model : ""}).\n\n` +
               rows +
-              `\n---\n\n**The human gate:** pick the themes worth building, run the anyagent command (or hand it to a coding agent), merge the PR, then close the loop:\n` +
+              `\n---\n\n**The human gate:** pick the themes worth building, act on the build directive (or hand it to a coding agent), merge the PR, then close the loop:\n` +
               "```\ncurl -X POST $PORTFOLIO_URL/api/feedback/notify -H \"x-feedback-secret: $FEEDBACK_SECRET\" -H \"Content-Type: application/json\" -d \x27{\"themes\":[\"<shipped theme>\"]}\x27\n```\n" +
               `Contributors who left an email get one ship notice; hosted portfolios already run the update (shared code, per-slug data — nothing to migrate).` +
               (d.note ? `\n\n_Note: ${d.note}_` : "");

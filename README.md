@@ -138,9 +138,9 @@ Then the loop runs:
 1. **Weekly digest.** A cron (`.github/workflows/feedback-digest.yml` → `POST /api/feedback/digest`)
    clusters the batch into themes + a drafted feature proposal each. Honest by construction: every
    count is recomputed in code, the examples are contributors' real words, ungrounded clusters are dropped.
-2. **The human gate.** The digest lands as a GitHub issue where each theme carries a ready-to-run
-   **`anyagent`** build command. A maintainer picks what's worth building, builds it (or hands the
-   command to a coding agent), and merges. **Nothing auto-merges.**
+2. **The human gate.** The digest lands as a GitHub issue where each theme carries a ready-to-act
+   **build directive**. A maintainer picks what's worth building, builds it (or hands the
+   directive to a coding agent), and merges. **Nothing auto-merges.**
 3. **The ship notice + 1-click update.** `POST /api/feedback/notify {themes}` emails exactly the people
    who asked for exactly what shipped — one transactional notice, never a list. And because hosted
    portfolios share the deploy's code while **your data lives in your portfolio's own store** (config,
