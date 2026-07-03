@@ -5,7 +5,7 @@
 // themes + drafted feature proposals — the LLM groups and drafts, but every COUNT is recomputed in
 // code from the real items (same honesty rule as verification/jobfit/standing), examples are the
 // contributors' REAL words (never model-rewritten), and each cluster carries a deterministic
-// `anyagent` build command as the human-approved handoff. Contact is optional and single-purpose:
+// build directive as the human-approved handoff. Contact is optional and single-purpose:
 // the ship notice when that theme lands.
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -31,7 +31,7 @@ export type FeedbackCluster = {
   complaints: number; // recomputed from the real items
   examples: string[]; // REAL item texts (≤3, capped) — contributors' words, not the model's
   proposal: string; // the drafted feature (model-authored, human-approved before build)
-  buildCmd: string; // deterministic `anyagent` handoff, computed in code
+  buildCmd: string; // deterministic build directive, computed in code
 };
 
 export type FeedbackDigest = {
@@ -97,10 +97,11 @@ export function itemsInWindow(items: FeedbackItem[], nowMs: number, windowDays: 
   });
 }
 
-/** The deterministic anyagent handoff — a human runs/approves it; nothing auto-merges. */
+/** The deterministic build directive — a human reads/approves it, then builds it with whatever
+ * agent or workflow they use; nothing auto-merges. Tool-agnostic on purpose. */
 export function buildCommandFor(proposal: string): string {
   const oneLine = proposal.replace(/\s+/g, " ").trim().slice(0, 300);
-  return `anyagent goal ${JSON.stringify(oneLine)} --repo .`;
+  return `Build: ${oneLine}`;
 }
 
 /**

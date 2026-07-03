@@ -3,7 +3,7 @@
 // (weekly GitHub Action) or on demand (owner), it clusters the recent feedback batch into
 // themes + drafted feature proposals. The LLM only GROUPS and DRAFTS: every count is
 // recomputed in code from the real items, examples are contributors' real words, and each
-// cluster carries a deterministic `anyagent` build command — the handoff a HUMAN approves
+// cluster carries a deterministic build directive — the handoff a HUMAN approves
 // (the cron opens an issue/PR; nothing auto-merges — same ethic as scout/verified-resume).
 //
 // Auth: the owner (x-portfolio-owner) OR the cron secret (x-feedback-secret == FEEDBACK_SECRET),
