@@ -6,8 +6,17 @@
 import { useEffect, useState } from "react";
 import { CREATOR, CREATOR_URL, REPO_URL } from "@/components/MadeWith";
 import { SharePanel } from "@/components/SharePanel";
+import { categorySpec, MAKE_CATEGORIES, type MakeCategory } from "@core/make-category";
 
 type Result = { url?: string; hosted?: boolean; slug?: string; pack?: unknown; note?: string; source?: "resume" | "linkedin" | "thin"; error?: string; tagline?: string; ownerUrl?: string; referredBy?: string | null };
+
+// Who is this page for? One pipeline, three intakes (labels + grounding wording swap; the
+// engine difference lives in @core/make-category). MODULE-SCOPE data, not a component.
+const CATEGORY_META: Record<MakeCategory, { chip: string; blurb: string; demo: { slug: string; label: string }[] }> = {
+  individual: { chip: "🧑‍💻 Me (a person)", blurb: "engineer · nurse · artist · any professional", demo: [{ slug: "demo-artist", label: "🎨 artist" }] },
+  business: { chip: "🏪 My business", blurb: "dentist · roofer · shop · practice", demo: [{ slug: "demo-dentist", label: "🦷 dentist" }, { slug: "demo-roofer", label: "🏠 roofer" }] },
+  community: { chip: "🤝 My community", blurb: "church · prayer group · running club", demo: [{ slug: "demo-church", label: "⛪ church" }, { slug: "demo-running-club", label: "🏃 running club" }] },
+};
 
 // MODULE-SCOPE (stable identity). Defining this INSIDE Make() remounts the input on every
 // keystroke → focus is lost after each character. Keep it out here; pass value + onChange.
@@ -28,6 +37,7 @@ function Field({ label, value, onChange, ph, hint, textarea }: {
 
 export default function Make() {
   const [f, setF] = useState({ name: "", email: "", linkedin: "", resume: "", x: "", fb: "", ig: "", github: "", youtube: "" });
+  const [category, setCategory] = useState<MakeCategory>("individual");
   const [busy, setBusy] = useState(false);
   const [res, setRes] = useState<Result | null>(null);
   const [copied, setCopied] = useState(false);
@@ -44,12 +54,13 @@ export default function Make() {
 
   async function make() {
     if (!f.name.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email)) { setRes({ error: "Please add your name and a valid email." }); return; }
-    if (f.resume.trim().length < 40 && !/^https?:\/\/(www\.)?linkedin\.com\/in\//i.test(f.linkedin.trim())) {
-      setRes({ error: "Add your LinkedIn profile URL OR paste a few lines of your résumé — either one works." }); return;
+    const liOk = category === "individual" && /^https?:\/\/(www\.)?linkedin\.com\/in\//i.test(f.linkedin.trim());
+    if (f.resume.trim().length < 40 && !liOk) {
+      setRes({ error: categorySpec(category).intake.groundingError }); return;
     }
     setBusy(true); setRes(null);
     try {
-      const r = await fetch("/api/make", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...f, ref }) });
+      const r = await fetch("/api/make", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ...f, ref, category }) });
       setRes(await r.json());
     } catch (e) { setRes({ error: (e as Error).message }); }
     setBusy(false);
@@ -121,11 +132,32 @@ export default function Make() {
         </label>
       </div>
 
+      {/* Category chips — one pipeline, three intakes. Plain buttons (never a component defined
+          in here — that's the focus-loss bug); the wording below swaps from @core/make-category. */}
+      <div className="mt-6 grid gap-2">
+        <span className="text-sm font-medium text-ink">This page is for…</span>
+        <div className="flex flex-wrap gap-2">
+          {MAKE_CATEGORIES.map((c) => (
+            <button key={c} onClick={() => setCategory(c)} className={`chip ${category === c ? "border-accent text-accent" : "border-edge text-muted"}`} title={CATEGORY_META[c].blurb}>
+              {CATEGORY_META[c].chip}
+            </button>
+          ))}
+        </div>
+        <span className="text-xs text-muted">
+          {CATEGORY_META[category].blurb} · see a live demo:{" "}
+          {CATEGORY_META[category].demo.map((d, i) => (
+            <span key={d.slug}>{i > 0 && " · "}<a href={`/p/${d.slug}`} target="_blank" rel="noreferrer" className="text-accent hover:underline">{d.label} ↗</a></span>
+          ))}
+        </span>
+      </div>
+
       <div className="mt-6 grid gap-5">
-        <Field label="Your name *" value={f.name} onChange={set("name")} ph="Jane Doe" />
-        <Field label="Email *" value={f.email} onChange={set("email")} ph="jane@example.com" hint="Used only to key your portfolio (re-run to update it). Not shown publicly." />
-        <Field label="LinkedIn profile — or paste your résumé below" value={f.linkedin} onChange={set("linkedin")} ph="https://www.linkedin.com/in/…" hint="We auto-fill from your PUBLIC profile (best-effort — no login, we never post as you). If LinkedIn blocks it, just paste a few lines below." />
-        <Field label="Your résumé / about you" value={f.resume} onChange={set("resume")} ph="Optional if you gave LinkedIn above. Paste your résumé or a few paragraphs about your work, skills, and highlights…" hint="The more real detail here, the richer your agent. Either this OR LinkedIn is enough to start." textarea />
+        <Field label={category === "individual" ? "Your name *" : category === "business" ? "Business name *" : "Community name *"} value={f.name} onChange={set("name")} ph={category === "individual" ? "Jane Doe" : category === "business" ? "Brightside Dental Studio" : "Riverside Running Crew"} />
+        <Field label="Email *" value={f.email} onChange={set("email")} ph="jane@example.com" hint="Used only to key your page (re-run to update it). Not shown publicly." />
+        {category === "individual" && (
+          <Field label="LinkedIn profile — or paste your résumé below" value={f.linkedin} onChange={set("linkedin")} ph="https://www.linkedin.com/in/…" hint="We auto-fill from your PUBLIC profile (best-effort — no login, we never post as you). If LinkedIn blocks it, just paste a few lines below." />
+        )}
+        <Field label={categorySpec(category).intake.aboutLabel} value={f.resume} onChange={set("resume")} ph={categorySpec(category).intake.aboutPlaceholder} hint={category === "individual" ? "The more real detail here, the richer your agent. Either this OR LinkedIn is enough to start." : "The more real detail here, the richer your agent. Plain words beat marketing copy."} textarea />
         <details className="text-sm" open>
           <summary className="cursor-pointer text-accent">+ links to keep your portfolio auto-fresh</summary>
           <div className="mt-3 grid gap-3">

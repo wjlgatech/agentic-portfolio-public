@@ -8,10 +8,14 @@ import fs from "node:fs";
 import path from "node:path";
 import { validateInstance, type InstanceConfig } from "@core/instance-types";
 import { portfolioInstance } from "@/content/instances/portfolio";
+import { SEED_PACKS } from "@/content/instances/seeds";
 
-// The registered site configs, by slug.
+// The registered site configs, by slug. Seed demo packs (fictional, clearly labelled) are
+// registered too, so `INSTANCE=demo-dentist` renders one as a whole deploy — and /p/<slug>
+// falls back to them as read-only demos (see app/p/[slug]/page.tsx).
 export const INSTANCES: Record<string, InstanceConfig> = {
   portfolio: portfolioInstance,
+  ...SEED_PACKS,
 };
 
 export const DEFAULT_INSTANCE = "portfolio";

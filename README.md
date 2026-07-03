@@ -54,6 +54,22 @@ Not a developer? Go to **`/make`**: type your name + email, and **either paste a
 give your LinkedIn profile URL** — click once, and you get a **live portfolio with its own AI agent**, hosted on
 the shared network at `/p/<you>`. No fork, no deploy. Recruiters can just *ask your agent* about you.
 
+**Not just for job-hunters.** `/make` asks one question first — *who is this page for?* —
+and serves three kinds of maker with the same one-click pipeline:
+
+- **🧑‍💻 Me (a person)** — engineer, nurse, artist, any professional. Grounded in your résumé or LinkedIn.
+- **🏪 My business** — dentist, roofer, shop, practice. Grounded in a few honest lines about what you do;
+  your agent answers visitors' questions and captures interested leads **only you** can read.
+- **🤝 My community** — church, prayer group, running club. Grounded in who you are and when you meet;
+  your agent welcomes newcomers 24/7.
+
+See a **live demo** for each: [🎨 artist](https://agentic-portfolio-public.vercel.app/p/demo-artist) ·
+[🦷 dentist](https://agentic-portfolio-public.vercel.app/p/demo-dentist) ·
+[🏠 roofer](https://agentic-portfolio-public.vercel.app/p/demo-roofer) ·
+[⛪ church](https://agentic-portfolio-public.vercel.app/p/demo-church) ·
+[🏃 running club](https://agentic-portfolio-public.vercel.app/p/demo-running-club) — all
+**clearly-labelled fictional examples** (every claim shows `unverified`; demos never join the real network directory).
+
 > **LinkedIn auto-fill** reads only your **public** profile metadata (the same info Google sees — no login, we
 > never post as you). LinkedIn sometimes blocks server reads from datacenter IPs; if so, your portfolio is a
 > starter and you just paste a few lines to enrich it. Hosting the shared `/make` needs an LLM key + a Postgres/Neon
