@@ -122,6 +122,92 @@ export function InstanceAgentActions({ instanceName, siteUrl, slug }: { instance
   });
 
   useCopilotAction({
+    name: "scoutOpportunities",
+    description:
+      `OWNER ONLY: proactively hunt public discussions where ${instanceName} could genuinely help ` +
+      "(and be discovered) — e.g. a roofer finding after-storm renovation threads. Searches public " +
+      "sources (Hacker News live; Reddit best-effort) and DRAFTS a helpful, affiliation-disclosed " +
+      "reply for each. NOTHING is posted anywhere — the owner reviews and posts from their own " +
+      "account. Optional `keywords` sharpen the search (e.g. 'hail damage roof').",
+    parameters: [{ name: "keywords", type: "string", description: "Optional comma-separated search topics", required: false }],
+    handler: async ({ keywords }) => {
+      if (!slug) return "Opportunity scouting is available on hosted portfolios (made via /make).";
+      let token = "";
+      try { token = localStorage.getItem(tokenKey(slug)) || ""; } catch { /* ignore */ }
+      try {
+        const res = await fetch("/api/opportunities", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", ...(token ? { "x-portfolio-owner": token } : {}) },
+          body: JSON.stringify({ instance: slug, keywords: String(keywords || "").split(",").map((k) => k.trim()).filter(Boolean) }),
+        });
+        if (res.status === 403) return "🔒 Owner only. Open your portfolio with `?owner=<your token>` once to unlock, then ask me to scout again.";
+        const data = await res.json();
+        if (!res.ok) return `Couldn't scout: ${data.error || res.status}`;
+        if (!data.found) return `🔭 Scouted ${data.queries?.length ?? 0} topics — nothing new right now (${data.total} in your queue). Note: Facebook groups, Skool, LinkedIn and X are login-walled, so I can't watch those — paste a thread from them and I'll draft your reply.`;
+        const rows = (data.opportunities as { title: string; url: string; draft: string }[]).map((o, i) => `${i + 1}. **${o.title}**\n   ${o.url}\n   Draft reply (edit + post it YOURSELF): "${o.draft.slice(0, 220)}…"`).join("\n");
+        return `🔭 Found ${data.found} new opportunit${data.found === 1 ? "y" : "ies"} (${data.total} in queue). I drafted a disclosed, helpful reply for each — nothing was posted; you review, edit, and post from your own account:\n${rows}`;
+      } catch (e) {
+        return `Couldn't reach the scout: ${(e as Error).message}`;
+      }
+    },
+  });
+
+  useCopilotAction({
+    name: "viewOpportunities",
+    description:
+      `OWNER ONLY: show ${instanceName}'s opportunity queue — the public discussions the scout found, ` +
+      "each with its drafted reply. The owner posts replies themselves; ask them to say 'mark <n> sent' " +
+      "or 'skip <n>' after they act (use markOpportunity).",
+    parameters: [],
+    handler: async () => {
+      if (!slug) return "Opportunity scouting is available on hosted portfolios (made via /make).";
+      let token = "";
+      try { token = localStorage.getItem(tokenKey(slug)) || ""; } catch { /* ignore */ }
+      try {
+        const res = await fetch(`/api/opportunities?instance=${encodeURIComponent(slug)}`, { headers: token ? { "x-portfolio-owner": token } : {} });
+        if (res.status === 403) return "🔒 Owner only. Open your portfolio with `?owner=<your token>` once to unlock, then ask again.";
+        const data = await res.json();
+        if (!res.ok) return `Couldn't read the queue: ${data.error || res.status}`;
+        if (!data.count) return "No opportunities in the queue yet — say 'scout for opportunities' and I'll go hunting.";
+        const rows = (data.opportunities as { id: string; title: string; url: string; status: string; draft: string }[]).slice(0, 8)
+          .map((o) => `• [${o.status}] ${o.title}\n  ${o.url}\n  id ${o.id} — draft: "${o.draft.slice(0, 160)}…"`).join("\n");
+        return `🔭 ${data.count} opportunit${data.count === 1 ? "y" : "ies"} in ${instanceName}'s queue (you post; I only draft):\n${rows}`;
+      } catch (e) {
+        return `Couldn't reach the queue: ${(e as Error).message}`;
+      }
+    },
+  });
+
+  useCopilotAction({
+    name: "markOpportunity",
+    description:
+      "OWNER ONLY: after the owner personally posts (or decides to skip) a scouted opportunity, mark it " +
+      "`sent` or `skipped` by its id — this is how the scout measures what actually converts.",
+    parameters: [
+      { name: "id", type: "string", description: "The opportunity id (from viewOpportunities)", required: true },
+      { name: "status", type: "string", description: "'sent' or 'skipped'", required: true },
+    ],
+    handler: async ({ id, status }) => {
+      if (!slug) return "Opportunity scouting is available on hosted portfolios (made via /make).";
+      let token = "";
+      try { token = localStorage.getItem(tokenKey(slug)) || ""; } catch { /* ignore */ }
+      try {
+        const res = await fetch("/api/opportunities", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json", ...(token ? { "x-portfolio-owner": token } : {}) },
+          body: JSON.stringify({ instance: slug, id, status }),
+        });
+        if (res.status === 403) return "🔒 Owner only. Open your portfolio with `?owner=<your token>` once to unlock.";
+        const data = await res.json();
+        if (!res.ok) return `Couldn't mark it: ${data.error || res.status}`;
+        return `✅ Marked ${id} as ${status}.`;
+      } catch (e) {
+        return `Couldn't reach the queue: ${(e as Error).message}`;
+      }
+    },
+  });
+
+  useCopilotAction({
     name: "sendFeedback",
     description:
       "Send a feature SUGGESTION or a COMPLAINT about this app to its builders. ANYONE can use this " +

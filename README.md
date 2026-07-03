@@ -70,6 +70,16 @@ See a **live demo** for each: [🎨 artist](https://agentic-portfolio-public.ver
 [🏃 running club](https://agentic-portfolio-public.vercel.app/p/demo-running-club) — all
 **clearly-labelled fictional examples** (every claim shows `unverified`; demos never join the real network directory).
 
+**And it hunts, instead of waiting to be discovered.** Ask your agent to *"scout for opportunities"*
+and it searches public discussions where you could genuinely help (a roofer finding after-storm
+renovation threads), then **drafts a helpful, affiliation-disclosed reply for each** — in your voice,
+grounded in your real offerings, with a built-in spam gate that refuses threads where a reply from
+you wouldn't actually help. **Nothing is ever auto-posted**: you review, edit, and post from your own
+account (bots get banned; a helpful human answer converts) — then tell your agent "mark it sent" so it
+learns what works. Honest about the walls: Hacker News is searched live; Reddit is best-effort;
+Facebook Groups, Skool, LinkedIn and X are login-walled — you watch those, and your agent drafts a
+reply for anything you paste in.
+
 > **LinkedIn auto-fill** reads only your **public** profile metadata (the same info Google sees — no login, we
 > never post as you). LinkedIn sometimes blocks server reads from datacenter IPs; if so, your portfolio is a
 > starter and you just paste a few lines to enrich it. Hosting the shared `/make` needs an LLM key + a Postgres/Neon
