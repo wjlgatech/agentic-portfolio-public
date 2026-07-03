@@ -5,6 +5,13 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Fixed
+- **README two-reader clarity pass.** Fixed a dangling table-of-contents anchor — the "The Network" nav
+  link pointed at `#-the-network-the-reason-to-join`, but the em-dash in the heading makes the real GitHub
+  slug `#-the-network--the-reason-to-join` (double hyphen). Audited every other doc pointer, file path, API
+  route, and numeric claim (9 `[data-theme]` brands, `/make` `/network` `/society`, the `.well-known/agent-card.json`
+  rewrite) against the source — all accurate, no other changes needed.
+
 ### Added
 - **1-click source syncs — keep Projects (GitHub) + Writing (feeds) fresh, with both a button and a weekly cron.**
   - **Projects ⟳ Sync from GitHub** (owner) — pulls your repos (public + private with a `repo`-scoped

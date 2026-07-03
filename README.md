@@ -11,7 +11,7 @@ click once — and you get a **live portfolio with its own AI agent** that answe
 24/7. Hosted for you. Nothing to install.
 **A developer?** Fork it, fill in `content/`, deploy for $0 — same agent + an A2A card so other agents can query yours.
 
-[Make your own](https://agentic-portfolio-public.vercel.app/) · [See an example](#-see-it-live) · [The Network](#-the-network-the-reason-to-join) · [Quick start (devs)](#-quick-start) · [Deploy](#-deploy-free) · MIT
+[Make your own](https://agentic-portfolio-public.vercel.app/) · [See an example](#-see-it-live) · [The Network](#-the-network--the-reason-to-join) · [Quick start (devs)](#-quick-start) · [Deploy](#-deploy-free) · MIT
 
 </div>
 
