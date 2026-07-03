@@ -12,12 +12,16 @@ import { InstanceSite } from "@/components/InstanceSite";
 import { InstanceAgentActions } from "@/components/InstanceAgentActions";
 import { HostedOwnerBadge } from "@/components/HostedOwnerBadge";
 import { kvGetJSON } from "@/lib/storage";
+import { SEED_PACKS } from "@/content/instances/seeds";
 import { validateInstance, instanceEvidence, type InstanceConfig } from "@core/instance-types";
 
 export const dynamic = "force-dynamic";
 
+// KV (a real hosted portfolio) wins; the seed DEMO packs are the fs fallback so /p/demo-dentist
+// etc. work on ANY deploy with zero setup. Demos are read-only by construction: no owner:<slug>
+// hash exists in KV, so the owner badge honestly shows View-only and owner reads stay 403.
 async function load(slug: string): Promise<InstanceConfig | null> {
-  const raw = await kvGetJSON<unknown>(`portfolio:${slug}`);
+  const raw = (await kvGetJSON<unknown>(`portfolio:${slug}`)) ?? SEED_PACKS[slug] ?? null;
   if (!raw) return null;
   const { ok, config } = validateInstance(raw);
   return ok && config ? config : null;

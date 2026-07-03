@@ -18,7 +18,8 @@ import { upsertEntry, cleanEntry } from "@/lib/registry";
 import { recordReferral } from "@/lib/referrals";
 import { fetchLinkedInPublic, isLinkedInProfileUrl } from "@/lib/linkedin-public";
 import { mintOwnerToken, hashOwnerToken, ownerKey } from "@/lib/portfolio-owner";
-import { validateInstance, type InstanceConfig } from "@core/instance-types";
+import { validateInstance, type InstanceConfig, type Vertical } from "@core/instance-types";
+import { categorySpec, resolveVertical, toCategory, type CategorySpec } from "@core/make-category";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -33,38 +34,40 @@ function slugFor(name: string, email: string): string {
   return `${base}-${h.toString(36).slice(0, 4)}`;
 }
 
-const GEN_SYSTEM = `You write a person's professional portfolio from their résumé. Be truthful and specific — ground everything in the résumé; never invent employers, titles, or metrics. Output STRICT JSON only:
-{"tagline":"3-8 words","blurb":"1-2 warm sentences on who they are + what they do","mission":"one sentence on what they're working toward","principles":[{"title":"short","body":"one sentence"}],"skills":["a real skill/service they offer"],"highlights":["a concrete thing they've done — claimed, will show as 'unverified'"],"values":[{"title":"short","body":"one sentence"}]}`;
-
 // Assemble a full, valid InstanceConfig from the generated fields + the form (boilerplate in code).
-function buildInstance(name: string, slug: string, links: Record<string, string>, g: Record<string, unknown>): InstanceConfig {
+// The category spec (@core/make-category) supplies the vertical, sections, proof nouns, and
+// generation prompt — an individual, a business, and a community share ONE pipeline (data, not forks).
+function buildInstance(name: string, slug: string, links: Record<string, string>, g: Record<string, unknown>, spec: CategorySpec, vertical: Vertical): InstanceConfig {
   const principles = (Array.isArray(g.principles) ? g.principles : []).map((p) => ({ title: str((p as Record<string, unknown>)?.title, 60), body: str((p as Record<string, unknown>)?.body, 200) })).filter((p) => p.title).slice(0, 4);
   const values = (Array.isArray(g.values) ? g.values : []).map((p) => ({ title: str((p as Record<string, unknown>)?.title, 60), body: str((p as Record<string, unknown>)?.body, 200) })).filter((p) => p.title).slice(0, 4);
   const skills = arr(g.skills);
+  const isPerson = spec.category === "individual";
   const raw = {
     slug,
-    vertical: "personal",
-    entity: { name, tagline: str(g.tagline, 120) || `${name}'s portfolio`, blurb: str(g.blurb, 400), location: "", links },
+    vertical,
+    entity: { name, tagline: str(g.tagline, 120) || `${name}'s ${isPerson ? "portfolio" : "site"}`, blurb: str(g.blurb, 400), location: "", links },
     // mission is REQUIRED by validateInstance — never leave it empty (the no-LLM fallback would, → null config → 500).
-    story: { mission: str(g.mission, 240) || `${name}'s work, in one place — ask my agent anything about it.`, principles: principles.length ? principles : [{ title: "In progress", body: "This portfolio is grounded in a résumé; the owner can refine it." }] },
+    story: { mission: str(g.mission, 240) || `${name}, in one place — ask ${isPerson ? "my" : "our"} agent anything about it.`, principles: principles.length ? principles : [{ title: "In progress", body: "This page is grounded in the maker's own words; the owner can refine it." }] },
     theme: "vercel",
     agent: {
-      persona: `A friendly agent for ${name} — answers about their background and whether they're a fit, grounded in their real material.`,
+      persona: isPerson
+        ? `A friendly agent for ${name} — answers about their background and whether they're a fit, grounded in their real material.`
+        : `A friendly agent for ${name} — answers visitors' questions about what ${name} offers, grounded in its real material.`,
       grounding: `Answer only from ${name}'s real material. Present achievements as claimed (unverified), never fabricate. Be honest about gaps.`,
-      skills: [
-        { id: "about_me", name: `About ${name}`, description: `Answer questions about ${name}'s background, skills, and work — grounded, no fabrication.`, tags: ["q&a"], examples: [`Tell me about ${name}.`] },
-        { id: "assess_fit", name: "Am I a fit?", description: "Given a role or project, honestly assess whether this person is a fit, and where they aren't.", tags: ["fit"], examples: ["Would they fit a senior PM role?"] },
-        { id: "contact", name: "How to reach me", description: `Share how to contact ${name} (the links in this profile).`, tags: ["contact"], examples: ["How do I reach them?"] },
-      ],
+      skills: isPerson
+        ? [
+            { id: "about_me", name: `About ${name}`, description: `Answer questions about ${name}'s background, skills, and work — grounded, no fabrication.`, tags: ["q&a"], examples: [`Tell me about ${name}.`] },
+            { id: "assess_fit", name: "Am I a fit?", description: "Given a role or project, honestly assess whether this person is a fit, and where they aren't.", tags: ["fit"], examples: ["Would they fit a senior PM role?"] },
+            { id: "contact", name: "How to reach me", description: `Share how to contact ${name} (the links in this profile).`, tags: ["contact"], examples: ["How do I reach them?"] },
+          ]
+        : [
+            { id: "about_us", name: `About ${name}`, description: `Answer questions about ${name} — what it offers, when, where — grounded, no fabrication.`, tags: ["q&a"], examples: [`Tell me about ${name}.`] },
+            { id: "capture_lead", name: "Get in touch", description: `Take a visitor's contact + what they need so ${name} can follow up.`, tags: ["lead"], examples: ["I'd like to talk to someone."] },
+            { id: "contact", name: "How to reach us", description: `Share how to contact ${name} (the links in this profile).`, tags: ["contact"], examples: ["How do I reach you?"] },
+          ],
     },
-    sections: [
-      { id: "practices", title: "About", eyebrow: "Who I am + how I work" },
-      { id: "projects", title: "What I Do", eyebrow: "Skills & services" },
-      { id: "receipts", title: "Highlights", eyebrow: "Claimed — verify before you trust" },
-      { id: "writing", title: "Links", eyebrow: "Find me online" },
-      { id: "values", title: "What I Value", eyebrow: "The why" },
-    ],
-    proof: { enabled: true, label: "Highlights", claimNoun: "highlight", sources: ["manual"] },
+    sections: spec.sections.map((s) => ({ ...s })),
+    proof: { enabled: true, label: spec.proof.label, claimNoun: spec.proof.claimNoun, sources: ["manual"] },
     scout: { enabled: false, deepen: "", widen: "", reach: "" },
     network: { discoverable: true, peers: [] },
     owner: { gateEnv: "PORTFOLIO_OWNER_TOKEN" },
@@ -82,23 +85,23 @@ function buildInstance(name: string, slug: string, links: Record<string, string>
   return (ok && config ? config : (validateInstance({ ...raw, vertical: "personal", theme: "vercel" }).config as InstanceConfig));
 }
 
-async function generate(resume: string, name: string): Promise<Record<string, unknown>> {
+async function generate(about: string, name: string, spec: CategorySpec): Promise<Record<string, unknown>> {
   const llm = resolveLlm();
-  if (!llm || resume.length < 40) {
+  if (!llm || about.length < 40) {
     // Deterministic fallback (no key, or too little text) — still a real, honest starter.
-    return { tagline: "", blurb: resume.slice(0, 300), mission: "", principles: [], skills: [], highlights: [], values: [] };
+    return { tagline: "", blurb: about.slice(0, 300), mission: "", principles: [], skills: [], highlights: [], values: [] };
   }
   try {
     const openai = new OpenAI({ apiKey: llm.apiKey, baseURL: llm.baseURL });
     const r = await openai.chat.completions.create({
       model: llm.model,
       temperature: 0.3,
-      messages: [{ role: "system", content: GEN_SYSTEM }, { role: "user", content: `Name: ${name}\n\nRÉSUMÉ / BACKGROUND:\n${resume}` }],
+      messages: [{ role: "system", content: spec.genSystem }, { role: "user", content: `Name: ${name}\n\nABOUT (the maker's own words):\n${about}` }],
       response_format: { type: "json_object" },
     });
     return JSON.parse(r.choices[0]?.message?.content ?? "{}");
   } catch {
-    return { blurb: resume.slice(0, 300) };
+    return { blurb: about.slice(0, 300) };
   }
 }
 
@@ -121,25 +124,32 @@ export async function POST(req: NextRequest) {
   }
   let resume = str(body.resume, 12000);
 
-  // 1-CLICK, NON-TECH: résumé OR LinkedIn is enough. If they gave no (real) résumé but a LinkedIn
-  // profile URL, pull its PUBLIC metadata (best-effort, may be IP-blocked) and ground on that.
+  // The category seam: individual (résumé/LinkedIn) · business · community — one pipeline,
+  // different vertical/sections/prompt (data from @core/make-category, never a fork).
+  const category = toCategory(body.category);
+  const spec = categorySpec(category);
+  const vertical = resolveVertical(category, body.vertical);
+
+  // 1-CLICK, NON-TECH: for an INDIVIDUAL, résumé OR LinkedIn is enough — if they gave no (real)
+  // résumé but a LinkedIn profile URL, pull its PUBLIC metadata (best-effort, may be IP-blocked).
+  // Businesses/communities ground on their own description (they don't have a résumé).
   let source: "resume" | "linkedin" | "thin" = resume.length >= 40 ? "resume" : "thin";
   let thinNote = "";
-  if (resume.length < 40 && links.linkedin && isLinkedInProfileUrl(links.linkedin)) {
+  if (category === "individual" && resume.length < 40 && links.linkedin && isLinkedInProfileUrl(links.linkedin)) {
     const li = await fetchLinkedInPublic(links.linkedin).catch(() => null);
     if (li) { resume = li.resumeText; source = "linkedin"; }
     else { thinNote = "We couldn't read your LinkedIn automatically (LinkedIn blocks server reads). Your portfolio is a starter — paste a few lines about yourself and re-make to enrich it."; }
   }
-  // Require at least ONE grounding source (name+email alone is too thin for a real portfolio).
-  if (resume.length < 40 && !links.linkedin) {
-    return NextResponse.json({ error: "Add your résumé (paste a few lines) OR your LinkedIn profile URL — we need something to ground your portfolio in." }, { status: 400 });
+  // Require at least ONE grounding source (name+email alone is too thin for a real page).
+  if (resume.length < 40 && !(category === "individual" && links.linkedin)) {
+    return NextResponse.json({ error: spec.intake.groundingError }, { status: 400 });
   }
   // Who invited them (their referrer's slug). Attribution flows from a shared portfolio's footer
   // link (?ref=<slug>) — a public handle, never a contact list. Sanitized to the slug charset.
   const ref = str(body.ref, 48).toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 48);
 
   const slug = slugFor(name, email);
-  const config = buildInstance(name, slug, links, await generate(resume, name));
+  const config = buildInstance(name, slug, links, await generate(resume, name, spec), spec, vertical);
   if (!config?.entity) {
     return NextResponse.json({ error: "Couldn't assemble a valid portfolio from that input — add a few more lines about yourself and try again." }, { status: 422 });
   }
