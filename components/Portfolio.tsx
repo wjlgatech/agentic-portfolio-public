@@ -613,8 +613,14 @@ export function Portfolio({
           ? "You are the verified owner; edits apply."
           : "If the user IS the owner: tell them to click the 🔒 “View only” badge at the " +
             "bottom-left and enter the owner passphrase (or open the site once with " +
-            "?owner=<token> in the URL). After unlocking, ask them to repeat the request and " +
-            "it will apply. Offer this every time you decline an edit.",
+            "?owner=<token> in the URL). FORGOT the passphrase? There IS a reset: leave the " +
+            "passphrase prompt BLANK and press OK — a 30-minute recovery link is emailed to " +
+            "the owner's address on file, and clicking it signs them back in (no password is " +
+            "ever revealed; needs email configured on this deploy — otherwise reset " +
+            "PORTFOLIO_OWNER_TOKEN in the hosting env, e.g. Vercel → Settings → Environment " +
+            "Variables). NEVER say you can't help with a forgotten passphrase — give these " +
+            "steps. After unlocking, ask them to repeat the request and it will apply. Offer " +
+            "this every time you decline an edit.",
       visitorNote: isOwner
         ? undefined
         : "This user is currently a VISITOR (owner mode not unlocked). You may answer and " +
@@ -639,7 +645,7 @@ export function Portfolio({
         "a single linkedin.com/pulse/… or /posts/… link IS fetchable — use addArticleFromUrl for those",
       ownerNote:
         ownerRequired && !isOwner
-          ? "User is in View-only mode — they must unlock owner mode FIRST (🔒 “View only” badge, bottom-left, enter the passphrase) before importing. Say this up front."
+          ? "User is in View-only mode — they must unlock owner mode FIRST (🔒 “View only” badge, bottom-left, enter the passphrase; forgot it? leave the prompt blank + OK to recover by email) before importing. Say this up front."
           : "Owner mode is active — they can import.",
       easiestOneClick:
         "The browser extension in extension/ — load it unpacked once (chrome://extensions → Developer mode → Load unpacked), then click the “⬆ Send my posts to my portfolio” button on the LinkedIn activity page. It harvests AND imports automatically — no DevTools, no copy-paste. Recommend this first.",
