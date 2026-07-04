@@ -5,6 +5,14 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Docs
+- **`.env.example`: a 2-minute zero-domain runbook for turning email recovery ON.** A deploy showed
+  the honest "email recovery isn't set up" note because it lacked `RESEND_API_KEY`. Since ROOT
+  recovery only emails the OWNER, Resend's default `onboarding@resend.dev` sender reaches that
+  address with no domain to verify — sign up at resend.com with the owner email → key → set
+  `RESEND_API_KEY` → redeploy → verify. (Hosted `/p/<slug>` recovery emails other makers, so that
+  path still needs a verified domain + `RESEND_FROM`.)
+
 ### Added
 - **/make prefill links — a helper can set up a non-technical maker's form with one URL.** Why: the
   remake path for a links-only maker (the Jeff case) required them to re-type name + source URLs;
