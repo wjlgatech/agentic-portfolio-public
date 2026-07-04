@@ -57,6 +57,11 @@ Recruiters can just *ask your agent* about you. Everything genuinely public is *
 and the result screen shows a per-source report — what was pulled, what
 was blocked, what's login-walled by design.
 
+**Helping someone non-technical?** Send them a **prefilled link** — put their name and source URLs right
+in the address (`/make?name=Their%20Name&linkedin=…&youtube=…`): the form arrives already filled, they type
+only their email and click once. (Their email is never taken from the link — it's what keys their page, and
+re-making with the same email updates their page in place.)
+
 **Not just for job-hunters.** `/make` asks one question first — *who is this page for?* —
 and serves three kinds of maker with the same one-click pipeline:
 

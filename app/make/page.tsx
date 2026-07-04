@@ -70,6 +70,17 @@ export default function Make() {
     setRef((q.get("ref") || "").toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 48));
     const ex = (q.get("example") || "").trim();
     if (/^https?:\/\//i.test(ex)) setExample(ex.slice(0, 200)); // an example portfolio to model yours on
+    // 1-CLICK PREFILL: a helper can send a non-technical maker a link with the form already filled
+    // (?name=…&linkedin=…&youtube=…) — the maker only types their email and clicks. Email is NEVER
+    // prefilled from a URL (links get forwarded/logged; the email keys the page — it stays typed).
+    const pre: Partial<typeof f> = {};
+    for (const k of ["name", "linkedin", "x", "fb", "ig", "github", "youtube", "website", "resume"] as const) {
+      const v = (q.get(k) || "").trim().slice(0, k === "resume" ? 12000 : 200);
+      if (v && (k === "name" || k === "resume" || /^https?:\/\//i.test(v))) pre[k] = v;
+    }
+    if (Object.keys(pre).length) setF((prev) => ({ ...prev, ...pre }));
+    const cat = q.get("category");
+    if (cat && (MAKE_CATEGORIES as readonly string[]).includes(cat)) setCategory(cat as MakeCategory);
   }, []);
 
   async function make() {

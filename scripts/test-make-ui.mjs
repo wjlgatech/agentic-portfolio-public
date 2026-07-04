@@ -30,6 +30,15 @@ try {
     console.log(`${pass ? "✅" : "❌"} ${name}: typed "${text}" → "${got}"${pass ? "" : "  ← DROPPED CHARACTERS"}`);
     if (!pass) ok = false;
   }
+
+  // 1-click prefill: a helper's link fills the form; the maker only types their email.
+  await page.goto(`${BASE}/make?name=Jane%20Prefill&youtube=https%3A%2F%2Fyoutube.com%2F%40jane&email=evil%40nope.com`, { waitUntil: "networkidle", timeout: 30000 });
+  const preName = await page.getByLabel("Your name", { exact: false }).first().inputValue();
+  const preYt = await page.getByLabel("YouTube", { exact: false }).first().inputValue();
+  const preEmail = await page.getByLabel("Email", { exact: false }).first().inputValue();
+  const prefillPass = preName === "Jane Prefill" && preYt === "https://youtube.com/@jane" && preEmail === "";
+  console.log(`${prefillPass ? "✅" : "❌"} prefill: ?name+?youtube fill the form, email is NEVER prefilled (got name="${preName}", yt="${preYt}", email="${preEmail}")`);
+  if (!prefillPass) ok = false;
 } catch (e) {
   console.log("❌ make-ui:", e.message);
   ok = false;
