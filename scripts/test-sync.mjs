@@ -41,6 +41,11 @@ check("merge is newest-first across sources", merged[0].date >= merged[merged.le
 const twice = mergeFeed(merged, y.concat(g));
 check("merge is idempotent (dedupe by url)", twice.length === merged.length);
 check("merge caps the feed", mergeFeed([], Array.from({ length: 50 }, (_, i) => ({ source: "github", title: `r${i}`, url: `https://x/${i}`, date: `2025-01-${(i % 28) + 1}` })), 10).length === 10);
+// REGRESSION (found live on a remade portfolio): the query string IS the identity for YouTube
+// watch URLs — a dedupe key that strips `?v=<id>` collapses every synced video into one item.
+const vids = [1, 2, 3].map((n) => ({ source: "youtube", title: `v${n}`, url: `https://www.youtube.com/watch?v=id${n}`, date: `2026-01-0${n}`, category: "YouTube" }));
+check("watch?v= videos keep distinct identities", mergeFeed([], vids).length === 3);
+check("same video (hash/trailing-slash variants) still dedupes", mergeFeed([{ ...vids[0], url: `${vids[0].url}#t=1` }], [vids[0]]).length === 1);
 
 console.log(ok ? "✅ sync: all pass" : "❌ sync: FAIL");
 process.exit(ok ? 0 : 1);
