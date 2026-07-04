@@ -51,6 +51,11 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   reset `PORTFOLIO_OWNER_TOKEN` in the hosting env. Unit-tested
   (`scripts/test-owner-session.mjs`, 15 checks, in `npm test`); full loop verified live in the
   sibling private repo (identical files): magic link → Owner mode, secret stripped from the URL.
+  **The copilot agent knows the reset too:** the `howToBecomeOwner` grounding readable
+  (`Portfolio.tsx`) described only "enter the passphrase", so *"how do I reset the password
+  for owner mode?"* got a dead-end "I cannot help with that" — it now carries the
+  blank-prompt→emailed-link steps (+ the env-var fallback) and instructs the agent never
+  to dead-end that question.
 
   _Investigated / Rejected:_ emailing or returning the raw token after the link is confirmed
   (secret would transit; sessions keep it server-side); a KV-backed single-use recovery record
