@@ -30,7 +30,7 @@ Ask its on-page agent *"what has Paul built?"* or *"is he a fit for a staff ML r
 |---|---|---|
 | 🧑‍💻 **A live portfolio** | [agentic-portfolio-lovat.vercel.app ↗](https://agentic-portfolio-lovat.vercel.app/) | Chat with the agent; open **Receipts** (claims audited against public GitHub — plus, optionally, your own pasted LinkedIn recommendations as an *attestation* tier). Practices & Values are click-to-expand card sliders. Owners can **Deep Dive** any source URL → a saved knowledge graph + skills. Apple-minimalist hero. |
 | 🌐 **The network** | [/network ↗](https://agentic-portfolio-public.vercel.app/network) | Browse agent-portfolios; ask one question and every node's agent answers. |
-| ✨ **Make your own** | [**`/make`** — try it live ↗](https://agentic-portfolio-public.vercel.app/make) | Give **name + email + your résumé _or_ just your LinkedIn URL** → your own live portfolio in the same style, customized to you. |
+| ✨ **Make your own** | [**`/make`** — try it live ↗](https://agentic-portfolio-public.vercel.app/make) | Give **name + email + any real source** — résumé text, LinkedIn URL, website, GitHub, YouTube → your own live portfolio in the same style, grounded in everything readable at make time. |
 <!-- LIVE-LINKS:END -->
 
 _Deployed this repo? Run `node scripts/set-live-links.mjs https://your-app.vercel.app` to make the `/make` and `/network` links above point at your live site, then commit._
@@ -50,9 +50,12 @@ what makes it yours.
 
 ## ✨ Make yours in one click (no code)
 
-Not a developer? Go to **`/make`**: type your name + email, and **either paste a few lines of your résumé OR
-give your LinkedIn profile URL** — click once, and you get a **live portfolio with its own AI agent**, hosted on
-the shared network at `/p/<you>`. No fork, no deploy. Recruiters can just *ask your agent* about you.
+Not a developer? Go to **`/make`**: type your name + email, and **any real source — a few lines of your
+résumé, your LinkedIn URL, your website, GitHub, or YouTube channel** — click once, and you get a **live
+portfolio with its own AI agent**, hosted on the shared network at `/p/<you>`. No fork, no deploy.
+Recruiters can just *ask your agent* about you. Everything genuinely public is **read at make time**
+and the result screen shows a per-source report — what was pulled, what
+was blocked, what's login-walled by design.
 
 **Not just for job-hunters.** `/make` asks one question first — *who is this page for?* —
 and serves three kinds of maker with the same one-click pipeline:
@@ -80,9 +83,13 @@ learns what works. Honest about the walls: Hacker News is searched live; Reddit 
 Facebook Groups, Skool, LinkedIn and X are login-walled — you watch those, and your agent drafts a
 reply for anything you paste in.
 
-> **LinkedIn auto-fill** reads only your **public** profile metadata (the same info Google sees — no login, we
-> never post as you). LinkedIn sometimes blocks server reads from datacenter IPs; if so, your portfolio is a
-> starter and you just paste a few lines to enrich it. Hosting the shared `/make` needs an LLM key + a Postgres/Neon
+> **What gets pulled, honestly.** At make time the Maker reads **everything genuinely public** you gave it —
+> your website's text, your recent GitHub repos, your latest YouTube videos (public RSS), and your **public**
+> LinkedIn profile metadata (the same info Google sees — no login, we never post as you) — and grounds your
+> page on all of it, not just pasted résumé text. What it *can't* read, it says so: LinkedIn sometimes blocks
+> server reads from datacenter IPs (paste a few lines and re-make to enrich), and **X / Instagram / Facebook are
+> login-walled — no server can read them**, so they stay links and the report tells you to paste your highlights
+> instead. Hosting the shared `/make` needs an LLM key + a Postgres/Neon
 > store on the deploy (see [Deploy](#-deploy-free)); without them it hands back a downloadable pack.
 
 **You own your page.** When you make a portfolio you get a **private owner link** (`/p/<you>?owner=…`) — save it.
@@ -200,9 +207,9 @@ zero component edits. Live theme switcher included.
 | `GROQ_API_KEY` (or `GEMINI_API_KEY` / `OPENAI_API_KEY` / `NVIDIA_API_KEY`) | the chat agent **and** `/make` portfolio generation | at least one; free tiers work. Server-side only — never `NEXT_PUBLIC_*`. |
 | `POSTGRES_URL` (or `DATABASE_URL`) | durable + **shared** hosting: `/make` → `/p/<slug>`, the Network registry, TRUE standing, the referral tree | a free Neon/Vercel Postgres. Without it, `/make` hands back a downloadable pack instead of hosting. |
 | `NEXT_PUBLIC_SITE_URL` | share **thumbnails** unfurling on X/LinkedIn/Slack | your production URL, e.g. `https://your-app.vercel.app`. Falls back to Vercel's auto URL. |
-| `PORTFOLIO_OWNER_TOKEN` | locking edits/owner routes to you | optional but recommended. The real security boundary. |
+| `PORTFOLIO_OWNER_TOKEN` | locking edits/owner routes to you | optional but recommended. The real security boundary. Forgot it? The 🔒 badge's prompt, left blank, emails you a magic link (needs the Resend keys below; sent to `PORTFOLIO_OWNER_EMAIL`, defaulting to your profile email). |
 | `CRON_SECRET` | the daily **auto-sync** (`vercel.json` cron → `/api/sync`) | optional. Vercel sends it as a Bearer token to the cron path; without it the scheduled sync is disabled. (`SYNC_SECRET` does the same for the GitHub Action alternative.) |
-| `RESEND_API_KEY` + `RESEND_FROM` | **email-based owner recovery** (a lost owner link → reset by email) **and** feedback **ship notices** | optional. A free [Resend](https://resend.com) key + a verified `from` address. Without it, recovery degrades to "re-make with the same name + email" and ship notices are skipped honestly. |
+| `RESEND_API_KEY` + `RESEND_FROM` | **email-based owner recovery** — a lost hosted owner link (`/api/recover`) *and* the root site's forgotten passphrase (`/api/owner/recover`) — plus feedback **ship notices** | optional. A free [Resend](https://resend.com) key + a verified `from` address. Without it, recovery degrades honestly: hosted → "re-make with the same name + email"; root → reset `PORTFOLIO_OWNER_TOKEN` in the hosting env. Ship notices are skipped honestly. |
 | `FEEDBACK_SECRET` | the weekly **feedback digest** cron (`.github/workflows/feedback-digest.yml` → `/api/feedback/digest` + `/notify`) | optional. Also set it as a repo secret (with the `PORTFOLIO_URL` repo variable) so the Action can run the digest without the owner token. |
 
 CLI alternative (after `vercel link`): `printf '%s' "<value>" | vercel env add GROQ_API_KEY production` (repeat per var), then `vercel --prod`.

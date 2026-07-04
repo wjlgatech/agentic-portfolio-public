@@ -4,10 +4,16 @@
 // InstanceConfig) with a free LLM, HOSTS it on the shared deploy at /p/<slug> (via KV — no
 // fork, no deploy), and auto-joins it to the network. 1-click, for people who don't code.
 //
-// Honest by design: the resume text is the grounding source (LinkedIn is login-walled → we keep
-// it as a link, not scraped); claimed achievements render as `unverified`; the key stays
-// server-side; rate-limited. Graceful: no LLM key → a deterministic template fill; no KV → the
-// caller gets the pack JSON to download + deploy.
+// MAKE-TIME PULL: every genuinely-public source is fetched HERE, before generation — public
+// LinkedIn metadata (best-effort), the maker's website, GitHub repos + YouTube videos
+// (syncSources — the same pullers the cron uses) — and folded into ONE grounding corpus
+// (@core/make-grounding) so the first render is rich, not a shell waiting for a later sync.
+// Login-walled sources (X / Instagram / Facebook) are NEVER fetched — they stay links, and the
+// response's per-source report says so honestly, with the paste-to-include escape hatch.
+//
+// Honest by design: claimed achievements render as `unverified`; the key stays server-side;
+// rate-limited. Graceful: no LLM key → a deterministic template fill; no KV → the caller gets
+// the pack JSON to download + deploy; every pull degrades to null/[] — never a 500.
 // ─────────────────────────────────────────────────────────────────────────────
 import { NextRequest, NextResponse } from "next/server";
 import OpenAI from "openai";
@@ -17,9 +23,13 @@ import { kvConfigured, kvSetJSON } from "@/lib/storage";
 import { upsertEntry, cleanEntry } from "@/lib/registry";
 import { recordReferral } from "@/lib/referrals";
 import { fetchLinkedInPublic, isLinkedInProfileUrl } from "@/lib/linkedin-public";
+import { fetchSourceText } from "@/lib/source-fetch";
+import { syncSources } from "@/lib/sync";
 import { mintOwnerToken, hashOwnerToken, ownerKey } from "@/lib/portfolio-owner";
 import { validateInstance, type InstanceConfig, type Vertical } from "@core/instance-types";
 import { categorySpec, resolveVertical, toCategory, type CategorySpec } from "@core/make-category";
+import { buildGroundingCorpus, makeSourceReport } from "@core/make-grounding";
+import { mergeFeed, type SyncItem } from "@core/sync-types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -37,7 +47,7 @@ function slugFor(name: string, email: string): string {
 // Assemble a full, valid InstanceConfig from the generated fields + the form (boilerplate in code).
 // The category spec (@core/make-category) supplies the vertical, sections, proof nouns, and
 // generation prompt — an individual, a business, and a community share ONE pipeline (data, not forks).
-function buildInstance(name: string, slug: string, links: Record<string, string>, g: Record<string, unknown>, spec: CategorySpec, vertical: Vertical): InstanceConfig {
+function buildInstance(name: string, slug: string, links: Record<string, string>, g: Record<string, unknown>, spec: CategorySpec, vertical: Vertical, feed: SyncItem[] = []): InstanceConfig {
   const principles = (Array.isArray(g.principles) ? g.principles : []).map((p) => ({ title: str((p as Record<string, unknown>)?.title, 60), body: str((p as Record<string, unknown>)?.body, 200) })).filter((p) => p.title).slice(0, 4);
   const values = (Array.isArray(g.values) ? g.values : []).map((p) => ({ title: str((p as Record<string, unknown>)?.title, 60), body: str((p as Record<string, unknown>)?.body, 200) })).filter((p) => p.title).slice(0, 4);
   const skills = arr(g.skills);
@@ -75,7 +85,13 @@ function buildInstance(name: string, slug: string, links: Record<string, string>
     content: {
       offerings: skills.map((s) => ({ name: s, category: "Skill", summary: s })),
       outcomes: arr(g.highlights).map((c) => ({ claim: c, verdict: "unverified" as const })),
-      writings: Object.entries(links).filter(([, u]) => u).map(([k, u]) => ({ title: k, url: u, category: "Link", summary: `${name} on ${k}` })),
+      // Real pulled work first (repos/videos from the make-time sync), then the profile links —
+      // mergeFeed dedupes by url so a re-make stays idempotent.
+      writings: mergeFeed(
+        feed,
+        Object.entries(links).filter(([, u]) => u).map(([k, u]) => ({ source: "linkedin" as const, title: k, url: u, category: "Link", summary: `${name} on ${k}` })),
+        24,
+      ).map((i) => ({ title: i.title, url: i.url, category: i.category ?? "Link", summary: i.summary ?? "" })),
     },
     ...(values.length ? { /* values kept as extra principles via story */ } : {}),
   };
@@ -96,7 +112,7 @@ async function generate(about: string, name: string, spec: CategorySpec): Promis
     const r = await openai.chat.completions.create({
       model: llm.model,
       temperature: 0.3,
-      messages: [{ role: "system", content: spec.genSystem }, { role: "user", content: `Name: ${name}\n\nABOUT (the maker's own words):\n${about}` }],
+      messages: [{ role: "system", content: spec.genSystem }, { role: "user", content: `Name: ${name}\n\nABOUT (the maker's own words + their labeled PUBLIC material — profile metadata, website, recent repos/videos; ground on it, never invent beyond it):\n${about}` }],
       response_format: { type: "json_object" },
     });
     return JSON.parse(r.choices[0]?.message?.content ?? "{}");
@@ -118,11 +134,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Please give your name and a valid email." }, { status: 400 });
   }
   const links: Record<string, string> = {};
-  for (const [k, key] of [["linkedin", "linkedin"], ["x", "x"], ["facebook", "fb"], ["instagram", "ig"], ["github", "github"], ["youtube", "youtube"]] as const) {
+  for (const [k, key] of [["linkedin", "linkedin"], ["x", "x"], ["facebook", "fb"], ["instagram", "ig"], ["github", "github"], ["youtube", "youtube"], ["website", "website"]] as const) {
     const v = str(body[key], 200);
     if (/^https?:\/\//i.test(v)) links[k] = v;
   }
-  let resume = str(body.resume, 12000);
+  const resume = str(body.resume, 12000);
 
   // The category seam: individual (résumé/LinkedIn) · business · community — one pipeline,
   // different vertical/sections/prompt (data from @core/make-category, never a fork).
@@ -130,26 +146,39 @@ export async function POST(req: NextRequest) {
   const spec = categorySpec(category);
   const vertical = resolveVertical(category, body.vertical);
 
-  // 1-CLICK, NON-TECH: for an INDIVIDUAL, résumé OR LinkedIn is enough — if they gave no (real)
-  // résumé but a LinkedIn profile URL, pull its PUBLIC metadata (best-effort, may be IP-blocked).
-  // Businesses/communities ground on their own description (they don't have a résumé).
-  let source: "resume" | "linkedin" | "thin" = resume.length >= 40 ? "resume" : "thin";
-  let thinNote = "";
-  if (category === "individual" && resume.length < 40 && links.linkedin && isLinkedInProfileUrl(links.linkedin)) {
-    const li = await fetchLinkedInPublic(links.linkedin).catch(() => null);
-    if (li) { resume = li.resumeText; source = "linkedin"; }
-    else { thinNote = "We couldn't read your LinkedIn automatically (LinkedIn blocks server reads). Your portfolio is a starter — paste a few lines about yourself and re-make to enrich it."; }
-  }
+  // MAKE-TIME PULL — fetch every genuinely-public source NOW, in parallel, each timeboxed and
+  // degrading to null/[] (a slow or blocked source never fails the make). Login-walled sources
+  // (X / Instagram / Facebook) are never fetched — the report below says so honestly.
+  const [li, synced, site] = await Promise.all([
+    links.linkedin && isLinkedInProfileUrl(links.linkedin) ? fetchLinkedInPublic(links.linkedin).catch(() => null) : Promise.resolve(null),
+    syncSources(links).catch(() => ({ items: [] as SyncItem[], counts: {} as Record<string, number> })),
+    links.website ? fetchSourceText(links.website, 6000).catch(() => null) : Promise.resolve(null),
+  ]);
+
+  // ONE corpus from everything readable, the maker's own words first (@core/make-grounding).
+  const { corpus, used } = buildGroundingCorpus({
+    resume,
+    linkedin: li?.resumeText,
+    website: site?.ok ? `${site.title}\n${site.text}` : undefined,
+    feed: synced.items,
+  });
   // Require at least ONE grounding source (name+email alone is too thin for a real page).
-  if (resume.length < 40 && !(category === "individual" && links.linkedin)) {
+  if (corpus.length < 40) {
     return NextResponse.json({ error: spec.intake.groundingError }, { status: 400 });
   }
+  // Legacy `source` + honest note kept for the UI; the full story is in `sources` below.
+  const source: "resume" | "linkedin" | "public" | "thin" =
+    resume.length >= 40 ? "resume" : li ? "linkedin" : used.length ? "public" : "thin";
+  const thinNote = links.linkedin && !li
+    ? "We couldn't read your LinkedIn automatically (LinkedIn blocks server reads). Your portfolio is grounded in your other sources — paste a few lines about yourself and re-make to enrich it."
+    : "";
+  const sources = makeSourceReport({ resumeChars: resume.length, links, linkedinPulled: !!li, websitePulled: !!site?.ok, counts: synced.counts });
   // Who invited them (their referrer's slug). Attribution flows from a shared portfolio's footer
   // link (?ref=<slug>) — a public handle, never a contact list. Sanitized to the slug charset.
   const ref = str(body.ref, 48).toLowerCase().replace(/[^a-z0-9-]/g, "").slice(0, 48);
 
   const slug = slugFor(name, email);
-  const config = buildInstance(name, slug, links, await generate(resume, name, spec), spec, vertical);
+  const config = buildInstance(name, slug, links, await generate(corpus, name, spec), spec, vertical, synced.items);
   if (!config?.entity) {
     return NextResponse.json({ error: "Couldn't assemble a valid portfolio from that input — add a few more lines about yourself and try again." }, { status: 422 });
   }
@@ -159,7 +188,7 @@ export async function POST(req: NextRequest) {
 
   if (!kvConfigured()) {
     // No shared store → hand back the pack to fork+deploy (the technical path).
-    return NextResponse.json({ hosted: false, slug, source, note: thinNote || ("No shared host configured — download this pack, drop it in content/instances/, deploy, set INSTANCE=" + slug), pack: config });
+    return NextResponse.json({ hosted: false, slug, source, sources, note: thinNote || ("No shared host configured — download this pack, drop it in content/instances/, deploy, set INSTANCE=" + slug), pack: config });
   }
 
   const stored = await kvSetJSON(`portfolio:${slug}`, config);
@@ -185,5 +214,5 @@ export async function POST(req: NextRequest) {
   // rises). The invitee is `live` because they're now hosted + in the network.
   if (ref && ref !== slug && stored) await recordReferral(ref, slug, true).catch(() => {});
 
-  return NextResponse.json({ hosted: stored, url: hostedUrl, slug, tagline: config.entity.tagline, source, note: thinNote || undefined, ownerUrl, ownerToken, referredBy: ref || null });
+  return NextResponse.json({ hosted: stored, url: hostedUrl, slug, tagline: config.entity.tagline, source, sources, note: thinNote || undefined, ownerUrl, ownerToken, referredBy: ref || null });
 }
