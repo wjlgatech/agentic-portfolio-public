@@ -20,7 +20,9 @@ export function sourceFeasibility(kind: SourceKind): { serverSyncable: boolean; 
   }
 }
 
-const stripSlash = (u: string) => u.replace(/[#?].*$/, "").replace(/\/+$/, "");
+// Dedupe key: drop the #fragment and trailing slashes but KEEP the query string — for YouTube the
+// query IS the identity (`watch?v=<id>`); stripping it collapsed every synced video into one item.
+const urlKey = (u: string) => u.replace(/#.*$/, "").replace(/\/+$/, "");
 
 export function githubUserFromUrl(url: string): string | null {
   try {
@@ -88,8 +90,8 @@ function decodeXml(s: string): string {
 // Merge incoming items over existing: dedupe by URL (incoming wins), newest-first, capped. Idempotent.
 export function mergeFeed(existing: SyncItem[], incoming: SyncItem[], cap = 24): SyncItem[] {
   const byUrl = new Map<string, SyncItem>();
-  for (const it of existing) if (it?.url) byUrl.set(stripSlash(it.url), it);
-  for (const it of incoming) if (it?.url) byUrl.set(stripSlash(it.url), it);
+  for (const it of existing) if (it?.url) byUrl.set(urlKey(it.url), it);
+  for (const it of incoming) if (it?.url) byUrl.set(urlKey(it.url), it);
   return [...byUrl.values()]
     .sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""))
     .slice(0, cap);

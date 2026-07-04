@@ -64,6 +64,16 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
   verbose "⌘ Ask the agent…" chip (now a quiet "· Ask my agent ↘"). Narrower column, one accent, more air.
 
 ### Fixed
+- **`mergeFeed` collapsed every synced YouTube video into one item.** Its dedupe key stripped the
+  query string, but for YouTube watch URLs the query IS the identity (`watch?v=<id>`) — so a synced
+  feed of N videos stored exactly one (the oldest, after the newest-first sort ran on a single
+  survivor). Found live: the first production make after the make-time-pull ship reported "6 videos
+  pulled" yet rendered one; it never showed locally because the local test channel's items were
+  path-identified `/shorts/<id>` URLs. The key (`urlKey`, née `stripSlash`) now keeps the query and
+  still drops `#fragment` + trailing slashes, so hash/slash variants of the same video dedupe.
+  This also silently crippled the daily sync cron for every hosted portfolio with a YouTube link —
+  same class, same fix, since make-time pull and the cron share `mergeFeed`. Regression checks in
+  `scripts/test-sync.mjs` (distinct `watch?v=` ids survive; hash/trailing-slash variants still dedupe).
 - **Genericized the feedback build-directive — the open-source repo no longer names a private build tool.**
   The feedback→feature loop's per-theme handoff (`buildCommandFor`) emitted a command naming a proprietary
   CLI; it now returns a **tool-agnostic `Build: <one-line>` directive** a maintainer acts on with whatever
