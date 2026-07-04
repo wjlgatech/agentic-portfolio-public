@@ -6,6 +6,47 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **/make now PULLS every genuinely-public source at make time — no more shell pages.** Why: a maker
+  who gave only links (the "Jeff case": LinkedIn + Instagram + X, no pasted résumé) got a near-empty
+  "In progress" page — `/api/make` grounded on résumé text alone, LinkedIn's server fetch is usually
+  blocked from datacenter IPs (999), X/IG are login-walled, and the genuinely-public pullers
+  (GitHub API, YouTube RSS in `lib/sync.ts`) only ran on a later owner sync/cron the maker never
+  triggered. Now `/api/make` fetches **in parallel, before generation**: public LinkedIn metadata
+  (best-effort), the maker's **website** (new form field + link, via SSRF-guarded `fetchSourceText`),
+  and GitHub repos + YouTube videos (`syncSources` — same pullers as the cron; items also merge into
+  `writings` via `mergeFeed` so the first render already shows real work). New pure core
+  `@core/make-grounding`: `buildGroundingCorpus()` (ONE labeled corpus, maker's own words first,
+  per-part caps + hard budget for free-tier TPM) and `makeSourceReport()` (per-source honesty:
+  `pulled` with counts / `blocked` with the paste-and-re-make escape hatch / `walled` for X-IG-FB
+  which are NEVER fetched / `empty` with a how-to-fix note). The response carries the report as
+  `sources`; `/make` renders it verbatim ("What we pulled from your sources") and its grounding gate
+  now accepts any readable source (a YouTube-only maker gets a real page; grounding <40 chars still
+  → the honest 400). Tests: `scripts/test-make-grounding.mjs` (18 checks, in `npm test`); Playwright
+  e2e (real typing) green; _verified live: a links-only make pulled 6 videos → grounded blurb/mission,
+  X/IG reported `walled`, empty input still 400s._
+
+  _Investigated / Rejected:_ server-side scraping of LinkedIn/X/Instagram behind the wall (ToS +
+  blocked from datacenter IPs + against the repo's honesty rule — walled sources stay links with an
+  in-browser/paste path); relying on the daily sync cron to enrich after the fact (first impression
+  is the only impression a shared link gets — and the cron never fixes an empty About).
+- **Forgot-passphrase recovery for the root owner gate.** The 🔒 badge's passphrase prompt
+  ("Enter …'s owner passphrase") had no recovery path — a forgotten `PORTFOLIO_OWNER_TOKEN`
+  locked the owner out with no hint (hosted `/p/<slug>` portfolios already had `/api/recover`).
+  Now leaving the prompt blank emails the owner (`PORTFOLIO_OWNER_EMAIL` ||
+  `profile.links.email`, via Resend) a 30-minute magic link (`/recover?token=rec.…`);
+  `POST /api/owner/recover` verifies it and grants a 30-day HMAC-signed session
+  (`sess.<exp>.<sig>`, keyed by the owner token — stateless, no KV; rotating the env var kills
+  all sessions) accepted by `isOwnerRequest`/`/api/owner` alongside the raw passphrase.
+  Why: an env secret can't be re-minted at runtime, so recovery grants a signed session
+  instead of ever revealing the secret. Without Resend configured, the flow answers honestly:
+  reset `PORTFOLIO_OWNER_TOKEN` in the hosting env. Unit-tested
+  (`scripts/test-owner-session.mjs`, 15 checks, in `npm test`); full loop verified live in the
+  sibling private repo (identical files): magic link → Owner mode, secret stripped from the URL.
+
+  _Investigated / Rejected:_ emailing or returning the raw token after the link is confirmed
+  (secret would transit; sessions keep it server-side); a KV-backed single-use recovery record
+  like the hosted flow (needs `POSTGRES_URL` — the stateless HMAC works on any fork with just
+  an email key, and the 30-min expiry bounds replay of a link that only lands in the owner's inbox).
 - **The Opportunity Scout — the portfolio that hunts instead of waits (drafts-never-posts, spam-gated).** A hosted portfolio's agent can now be PROACTIVE: `POST /api/opportunities {instance, keywords?}` (owner-gated per portfolio, rate-limited) searches public discussions relevant to what the owner actually offers (queries derived from the pack's real offerings + optional keywords), and for each hit runs a **relevance-screen + draft in one LLM call**: if a reply from this business wouldn't genuinely help that thread, it's refused as spam (`droppedAsIrrelevant`, fail-closed when the model can't judge) — only genuinely-helpful, **affiliation-disclosed** drafts (owner's voice, one link, no sales language) enter the queue. **The hard line holds: nothing is ever posted anywhere** — the owner reviews, edits, and posts from their own account, then `PATCH`es the opportunity `sent`/`skipped` (the measure loop). Three new owner agent actions (`scoutOpportunities`/`viewOpportunities`/`markOpportunity` in `InstanceAgentActions`). **Feasibility is probed + honest** (`oppSourceFeasibility`): HN (Algolia) is server-searchable; Reddit's public JSON 403s from datacenter IPs (best-effort → `[]`); Facebook Groups/Skool/LinkedIn/X are login-walled and never claimed — the owner watches those and the agent drafts for anything pasted in. Pure core `@core/opportunity-types` (14 checks, `scripts/test-opportunities.mjs`, in `npm test`). _Verified live: unauth → 403 (fail-closed, even for demo packs); a real scout run searched HN live and the spam gate correctly refused all 6 off-topic hits (found:0, dropped:6) — the first ungated run had drafted replies into a mental-health thread, which is exactly the failure the gate now blocks._
 - **/make went category-aware — individuals, businesses, and communities, one pipeline (+ 5 live seed demos).** The Maker now asks *who is this page for?* (🧑‍💻 person · 🏪 business · 🤝 community) and serves all three with the SAME one-click flow; the difference is **data, never a fork** (the platform rule): a new pure-core module `@core/make-category` supplies each category's vertical (validated against `VERTICALS`), sections, proof nouns ("Highlights" / "Track Record" / "Community Impact"), generation prompt (résumé-voice vs business-"we" vs community-welcome), and intake wording — `app/api/make` threads `{category, vertical?}` through `generate()`+`buildInstance()`, with per-category grounding rules (a business/community grounds on its own description; LinkedIn auto-fill stays individual-only) and per-category 400 messages. Plus **five seed DEMO packs** (`content/instances/seeds.ts` — dentist/clinic/apple, roofer/services/brutalist, church/ministry/notion, running-club/fitness/google, artist/personal/anthropic) served with zero setup: registered in `INSTANCES` (`INSTANCE=demo-<x>` renders one as a deploy) and `/p/<slug>` **falls back to them when KV misses** (read-only — no owner hash → View-only badge). **Honesty is test-enforced** (`scripts/test-make-category.mjs`, 40+ checks in `npm test`): every demo blurb says "fictional demo", every outcome stays `unverified`, `network.discoverable:false` keeps demos out of the real registry, `demo-` prefixes prevent maker collisions. `/make` links the demos per category. (tsconfig gains `allowImportingTsExtensions` for core's first intra-package import, keeping plain-Node tests green.) _Verified live against the production build: all 5 `/p/demo-*` → 200 with the fictional-demo label; business make → a `services`-vertical pack in business voice; community thin-input → its own grounding error; Playwright e2e (real typing) green._
 - **Deep Dives is now a GENERATOR, not just a receiver (owner-only).** Paste a source URL → `🔎 Deep Dive`

@@ -8,7 +8,27 @@ import { CREATOR, CREATOR_URL, REPO_URL } from "@/components/MadeWith";
 import { SharePanel } from "@/components/SharePanel";
 import { categorySpec, MAKE_CATEGORIES, type MakeCategory } from "@core/make-category";
 
-type Result = { url?: string; hosted?: boolean; slug?: string; pack?: unknown; note?: string; source?: "resume" | "linkedin" | "thin"; error?: string; tagline?: string; ownerUrl?: string; referredBy?: string | null };
+type SourceReport = { source: string; status: "pulled" | "blocked" | "walled" | "empty"; items?: number; note: string };
+type Result = { url?: string; hosted?: boolean; slug?: string; pack?: unknown; note?: string; source?: "resume" | "linkedin" | "public" | "thin"; sources?: SourceReport[]; error?: string; tagline?: string; ownerUrl?: string; referredBy?: string | null };
+
+// Per-source pull report — the honest answer to "why is my page thin?": what was read,
+// what was blocked, what's login-walled by design (with the paste-to-include escape hatch).
+const STATUS_ICON: Record<SourceReport["status"], string> = { pulled: "✅", blocked: "⚠️", walled: "🔒", empty: "◻️" };
+function SourcePullReport({ sources }: { sources: SourceReport[] }) {
+  if (!sources.length) return null;
+  return (
+    <div className="card">
+      <p className="text-sm font-semibold text-ink">What we pulled from your sources</p>
+      <ul className="mt-2 grid gap-1.5">
+        {sources.map((s) => (
+          <li key={s.source} className="text-xs text-muted">
+            {STATUS_ICON[s.status]} <strong className="text-ink">{s.source}</strong> — {s.note}
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
 
 // Who is this page for? One pipeline, three intakes (labels + grounding wording swap; the
 // engine difference lives in @core/make-category). MODULE-SCOPE data, not a component.
@@ -36,7 +56,7 @@ function Field({ label, value, onChange, ph, hint, textarea }: {
 }
 
 export default function Make() {
-  const [f, setF] = useState({ name: "", email: "", linkedin: "", resume: "", x: "", fb: "", ig: "", github: "", youtube: "" });
+  const [f, setF] = useState({ name: "", email: "", linkedin: "", resume: "", x: "", fb: "", ig: "", github: "", youtube: "", website: "" });
   const [category, setCategory] = useState<MakeCategory>("individual");
   const [busy, setBusy] = useState(false);
   const [res, setRes] = useState<Result | null>(null);
@@ -54,8 +74,11 @@ export default function Make() {
 
   async function make() {
     if (!f.name.trim() || !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(f.email)) { setRes({ error: "Please add your name and a valid email." }); return; }
+    // Enough to ground on = your own words OR any READABLE source (LinkedIn public metadata,
+    // your website, GitHub, YouTube). X/IG/FB are login-walled → links only, never grounding.
     const liOk = category === "individual" && /^https?:\/\/(www\.)?linkedin\.com\/in\//i.test(f.linkedin.trim());
-    if (f.resume.trim().length < 40 && !liOk) {
+    const pullable = liOk || [f.website, f.github, f.youtube].some((u) => /^https?:\/\//i.test(u.trim()));
+    if (f.resume.trim().length < 40 && !pullable) {
       setRes({ error: categorySpec(category).intake.groundingError }); return;
     }
     setBusy(true); setRes(null);
@@ -73,8 +96,9 @@ export default function Make() {
         <h1 className="text-3xl font-extrabold tracking-tight text-ink">✨ Your portfolio is ready!</h1>
         {live ? (
           <div className="mt-6 grid gap-4">
-            <p className="text-muted">It&apos;s live and already discoverable on the network — no code, no deploy.{res.source === "linkedin" ? " Built from your public LinkedIn." : ""}</p>
+            <p className="text-muted">It&apos;s live and already discoverable on the network — no code, no deploy.{res.source === "linkedin" ? " Built from your public LinkedIn." : res.source === "public" ? " Built from your public sources." : ""}</p>
             {res.note && <p className="rounded-theme border border-edge bg-surface p-3 text-sm text-muted">ℹ️ {res.note}</p>}
+            {res.sources && <SourcePullReport sources={res.sources} />}
             <div className="card flex flex-wrap items-center gap-3 border-accent/30 bg-accent/5">
               <a href={live} target="_blank" rel="noreferrer" className="text-lg font-semibold text-accent hover:underline">{live}</a>
               <button onClick={() => { navigator.clipboard?.writeText(live); setCopied(true); setTimeout(() => setCopied(false), 1500); }} className="chip border-accent/50 text-accent">{copied ? "copied ✓" : "copy link"}</button>
@@ -161,13 +185,14 @@ export default function Make() {
         <details className="text-sm" open>
           <summary className="cursor-pointer text-accent">+ links to keep your portfolio auto-fresh</summary>
           <div className="mt-3 grid gap-3">
-            <Field label="GitHub" value={f.github} onChange={set("github")} ph="https://github.com/yourname" hint="Your recent repos sync in automatically." />
-            <Field label="YouTube channel" value={f.youtube} onChange={set("youtube")} ph="https://youtube.com/@yourchannel" hint="Your latest videos sync in (public RSS, no login)." />
-            <Field label="X / Twitter" value={f.x} onChange={set("x")} ph="https://x.com/…" hint="Linked only — X can't be auto-synced (paid/login)." />
-            <Field label="Facebook" value={f.fb} onChange={set("fb")} ph="https://facebook.com/…" />
-            <Field label="Instagram" value={f.ig} onChange={set("ig")} ph="https://instagram.com/…" />
+            <Field label="Website / blog" value={f.website} onChange={set("website")} ph="https://yoursite.com" hint="We READ your site's public text right now and ground your page on it." />
+            <Field label="GitHub" value={f.github} onChange={set("github")} ph="https://github.com/yourname" hint="Your recent repos are pulled in right now, and keep syncing." />
+            <Field label="YouTube channel" value={f.youtube} onChange={set("youtube")} ph="https://youtube.com/@yourchannel" hint="Your latest videos are pulled in right now (public RSS, no login), and keep syncing." />
+            <Field label="X / Twitter" value={f.x} onChange={set("x")} ph="https://x.com/…" hint="Linked only — X is login-walled; paste your best posts in the About box to include them." />
+            <Field label="Facebook" value={f.fb} onChange={set("fb")} ph="https://facebook.com/…" hint="Linked only (login-walled)." />
+            <Field label="Instagram" value={f.ig} onChange={set("ig")} ph="https://instagram.com/…" hint="Linked only (login-walled) — paste highlights in the About box to include them." />
           </div>
-          <p className="mt-2 text-xs text-muted">GitHub + YouTube <strong className="text-ink">auto-sync</strong> to keep your portfolio current (1-click or on a schedule). LinkedIn &amp; X can&apos;t be pulled server-side — you add those in your browser.</p>
+          <p className="mt-2 text-xs text-muted">Website + GitHub + YouTube are <strong className="text-ink">read at make time</strong> and ground your page; GitHub + YouTube also <strong className="text-ink">auto-sync</strong> to keep it current. LinkedIn, X, Facebook &amp; Instagram are login-walled — no server can read them, so they stay links (paste your highlights instead; it&apos;s honest by design).</p>
         </details>
         <div className="flex items-center gap-3">
           <button onClick={make} disabled={busy} className="chip border-accent/50 text-accent disabled:opacity-50">{busy ? "Building your portfolio…" : "✨ Make my portfolio"}</button>
