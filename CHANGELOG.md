@@ -6,6 +6,15 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **/make prefill links — a helper can set up a non-technical maker's form with one URL.** Why: the
+  remake path for a links-only maker (the Jeff case) required them to re-type name + source URLs;
+  for someone non-technical, every field is friction. Now `/make?name=…&linkedin=…&youtube=…` (also
+  `x`, `fb`, `ig`, `github`, `website`, `resume`, `category`) pre-fills the form — the maker types
+  ONLY their email (which keys their page: same email → same slug → the old page is replaced) and
+  clicks once. **Email is never prefilled from a URL** — shared links get forwarded/logged, and the
+  email is the page's key, so it stays typed by its owner. URL fields must be `http(s)` to prefill;
+  everything is still validated server-side. E2E-tested with real browser navigation
+  (`scripts/test-make-ui.mjs`: prefill lands, `?email=` is ignored).
 - **/make now PULLS every genuinely-public source at make time — no more shell pages.** Why: a maker
   who gave only links (the "Jeff case": LinkedIn + Instagram + X, no pasted résumé) got a near-empty
   "In progress" page — `/api/make` grounded on résumé text alone, LinkedIn's server fetch is usually
