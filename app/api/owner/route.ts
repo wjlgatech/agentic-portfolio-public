@@ -8,12 +8,13 @@
 //
 //   GET  → { ownerRequired }   (is a token configured? if not, this is an
 //                               un-gated local/dev instance and everyone is owner)
-//   POST { token } → { owner }  (does the supplied token match?)
+//   POST { token } → { owner }  (raw passphrase OR a signed recovery session —
+//                               see /api/owner/recover)
 //
 // The shared check lives in lib/owner.ts (route files may only export HTTP verbs).
 // ─────────────────────────────────────────────────────────────────────────────
 import { NextRequest, NextResponse } from "next/server";
-import { ownerTokenConfigured, tokensMatch } from "@/lib/owner";
+import { ownerTokenConfigured, ownerCredentialValid } from "@/lib/owner";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -23,13 +24,12 @@ export async function GET() {
 }
 
 export async function POST(req: NextRequest) {
-  const required = process.env.PORTFOLIO_OWNER_TOKEN;
-  if (!required) return NextResponse.json({ owner: true, ownerRequired: false });
+  if (!ownerTokenConfigured()) return NextResponse.json({ owner: true, ownerRequired: false });
   let token = "";
   try {
     token = String((await req.json())?.token ?? "");
   } catch {
     /* empty body → not owner */
   }
-  return NextResponse.json({ owner: tokensMatch(token, required), ownerRequired: true });
+  return NextResponse.json({ owner: ownerCredentialValid(token), ownerRequired: true });
 }
