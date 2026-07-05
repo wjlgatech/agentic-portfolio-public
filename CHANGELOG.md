@@ -5,6 +5,12 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
 ## [Unreleased]
 
+### Added
+- **`/api/health` now reports `emailRecoveryReady`.** A plain, cache-free `GET` boolean mirroring
+  `/api/owner/recover`'s gate (RESEND key + a resolvable owner email), so `curl …/api/health`
+  confirms whether a Vercel `RESEND_API_KEY` change + redeploy actually took effect — without
+  minting a recovery token or exposing secrets.
+
 ### Docs
 - **`.env.example`: a 2-minute zero-domain runbook for turning email recovery ON.** A deploy showed
   the honest "email recovery isn't set up" note because it lacked `RESEND_API_KEY`. Since ROOT
