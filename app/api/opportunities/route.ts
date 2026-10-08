@@ -13,8 +13,7 @@
 //   PATCH { instance, id, status} → owner-gated: mark sent/skipped (closes the measure loop).
 // ─────────────────────────────────────────────────────────────────────────────
 import { NextRequest, NextResponse } from "next/server";
-import { isOwnerRequest, ownerTokenConfigured } from "@/lib/owner";
-import { ownerHashMatches, ownerKey } from "@/lib/portfolio-owner";
+import { ownsInstance } from "@/lib/instance-owner";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { kvGetJSON } from "@/lib/storage";
 import { chatWithFailover } from "@/lib/llm-complete";
@@ -28,14 +27,6 @@ export const dynamic = "force-dynamic";
 
 const slugRe = /^[a-z0-9-]{1,64}$/;
 
-async function ownsInstance(req: NextRequest, slug: string): Promise<boolean> {
-  // Admin bypass ONLY when a global token is configured AND matches (never the un-gated dev shortcut).
-  if (ownerTokenConfigured() && isOwnerRequest(req)) return true;
-  const provided = req.headers.get("x-portfolio-owner") ?? "";
-  if (!provided) return false;
-  const hash = await kvGetJSON<string>(ownerKey(slug));
-  return hash ? ownerHashMatches(provided, hash) : false;
-}
 
 async function loadConfig(slug: string): Promise<InstanceConfig | null> {
   const raw = (await kvGetJSON<unknown>(`portfolio:${slug}`)) ?? SEED_PACKS[slug] ?? null;

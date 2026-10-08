@@ -7,6 +7,7 @@
 // just a curl-able A2A endpoint. Theme applies via a data-theme wrapper (token seam).
 // ─────────────────────────────────────────────────────────────────────────────
 import type { InstanceConfig, SectionSpec, Verdict } from "@core/instance-types";
+import { excerpt, type Post } from "@core/post-types";
 
 // Use the matching section's TITLE where the pack defined one, else a sensible fallback.
 function headingFor(cfg: InstanceConfig, pred: (s: SectionSpec) => boolean, fallback: string): string {
@@ -31,7 +32,7 @@ function Section({ eyebrow, title, children }: { eyebrow?: string; title: string
   );
 }
 
-export function InstanceSite({ config }: { config: InstanceConfig }) {
+export function InstanceSite({ config, posts = [] }: { config: InstanceConfig; posts?: Post[] }) {
   const c = config.content ?? { offerings: [], outcomes: [], writings: [] };
   const links = config.entity.links ?? {};
   const site = /^https?:/.test(links.site ?? "") ? links.site! : links.site ? `https://${links.site}` : "";
@@ -108,9 +109,18 @@ export function InstanceSite({ config }: { config: InstanceConfig }) {
       )}
 
       {/* ── Writing (lessons / essays / posts) ──────────────────────────────── */}
-      {c.writings.length > 0 && (
+      {(c.writings.length > 0 || posts.length > 0) && (
         <Section title={headingFor(config, (s) => s.id === "writing" || /writ|lesson|essay|post|blog/i.test(s.title), "Writing")}>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {/* Hosted writing first: the posts the owner wrote ON this portfolio (post-types.ts). */}
+            {posts.slice(0, 12).map((p) => (
+              <a key={p.id} href={`/p/${config.slug}/w/${p.id}`} className="card block">
+                <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[11px] text-accent">{p.kind === "idea" ? "Idea · 想法" : "Article · 文章"}</span>
+                <h3 className="mt-2 font-semibold text-ink">{p.title}</h3>
+                <p className="mt-1 text-sm text-muted">{excerpt(p.body, 140)}</p>
+                <p className="mt-2 text-xs text-muted">{p.createdAt.slice(0, 10)}</p>
+              </a>
+            ))}
             {c.writings.map((w, i) => (
               <a key={i} href={w.url} target="_blank" rel="noreferrer" className="card block">
                 {w.category && <span className="rounded-full bg-accent/15 px-2 py-0.5 text-[11px] text-accent">{w.category}</span>}

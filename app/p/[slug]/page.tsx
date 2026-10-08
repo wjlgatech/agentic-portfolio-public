@@ -14,6 +14,7 @@ import { HostedOwnerBadge } from "@/components/HostedOwnerBadge";
 import { kvGetJSON } from "@/lib/storage";
 import { SEED_PACKS } from "@/content/instances/seeds";
 import { validateInstance, instanceEvidence, type InstanceConfig } from "@core/instance-types";
+import { postsEvidence, postsKey, type Post } from "@core/post-types";
 
 export const dynamic = "force-dynamic";
 
@@ -47,10 +48,12 @@ export default async function HostedPortfolio({ params }: { params: Promise<{ sl
   const { slug } = await params;
   const c = await load(slug);
   if (!c) notFound();
+  const posts = (await kvGetJSON<Post[]>(postsKey(slug))) ?? [];
+  const writing = posts.length ? `\n\nWRITING PUBLISHED ON THIS PORTFOLIO (the owner's own articles and ideas):\n${postsEvidence(posts)}` : "";
 
   return (
     <CopilotProvider
-      context={instanceEvidence(c, 120000)}
+      context={instanceEvidence(c, 120000) + writing}
       groundingDescription={`${c.entity.name}'s portfolio. ${c.agent.grounding} Answer ONLY from this; never invent facts.`}
       labels={{ title: `Ask ${c.entity.name}`, initial: `Hi — I'm ${c.entity.name}'s agent. ${c.entity.tagline}. Ask me anything (I answer only from real material).` }}
       starters={[
@@ -67,7 +70,7 @@ export default async function HostedPortfolio({ params }: { params: Promise<{ sl
         }}
       />
       <div className="min-h-screen bg-surface text-ink">
-        <InstanceSite config={c} />
+        <InstanceSite config={c} posts={posts} />
         <HostedOwnerBadge slug={slug} name={c.entity.name} />
       </div>
     </CopilotProvider>
