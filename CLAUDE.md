@@ -68,7 +68,7 @@ catches it (this shipped broken once).
 **Two owner gates — don't confuse them.** The global `PORTFOLIO_OWNER_TOKEN` (`lib/owner.ts`,
 `isOwnerRequest()`) makes the deploy admin an owner. Hosted `/p/<slug>` portfolios are
 **multi-tenant**: each gets its own token minted at `/make` (only the SHA-256 hash stored at
-`owner:<slug>`; raw token shown once), verified per-slug via `ownsInstance(req, slug)`
+`owner:<slug>`; raw token shown once), verified per-slug via `ownsInstance(req, slug)` from `lib/instance-owner.ts` (the only copy)
 (`lib/portfolio-owner.ts`). The admin bypass must be `ownerTokenConfigured() && isOwnerRequest()`
 — bare `isOwnerRequest()` returns `true` when no token is configured and would leave every tenant
 open. Email-based recovery (`/recover`, `POST /api/recover`, `@core/recovery-types` +
@@ -122,3 +122,9 @@ app/CopilotKit code.
 Any change to feature code, the API surface, the data model, or a flag must ship — in the same
 change — with a `CHANGELOG.md` entry **and** `README.md` (human) **and** `AGENTS.md` (agent)
 updates. A pre-push hook enforces this; conscious bypass is `SKIP_DOC_SYNC=1`.
+
+## Hosted writing (2026-10-08)
+
+Owners publish articles and ideas at `/p/<slug>/write` → `/p/<slug>/w/<id>` (`app/api/posts`, `packages/core/src/post-types.ts`).
+The body is owner-written and shown to every visitor, so `renderMarkdown` must stay escape-first with no raw-HTML path;
+`scripts/test-posts.mjs` carries the XSS cases. Keep it.

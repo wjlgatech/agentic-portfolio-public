@@ -8,8 +8,7 @@
 // Never claims a pull a wall forbids (X paid/login, LinkedIn login-walled) — see sourceFeasibility.
 // ─────────────────────────────────────────────────────────────────────────────
 import { NextRequest, NextResponse } from "next/server";
-import { isOwnerRequest, ownerTokenConfigured } from "@/lib/owner";
-import { ownerHashMatches, ownerKey } from "@/lib/portfolio-owner";
+import { ownsInstance } from "@/lib/instance-owner";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { kvConfigured, kvGetJSON, kvSetJSON } from "@/lib/storage";
 import { readRegistryAsync } from "@/lib/registry";
@@ -23,14 +22,6 @@ export const dynamic = "force-dynamic";
 const slugRe = /^[a-z0-9-]{1,64}$/i;
 const MAX_CRON = 25;
 
-async function ownsInstance(req: NextRequest, slug: string): Promise<boolean> {
-  // Admin bypass ONLY when a global token is configured AND matches (never the un-gated dev shortcut).
-  if (ownerTokenConfigured() && isOwnerRequest(req)) return true;
-  const provided = req.headers.get("x-portfolio-owner") ?? "";
-  if (!provided) return false;
-  const hash = await kvGetJSON<string>(ownerKey(slug));
-  return hash ? ownerHashMatches(provided, hash) : false;
-}
 
 // Pull sources for one portfolio, merge into its writings, persist. Returns a per-portfolio summary.
 async function syncOne(slug: string): Promise<{ slug: string; synced?: Record<string, number>; added?: number; error?: string }> {

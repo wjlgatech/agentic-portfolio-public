@@ -69,3 +69,17 @@ h3,
 .rounded-theme {
   border-radius: var(--radius);
 }
+
+/* Hosted writing (/p/<slug>/w/<post>): typography for renderMarkdown output — token colors only. */
+.post-body h2 { font-size: 1.5rem; font-weight: 700; margin: 2rem 0 0.75rem; }
+.post-body h3 { font-size: 1.2rem; font-weight: 700; margin: 1.5rem 0 0.5rem; }
+.post-body h4 { font-size: 1.05rem; font-weight: 700; margin: 1.25rem 0 0.5rem; }
+.post-body p { margin: 0 0 1.1rem; }
+.post-body ul { list-style: disc; padding-left: 1.4rem; margin: 0 0 1.1rem; }
+.post-body ol { list-style: decimal; padding-left: 1.4rem; margin: 0 0 1.1rem; }
+.post-body li { margin: 0.25rem 0; }
+.post-body a { color: var(--accent); text-decoration: underline; }
+.post-body blockquote { border-left: 3px solid currentColor; opacity: 0.85; padding-left: 1rem; margin: 0 0 1.1rem; }
+.post-body code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 0.9em; padding: 0.1em 0.3em; border-radius: 4px; background: rgba(127,127,127,0.15); }
+.post-body pre { overflow-x: auto; padding: 1rem; border-radius: 8px; background: rgba(127,127,127,0.12); margin: 0 0 1.1rem; }
+.post-body pre code { background: none; padding: 0; }

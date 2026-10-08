@@ -9,8 +9,7 @@
 // On-brand for a demo business (a lead-gen product) and generic for any instance.
 // ─────────────────────────────────────────────────────────────────────────────
 import { NextRequest, NextResponse } from "next/server";
-import { isOwnerRequest, ownerTokenConfigured } from "@/lib/owner";
-import { ownerHashMatches, ownerKey } from "@/lib/portfolio-owner";
+import { ownsInstance } from "@/lib/instance-owner";
 import { rateLimit, clientKey } from "@/lib/rate-limit";
 import { kvConfigured, kvGetJSON, kvSetJSON } from "@/lib/storage";
 import { getActiveInstance } from "@/content/instances";
@@ -27,18 +26,6 @@ function leadsKeyFor(slug?: string): string {
   return slug ? `leads:${slug}` : `leads:${getActiveInstance().storage.kvPrefix}`;
 }
 
-// Owns THIS instance? The deploy admin (global PORTFOLIO_OWNER_TOKEN) owns any; otherwise the
-// caller must present the per-portfolio owner token that matches owner:<slug> (multi-tenant safe).
-async function ownsInstance(req: NextRequest, slug?: string): Promise<boolean> {
-  // Admin bypass ONLY when a global token is actually configured AND matches — never the un-gated
-  // dev shortcut (else a deploy without PORTFOLIO_OWNER_TOKEN would leave every tenant's data open).
-  if (ownerTokenConfigured() && isOwnerRequest(req)) return true;
-  if (!slug) return false;
-  const provided = req.headers.get("x-portfolio-owner") ?? "";
-  if (!provided) return false;
-  const hash = await kvGetJSON<string>(ownerKey(slug));
-  return hash ? ownerHashMatches(provided, hash) : false;
-}
 
 const str = (v: unknown, cap = 200) => (typeof v === "string" ? v.trim().slice(0, cap) : "");
 const instanceParam = (v: string | null): string | undefined => (v && slugRe.test(v) ? v.toLowerCase() : undefined);

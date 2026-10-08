@@ -102,6 +102,13 @@ Open it and you're in **🔓 Owner mode**: manage your portfolio and ask your ag
 agent captured). Everyone else is a **🔒 visitor** — they can chat with your agent and it can capture *their* interest,
 but only you can read your pipeline. Each portfolio has its own owner key; no one can see anyone else's.
 
+**Write on your own page — articles and ideas.** In Owner mode, press **✍️ Write · 写作**. Write or paste an article
+or a short idea in any language. Markdown works: `# heading`, `**bold**`, `- list`, `[link](https://…)`. Preview it,
+then publish it. It gets its own page at `/p/<you>/w/<id>` and shows first in your Writing section. Your agent reads it
+too, so visitors can ask *"what has she written about quality?"* and get an answer from your own words. You can edit
+or delete a post any time; only you can publish. Your text is shown safely: it can format, but it can never run code
+in a visitor's browser.
+
 **Keep it fresh — 1-click or on a schedule.** Add your **GitHub** and **YouTube** links and your portfolio
 auto-pulls your latest repos + videos: ask your agent to *"sync my portfolio"* (1-click, owner-only), or let it
 update itself on a **daily schedule** (a [Vercel Cron](https://vercel.com/docs/cron-jobs) in `vercel.json` hits

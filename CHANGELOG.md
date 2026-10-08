@@ -6,6 +6,21 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **Hosted writing: owners publish articles and ideas ON their portfolio.** Before this, a hosted owner could only
+  add a *link* to writing hosted elsewhere. The first teammate to try it asked for exactly this ("a back office where I
+  upload my own articles and ideas"). How it works:
+  - A ✍️ **Write · 写作** button in owner mode opens `/p/<slug>/write`.
+  - The owner writes or pastes Markdown in any language, previews it, and publishes it to `/p/<slug>/w/<id>`.
+  - Posts can be edited or deleted later.
+  - Posts appear first in the Writing section, and they're added to the portfolio agent's grounding, so visitors
+    can ask about them.
+  - `/api/posts`: `GET` is public; `POST` and `DELETE` are owner-only per portfolio.
+  - The model and an **XSS-safe Markdown renderer** live in `packages/core/src/post-types.ts`. The renderer escapes
+    everything, then emits only its own tags, and only for http(s) links.
+  - `scripts/test-posts.mjs` has 22 cases, including script, onerror and `javascript:` attacks.
+  - The labels are bilingual (English · 中文).
+- **One owner check for every hosted route.** `lib/instance-owner.ts` replaces three copies of `ownsInstance` (leads,
+  opportunities, sync); posts is the fourth caller. A security check that lives in N places is N places to drift.
 - **`/api/health` now reports `emailRecoveryReady`.** A plain, cache-free `GET` boolean mirroring
   `/api/owner/recover`'s gate (RESEND key + a resolvable owner email), so `curl …/api/health`
   confirms whether a Vercel `RESEND_API_KEY` change + redeploy actually took effect — without

@@ -76,11 +76,16 @@ export function HostedOwnerBadge({ slug, name }: { slug: string; name: string })
   return (
     <div className="fixed bottom-4 left-4 z-50 text-sm">
       {state === "owner" ? (
-        <button onClick={signOut} className="card flex items-center gap-2 !py-2 !px-3" title={`You own ${name}'s portfolio. Ask the agent to "show my leads". Click to sign out.`}>
-          <span>🔓</span>
-          <span className="font-medium text-ink">Owner mode</span>
-          <span className="text-muted">· ask the agent to “show my leads”</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <a href={`/p/${slug}/write`} className="card flex items-center gap-2 !py-2 !px-3 font-medium text-accent" title="Write or paste an article or an idea; it is published on this portfolio.">
+            ✍️ Write · 写作
+          </a>
+          <button onClick={signOut} className="card flex items-center gap-2 !py-2 !px-3" title={`You own ${name}'s portfolio. Ask the agent to "show my leads". Click to sign out.`}>
+            <span>🔓</span>
+            <span className="font-medium text-ink">Owner mode</span>
+            <span className="text-muted">· ask the agent to “show my leads”</span>
+          </button>
+        </div>
       ) : (
         <button onClick={signIn} className="card flex items-center gap-2 !py-2 !px-3" title="Owner? Sign in with the owner link you got when you made this portfolio.">
           <span>🔒</span>
