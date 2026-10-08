@@ -6,6 +6,19 @@ Format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 ## [Unreleased]
 
 ### Added
+- **1-click setup and run.**
+  - A **Deploy with Vercel** button (`scripts/deploy-button.mjs`) clones the repo, creates a free Neon database in the
+    same flow, and asks for exactly a free `GEMINI_API_KEY` and an owner passphrase. The passphrase is required,
+    because a deploy without `PORTFOLIO_OWNER_TOKEN` is editable by anyone; the live public site reported
+    `ownerGated:false` on 2026-10-08.
+  - **`npm run quickstart`** installs, runs `scripts/setup.mjs`, and starts the dev server. The setup step creates
+    `.env.local` without ever overwriting one, asks for one optional key, and mints the owner passphrase. `--yes`
+    runs it non-interactively.
+  - **`scripts/test-one-click.mjs`** (in `npm test`) fails if any of these drift:
+    - the README button differs from the generated one;
+    - the button stops requiring the passphrase or creating the database;
+    - `.env.example` stops documenting the button's variables;
+    - the setup step overwrites an existing value.
 - **Hosted writing: owners publish articles and ideas ON their portfolio.** Before this, a hosted owner could only
   add a *link* to writing hosted elsewhere. The first teammate to try it asked for exactly this ("a back office where I
   upload my own articles and ideas"). How it works:
