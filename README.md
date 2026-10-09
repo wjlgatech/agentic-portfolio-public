@@ -6,6 +6,15 @@
 
 ## 🚀 [**→ Create yours now: agentic-portfolio-public.vercel.app**](https://agentic-portfolio-public.vercel.app/)
 
+**Three ways in, each one step:**
+
+| You want… | Do this | You get |
+|---|---|---|
+| A portfolio, no code | Open **[/make](https://agentic-portfolio-public.vercel.app/make)**, type your name, email and a résumé or LinkedIn link | Your own page with its own AI agent, in about a minute |
+| **Your own copy, deployed** | [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fwjlgatech%2Fagentic-portfolio-public&project-name=my-agentic-portfolio&repository-name=my-agentic-portfolio&env=GEMINI_API_KEY%2CPORTFOLIO_OWNER_TOKEN&envDescription=GEMINI_API_KEY%3A+a+free+key+from+aistudio.google.com%2Fapikey+turns+your+agent+on.+PORTFOLIO_OWNER_TOKEN%3A+make+up+a+long+passphrase%3B+it+locks+editing+to+you.&envLink=https%3A%2F%2Fgithub.com%2Fwjlgatech%2Fagentic-portfolio-public%23-deploy-free&stores=%5B%7B%22type%22%3A%22integration%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%5D) | Your own site on Vercel, with a free database created for you. It asks for one free Gemini key and an owner passphrase |
+| Your own copy, on your laptop | `git clone https://github.com/wjlgatech/agentic-portfolio-public && cd agentic-portfolio-public && npm run quickstart` | Installs, sets up `.env.local` (asks for one free key, or skip), makes your owner passphrase, opens http://localhost:3000 |
+
+
 **Non-technical?** Just enter your name, email, and a few lines of your résumé (or your LinkedIn URL),
 click once — and you get a **live portfolio with its own AI agent** that answers questions about you,
 24/7. Hosted for you. Nothing to install.
@@ -121,17 +130,26 @@ and free, but each portfolio grows the network and the brand. That's the point.
 
 ## ⚡ Quick start
 
+One command:
+
 ```bash
-git clone https://github.com/wjlgatech/agentic-portfolio-public   # (your fork)
+git clone https://github.com/wjlgatech/agentic-portfolio-public   # (or your fork)
 cd agentic-portfolio-public
-npm install
-cp .env.example .env.local      # add ONE free LLM key (see the table in .env.example)
-npm run dev                     # → http://localhost:3000
-npm run build                   # the real gate (TypeScript + Next compile)
-npm test                        # the pure-logic unit tests
+npm run quickstart              # install → setup → http://localhost:3000
 ```
 
-Without any key the site still renders fully; only the chat shows a "configure a key" hint.
+`npm run quickstart` installs dependencies, then runs `scripts/setup.mjs`, which:
+- creates `.env.local` from `.env.example`, and never overwrites one you already have;
+- asks for one free model key (press Enter to skip; the site still runs and only the chat asks for a key);
+- generates your owner passphrase and prints it once;
+- starts the dev server.
+
+Re-running it is safe. For CI, `node scripts/setup.mjs --yes` reads keys from the environment and asks nothing.
+
+```bash
+npm run build                   # the real gate (TypeScript + Next compile)
+npm test                        # the pure-logic unit tests, including the 1-click promise
+```
 
 ## 🌐 The Network — the reason to join
 
@@ -210,9 +228,18 @@ zero component edits. Live theme switcher included.
 
 ## 🚀 Deploy (free)
 
-1. Import your fork at [vercel.com/new](https://vercel.com/new).
-2. Set the environment variables below.
-3. Deploy. Then open `/network` and **Join** with your new URL.
+**One click:** [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fwjlgatech%2Fagentic-portfolio-public&project-name=my-agentic-portfolio&repository-name=my-agentic-portfolio&env=GEMINI_API_KEY%2CPORTFOLIO_OWNER_TOKEN&envDescription=GEMINI_API_KEY%3A+a+free+key+from+aistudio.google.com%2Fapikey+turns+your+agent+on.+PORTFOLIO_OWNER_TOKEN%3A+make+up+a+long+passphrase%3B+it+locks+editing+to+you.&envLink=https%3A%2F%2Fgithub.com%2Fwjlgatech%2Fagentic-portfolio-public%23-deploy-free&stores=%5B%7B%22type%22%3A%22integration%22%2C%22productSlug%22%3A%22neon%22%2C%22integrationSlug%22%3A%22neon%22%7D%5D)
+
+The button clones this repo into your GitHub account and creates a free **Neon Postgres** database during the
+flow. That sets `POSTGRES_URL`, so `/make` hosting and the Network work on the first deploy. It asks for exactly
+two values:
+- `GEMINI_API_KEY`, a free key from [aistudio.google.com/apikey](https://aistudio.google.com/apikey);
+- `PORTFOLIO_OWNER_TOKEN`, a passphrase you make up. It's required, because a deploy without one is editable by anyone.
+
+Open `/network` afterwards and **Join** with your new URL. The button is defined once, in
+`scripts/deploy-button.mjs`; `scripts/test-one-click.mjs` fails if this README drifts from it.
+
+**By hand instead:** import your fork at [vercel.com/new](https://vercel.com/new), set the variables below, then deploy.
 
 | Env var | Needed for | Notes |
 |---|---|---|

@@ -128,3 +128,9 @@ updates. A pre-push hook enforces this; conscious bypass is `SKIP_DOC_SYNC=1`.
 Owners publish articles and ideas at `/p/<slug>/write` → `/p/<slug>/w/<id>` (`app/api/posts`, `packages/core/src/post-types.ts`).
 The body is owner-written and shown to every visitor, so `renderMarkdown` must stay escape-first with no raw-HTML path;
 `scripts/test-posts.mjs` carries the XSS cases. Keep it.
+
+## 1-click setup and run (2026-10-08)
+
+The public repo promises one step per path: `/make` (no code) · the Deploy button (`scripts/deploy-button.mjs`) ·
+`npm run quickstart` (`scripts/setup.mjs`). `scripts/test-one-click.mjs` is the promise as a test. Keep it green. Any
+new required env var goes into `.env.example`, `REQUIRED_ENV`, and the README badge in the same change.
